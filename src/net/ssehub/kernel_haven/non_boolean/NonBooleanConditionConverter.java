@@ -10,7 +10,6 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.IConfiguration;
 import net.ssehub.kernel_haven.util.FormatException;
-import net.ssehub.kernel_haven.variability_model.FiniteIntegerVariable;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 

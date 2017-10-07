@@ -18,7 +18,6 @@ import net.ssehub.kernel_haven.test_utils.FileContentsAssertion;
 import net.ssehub.kernel_haven.test_utils.PseudoVariabilityExtractor;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
-import net.ssehub.kernel_haven.variability_model.FiniteIntegerVariable;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
 /**

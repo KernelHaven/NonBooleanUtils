@@ -25,7 +25,6 @@ import net.ssehub.kernel_haven.config.CodeExtractorConfiguration;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.Util;
-import net.ssehub.kernel_haven.variability_model.FiniteIntegerVariable;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
