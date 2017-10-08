@@ -8,7 +8,7 @@ import java.util.regex.PatternSyntaxException;
 
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.config.IConfiguration;
+import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.FormatException;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
@@ -53,7 +53,7 @@ public class NonBooleanConditionConverter {
      * @param config The configuration passed to KernelHaven, must not be <tt>null</tt>.
      * @throws SetUpException If configuring fails.
      */
-    public NonBooleanConditionConverter(IConfiguration config) throws SetUpException {
+    public NonBooleanConditionConverter(Configuration config) throws SetUpException {
         this(config, null, null);
     }
     
@@ -67,7 +67,7 @@ public class NonBooleanConditionConverter {
      *      
      * @throws SetUpException If configuring fails.
      */
-    public NonBooleanConditionConverter(IConfiguration config, VariabilityModel varModel) throws SetUpException {
+    public NonBooleanConditionConverter(Configuration config, VariabilityModel varModel) throws SetUpException {
         this(config, varModel, null);
     }
     
@@ -82,7 +82,7 @@ public class NonBooleanConditionConverter {
      * <tt>defined(&#037;)</tt>
      * @throws SetUpException If configuring fails.
      */
-    public NonBooleanConditionConverter(IConfiguration config, String booleanFunction)
+    public NonBooleanConditionConverter(Configuration config, String booleanFunction)
             throws SetUpException {
         this(config, null, booleanFunction);
     }
@@ -101,10 +101,10 @@ public class NonBooleanConditionConverter {
      * <tt>defined(&#037;)</tt>
      * @throws SetUpException If configuring fails.
      */
-    public NonBooleanConditionConverter(IConfiguration config, VariabilityModel varModel, String booleanFunction)
+    public NonBooleanConditionConverter(Configuration config, VariabilityModel varModel, String booleanFunction)
             throws SetUpException {
         
-        String variableRegex = config.getProperty(PROPERTY_VARIABLE_PATTERN);
+        String variableRegex = config.getValue(NonBooleanSettings.VARIABLE_REGEX).pattern();
         
         this.booleanFunction = (null != booleanFunction && booleanFunction.contains("%")) ? booleanFunction : null;
         

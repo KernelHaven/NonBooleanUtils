@@ -21,8 +21,8 @@ import java.util.stream.LongStream;
 import net.ssehub.kernel_haven.IPreparation;
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.config.CodeExtractorConfiguration;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.Util;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
@@ -38,7 +38,6 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 // TODO SE: @Adam please check whether and how NonBooleanConditionConverter can be used/integrated
 public class NonBooleanPreperation implements IPreparation {
     
-    static final String DESTINATION_CONFIG = "prepare_non_boolean.destination";
     static final String VAR_IDENTIFICATION_REGEX_CONFIG = "code.extractor.variable_regex";
     
     private static final String GROUP_NAME_VARIABLE = "variable";
@@ -90,20 +89,15 @@ public class NonBooleanPreperation implements IPreparation {
 
     @Override
     public void run(Configuration config) throws SetUpException {
-        run(config.getCodeConfiguration());
-    }
-    
-    public void run(CodeExtractorConfiguration config) throws SetUpException {
-        copiedSourceTree = new File(config.getProperty(DESTINATION_CONFIG));
-        originalSourceTree = config.getSourceTree();
+        NonBooleanSettings.registerAllSettings(config);
         
-        String variableRegex = config.getProperty(VAR_IDENTIFICATION_REGEX_CONFIG);
-        if (variableRegex == null) {
-            throw new SetUpException(VAR_IDENTIFICATION_REGEX_CONFIG + " not defined");
-        }
+        copiedSourceTree = config.getValue(NonBooleanSettings.DESTINATION_DIR);
+        originalSourceTree = config.getValue(DefaultSettings.SOURCE_TREE);
+        
+        variableNamePattern = config.getValue(NonBooleanSettings.VARIABLE_REGEX);
+        String variableRegex = variableNamePattern.pattern();
         
         try {
-            variableNamePattern = Pattern.compile(variableRegex);
             
             leftSide = Pattern.compile("^"
                 + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
@@ -148,7 +142,7 @@ public class NonBooleanPreperation implements IPreparation {
             throw new SetUpException(e);
         }
         
-        config.setSourceTree(copiedSourceTree);
+        config.setValue(DefaultSettings.SOURCE_TREE, copiedSourceTree);
         PipelineConfigurator.instance().getCmProvider().setConfig(config);
     }
 

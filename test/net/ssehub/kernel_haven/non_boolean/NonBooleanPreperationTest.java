@@ -3,6 +3,7 @@ package net.ssehub.kernel_haven.non_boolean;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,8 +13,8 @@ import org.junit.Test;
 import net.ssehub.kernel_haven.AllTests;
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.config.CodeExtractorConfiguration;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.test_utils.FileContentsAssertion;
 import net.ssehub.kernel_haven.test_utils.PseudoVariabilityExtractor;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
@@ -61,8 +62,8 @@ public class NonBooleanPreperationTest {
     @Test
     public void testGreaterExpressionWithoutVarModel() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation();
-        CodeExtractorConfiguration cconfig = createConfig();
-        preparator.run(cconfig);
+        Configuration config = createConfig();
+        preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "comparison.c"), 
             "#if ((defined(a_eq_2))) \n"
@@ -78,9 +79,9 @@ public class NonBooleanPreperationTest {
     @Test
     public void testGreaterExpressionWithVarModel() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation();
-        CodeExtractorConfiguration cconfig = createConfig(new FiniteIntegerVariable("a", "tristate",
+        Configuration config = createConfig(new FiniteIntegerVariable("a", "tristate",
             new int[] {1, 2, 3}));
-        preparator.run(cconfig);
+        preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "comparison.c"), 
             "#if ((defined(a_eq_2) || defined(a_eq_3))) \n"
@@ -96,10 +97,10 @@ public class NonBooleanPreperationTest {
     @Test
     public void testEqualityOnVarsWithVarModelSameRanges() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation();
-        CodeExtractorConfiguration cconfig = createConfig(
+        Configuration config = createConfig(
             new FiniteIntegerVariable("a", "tristate", new int[] {1, 2, 3}),
             new FiniteIntegerVariable("b", "tristate", new int[] {1, 2, 3}));
-        preparator.run(cconfig);
+        preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
             "#if ((((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
@@ -116,10 +117,10 @@ public class NonBooleanPreperationTest {
     @Test
     public void testEqualityOnVarsWithVarModelDifferentRanges() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation();
-        CodeExtractorConfiguration cconfig = createConfig(
+        Configuration config = createConfig(
                 new FiniteIntegerVariable("a", "tristate", new int[] {0, 1, 2}),
                 new FiniteIntegerVariable("b", "tristate", new int[] {1, 2, 3}));
-        preparator.run(cconfig);
+        preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
                 "#if ((((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2))) "
@@ -129,13 +130,13 @@ public class NonBooleanPreperationTest {
     }
 
     /**
-     * Configures the {@link PipelineConfigurator} and creates the {@link CodeExtractorConfiguration}, which is needed
+     * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability
      *     model or the complete list of relevant variables.
      * @return {@link CodeExtractorConfiguration}, which is needed for testing the {@link NonBooleanPreperation}.
      */
-    private CodeExtractorConfiguration createConfig(VariabilityVariable... variables) {
+    private Configuration createConfig(VariabilityVariable... variables) {
         Properties prop = new Properties();
         boolean usesVarModel = null != variables && variables.length > 0;
         if (usesVarModel) {
@@ -144,9 +145,9 @@ public class NonBooleanPreperationTest {
         } 
         
         prop.setProperty("source_tree", IN_FOLDER.getAbsolutePath());
-        CodeExtractorConfiguration cconfig = null;
         try {
             Configuration config = new TestConfiguration(prop);
+            NonBooleanSettings.registerAllSettings(config);
             PipelineConfigurator.instance().init(config);
             PipelineConfigurator.instance().instantiateExtractors();
             PipelineConfigurator.instance().createProviders();
@@ -155,15 +156,16 @@ public class NonBooleanPreperationTest {
                 PipelineConfigurator.instance().getVmProvider().start();
             }
             
-            cconfig = config.getCodeConfiguration();
+            config.setValue(NonBooleanSettings.DESTINATION_DIR, OUT_FOLDER);
+            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}"));
+            config.setValue(DefaultSettings.SOURCE_TREE, IN_FOLDER);
+            
+            return config;
+            
         } catch (SetUpException e) {
             Assert.fail(e.getMessage());
+            throw new RuntimeException(e);
         }
-        
-        cconfig.setProperty(NonBooleanPreperation.DESTINATION_CONFIG, OUT_FOLDER.getAbsolutePath());
-        cconfig.setProperty(NonBooleanPreperation.VAR_IDENTIFICATION_REGEX_CONFIG, "\\p{Alpha}");
-        cconfig.setSourceTree(IN_FOLDER);
-        return cconfig;
     }
 
 }
