@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- author: Sascha El-Sharkawy, Adam -->
-<project name="nonbooleanutils" default="jenkins" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:cs="antlib:com.puppycrawl.tools.checkstyle.ant">
+<project name="NonBooleanUtils" default="jenkins" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:cs="antlib:com.puppycrawl.tools.checkstyle.ant">
 	<description>Builds, tests, and runs the project DummyAnalysis.</description>
 
 	<!-- Load Marcros on Jenkins -->
