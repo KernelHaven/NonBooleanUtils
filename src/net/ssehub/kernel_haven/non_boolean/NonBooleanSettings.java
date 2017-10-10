@@ -20,10 +20,13 @@ import net.ssehub.kernel_haven.config.Setting.Type;
 public class NonBooleanSettings {
     
     public static final Setting<File> DESTINATION_DIR
-        = new Setting<>("prepare_non_boolean.destination", Type.DIRECTORY, true, null, "TODO");
+        = new Setting<>("prepare_non_boolean.destination", Type.DIRECTORY, true, null, "The destination directory "
+                + "where a temporary copy of the source tree with the non boolean replacements should be placed. "
+                + "All contents of this will be overwritten.");
     
     public static final Setting<Pattern> VARIABLE_REGEX
-        = new Setting<>("code.extractor.variable_regex", Type.REGEX, true, null, "TODO");
+        = new Setting<>("code.extractor.variable_regex", Type.REGEX, true, null, "A regular expression to define what "
+                + "the variables that require non-boolean replacements look like.");
 
     /**
      * Holds all declared setting constants.
