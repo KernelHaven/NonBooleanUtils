@@ -11,7 +11,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     CPPUtilsTest.class,
     NonBooleanPreperationTest.class,
-    NumberUtils.class
+    NumberUtilsTest.class
     })
 public class AllTests {
 
