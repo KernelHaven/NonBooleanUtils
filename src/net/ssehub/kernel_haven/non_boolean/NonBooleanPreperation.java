@@ -339,38 +339,37 @@ public class NonBooleanPreperation implements IPreparation {
                 newF.mkdir();
                 copy(f, newF);
             } else {
-                copyFile(f, newF);
+                if (f.getName().endsWith(".c") || f.getName().endsWith(".h")) {
+                    copySourceFile(f, newF);
+                } else {
+                    Util.copyFile(f, newF);
+                }
             }
         }
     }
     
-    private void copyFile(File from, File to) throws IOException {
+    private void copySourceFile(File from, File to) throws IOException {
         try (BufferedReader in = new BufferedReader(new FileReader(from))) {
             
             try (BufferedWriter out = new BufferedWriter(new FileWriter(to))) {
                 
                 String line;
                 while ((line = in.readLine()) != null) {
-                    
-                    if (from.getName().endsWith(".c") || from.getName().endsWith(".h")) {
+                    // Replace variable occurrences of #if's and #elif's
+                    if (CPPUtils.isIfOrElifStatement(line)) {
                         
-                        // Replace variable occurrences of #if's and #elif's
-                        if (CPPUtils.isIfOrElifStatement(line)) {
-                            
-                            // Consider continuation
-                            while (line.charAt(line.length() - 1) == '\\') {
-                                String tmp = in.readLine();
-                                if (null != tmp) {
-                                    line += tmp;
-                                } else {
-                                    break;
-                                }
+                        // Consider continuation
+                        while (line.charAt(line.length() - 1) == '\\') {
+                            String tmp = in.readLine();
+                            if (null != tmp) {
+                                line += tmp;
+                            } else {
+                                break;
                             }
-                            
-                            line = line.trim();
-                            line = replaceInLine(line);
                         }
                         
+                        line = line.trim();
+                        line = replaceInLine(line);
                     }
                     
                     out.write(line);
