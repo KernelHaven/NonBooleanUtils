@@ -94,6 +94,15 @@ public class NonBooleanPreperation implements IPreparation {
         copiedSourceTree = config.getValue(NonBooleanSettings.DESTINATION_DIR);
         originalSourceTree = config.getValue(DefaultSettings.SOURCE_TREE);
         
+        try {
+            if (Util.isNestedInDirectory(originalSourceTree, copiedSourceTree)) {
+                throw new SetUpException(NonBooleanSettings.DESTINATION_DIR.getKey() + " points to a location inside "
+                        + "of " + DefaultSettings.SOURCE_TREE);
+            }
+        } catch (IOException e1) {
+            throw new SetUpException(e1);
+        }
+        
         variableNamePattern = config.getValue(NonBooleanSettings.VARIABLE_REGEX);
         String variableRegex = variableNamePattern.pattern();
         
