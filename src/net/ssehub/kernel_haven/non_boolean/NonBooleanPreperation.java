@@ -256,7 +256,7 @@ public class NonBooleanPreperation implements IPreparation {
         gatherConstantValues();
         
         LOGGER.logInfo("Burnt variables: " + burntVariables);
-        LOGGER.logInfo("Variables: " + variables);
+//        LOGGER.logInfo("Variables: " + variables);
         
         
         LOGGER.logDebug("Copying from " + originalSourceTree.getAbsolutePath() + " to " + copiedSourceTree.getAbsolutePath());
