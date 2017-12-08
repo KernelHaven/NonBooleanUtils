@@ -51,10 +51,22 @@ public class NonBooleanPreperation implements IPreparation {
     
     private File copiedSourceTree;
     
+    /**
+     * The non boolean operations that were found in the source files. Maps variable name -> NonBooleanOperation.
+     */
     private Map<String, Set<NonBooleanOperation>> nonBooleanOperations;
     
+    /**
+     * The non boolean variables. These were either gathered from the heuristic, or the VariabilityModel (if it contains
+     * FiniteIntegerVariables). Maps variable name -> NonBooleanVariable.
+     */
     private Map<String, NonBooleanVariable> variables;
     
+    /**
+     * A set of burnt variables. A variable is burnt, if we found a non boolean expression with it, that we cannot
+     * handle. Currently, these are only logged to console (info level). In the future, this set may be used to
+     * remove them from any analysis, since the results may be screwed.
+     */
     private Set<String> burntVariables;
     
     private Pattern variableNamePattern;
@@ -74,6 +86,11 @@ public class NonBooleanPreperation implements IPreparation {
     private Pattern leftSideFinder;
     private Pattern twoVariablesExpression;
     
+    /**
+     * Defines whether we got the NonBooleanVariables from the VariabilityModel or the heuristic.
+     * <code>true</code> means we read from the variability model.
+     * <code>false</code> means we used the heuristic.
+     */
     private boolean nonBooleanModelRead = false;
     
     /**
@@ -384,7 +401,10 @@ public class NonBooleanPreperation implements IPreparation {
     
     private String replaceInLine(String line) {
         String result = line;
-        Matcher m = leftSideFinder.matcher(line);
+        
+        // TODO: replace known constants in result
+        
+        Matcher m = leftSideFinder.matcher(result);
         while (m.find()) {
             String whole = m.group();
             String name = m.group(GROUP_NAME_VARIABLE);
@@ -442,7 +462,7 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         // Check if it is a comparison between two variables and try it again
-        m = twoVariablesExpression.matcher(line);
+        m = twoVariablesExpression.matcher(result);
         while (m.find()) {
             String whole = m.group();
             String firstVar = m.group(GROUP_NAME_VARIABLE);
