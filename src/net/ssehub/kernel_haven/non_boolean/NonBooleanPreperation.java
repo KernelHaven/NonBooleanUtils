@@ -401,10 +401,22 @@ public class NonBooleanPreperation implements IPreparation {
     
     private String replaceInLine(String line) {
         String result = line;
+        Matcher m;
         
-        // TODO: replace known constants in result
+        // replace known constants in result
+        Map<String, Integer> constants = getConstants();
+        if (!constants.isEmpty()) {
+            m = variableNamePattern.matcher(result);
+            while (m.find()) {
+                if (constants.containsKey(m.group())) {
+                    String before = result;
+                    result = result.substring(0, m.start()) + constants.get(m.group()) + result.substring(m.end());
+                    LOGGER.logDebug("Replacing constant " + m.group() + " in " + before, " -> " + result);
+                }
+            }
+        }
         
-        Matcher m = leftSideFinder.matcher(result);
+        m = leftSideFinder.matcher(result);
         while (m.find()) {
             String whole = m.group();
             String name = m.group(GROUP_NAME_VARIABLE);
@@ -663,6 +675,18 @@ public class NonBooleanPreperation implements IPreparation {
             
         }
         
+    }
+    
+    /**
+     * Returns a map of variables that are constants. The key of the map are the variable names, the values in the map
+     * are the constant values. Occurrences of these constant variables will be replaced by their value.
+     * 
+     * @return A {@link Map} of constant variables.
+     */
+    protected Map<String, Integer> getConstants() {
+        // we don't have any source to get constants from.
+        // other preparations may inherit from this class and overwrite this method, if they do have a source of constants.
+        return new HashMap<>();
     }
 
 }

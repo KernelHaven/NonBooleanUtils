@@ -26,7 +26,8 @@ public class NonBooleanSettings {
     
     public static final Setting<Pattern> VARIABLE_REGEX
         = new Setting<>("code.extractor.variable_regex", Type.REGEX, true, null, "A regular expression to define what "
-                + "the variables that require non-boolean replacements look like.");
+                + "the variables that require non-boolean replacements look like. This regex should also cover the "
+                + "names of the constant variables, that should be replaced by their value.");
 
     /**
      * Holds all declared setting constants.
