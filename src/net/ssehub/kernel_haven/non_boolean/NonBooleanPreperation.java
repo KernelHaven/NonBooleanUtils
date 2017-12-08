@@ -443,11 +443,10 @@ public class NonBooleanPreperation implements IPreparation {
                     
                     break;
                 }
+                // Only replace if we had no error, i.e., if we could resolve all parts
+                result = result.replace(whole, replacement);
             }
-            
-            result = result.replace(whole, replacement);
         }
-        
         
         // Check if it is a comparison between two variables and try it again
         m = twoVariablesExpression.matcher(line);
