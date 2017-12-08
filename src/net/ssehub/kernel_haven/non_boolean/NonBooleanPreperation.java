@@ -230,6 +230,7 @@ public class NonBooleanPreperation implements IPreparation {
     private synchronized void prepare() throws IOException {
         LOGGER.logDebug("Starting preperation...");
         
+        // make sure that the destination is empty
         if (copiedSourceTree.exists()) {
             Util.deleteFolder(copiedSourceTree);
         }
@@ -238,6 +239,8 @@ public class NonBooleanPreperation implements IPreparation {
         nonBooleanOperations = new HashMap<>();
         burntVariables = new HashSet<>();
         
+        // walk through all *.c and *.h files in the source_tree, and collect non boolean operations.
+        // this fills this.nonBooleanOperations and this.burntVariables
         new PreprocessorConditionVisitor() {
             
             @Override
@@ -253,12 +256,16 @@ public class NonBooleanPreperation implements IPreparation {
         
         variables = new HashMap<>();
         
+        // convert the nonBooleanOperations we found earlier into NonBooleanVariables (this is our heuristic)
+        // if the variability model contains FiniteIntegerVariables, use them instead of our heuristic
+        // this fills this.variables
         gatherConstantValues();
         
         LOGGER.logInfo("Burnt variables: " + burntVariables);
 //        LOGGER.logInfo("Variables: " + variables);
         
         
+        // copy the source_tree to destination, while replacing the approiapte expressions with NonBoolean variables
         LOGGER.logDebug("Copying from " + originalSourceTree.getAbsolutePath() + " to " + copiedSourceTree.getAbsolutePath());
         copy(originalSourceTree, copiedSourceTree);
     }
@@ -287,40 +294,26 @@ public class NonBooleanPreperation implements IPreparation {
             for (Map.Entry<String, Set<NonBooleanOperation>> entry : nonBooleanOperations.entrySet()) {
                 Set<Long> requiredConstants = new HashSet<>();
                 
-                // SE: Integration of non-Boolean VarModel
-                if (null != varModel) {
-                    VariabilityVariable var = varModel.getVariableMap().get(entry.getKey());
-                    if (null != var && var instanceof FiniteIntegerVariable) {
-                        nonBooleanModelRead = true;
-                        FiniteIntegerVariable intVar = (FiniteIntegerVariable) var;
-                        for (int i = 0; i < intVar.getSizeOfRange(); i++) {
-                            requiredConstants.add((long) intVar.getValue(i));
-                        }
-                    }
-                }
-                
-                if (!nonBooleanModelRead) {
-                    for (NonBooleanOperation op : entry.getValue()) {
-                        switch (op.operator) {
-                        case "==":
-                        case "!=":
-                        case ">=":
-                        case "<=":
-                            requiredConstants.add(op.value);
-                            break;
-                            
-                        case ">":
-                            requiredConstants.add(op.value + 1);
-                            break;
-                            
-                        case "<":
-                            requiredConstants.add(op.value - 1);
-                            break;
-                            
-                        default:
-                            System.err.println("Unknown operator: " + op.operator);
-                            break;
-                        }
+                for (NonBooleanOperation op : entry.getValue()) {
+                    switch (op.operator) {
+                    case "==":
+                    case "!=":
+                    case ">=":
+                    case "<=":
+                        requiredConstants.add(op.value);
+                        break;
+                        
+                    case ">":
+                        requiredConstants.add(op.value + 1);
+                        break;
+                        
+                    case "<":
+                        requiredConstants.add(op.value - 1);
+                        break;
+                        
+                    default:
+                        System.err.println("Unknown operator: " + op.operator);
+                        break;
                     }
                 }
                 
