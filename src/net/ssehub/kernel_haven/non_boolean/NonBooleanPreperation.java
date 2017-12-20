@@ -408,10 +408,14 @@ public class NonBooleanPreperation implements IPreparation {
         if (!constants.isEmpty()) {
             m = variableNamePattern.matcher(result);
             while (m.find()) {
-                if (constants.containsKey(m.group())) {
+                String constCandidate = m.group();
+                if (constants.containsKey(constCandidate)) {
                     String before = result;
-                    result = result.substring(0, m.start()) + constants.get(m.group()) + result.substring(m.end());
-                    LOGGER.logDebug("Replacing constant " + m.group() + " in " + before, " -> " + result);
+                    result = result.substring(0, m.start()) + constants.get(constCandidate) + result.substring(m.end());
+
+                    LOGGER.logDebug("Replacing constant " + constCandidate + " in " + before, " -> " + result);
+                    // This is necessary if there is more than one match in order to get correct indexes
+                    m = variableNamePattern.matcher(result);
                 }
             }
         }

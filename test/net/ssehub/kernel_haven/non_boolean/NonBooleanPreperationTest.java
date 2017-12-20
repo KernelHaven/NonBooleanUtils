@@ -2,6 +2,8 @@ package net.ssehub.kernel_haven.non_boolean;
 
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -128,6 +130,79 @@ public class NonBooleanPreperationTest {
                         + "    // Do something\n"
                         + "#endif");
     }
+    
+    /**
+     * Tests the replacement of a constant (not end of line).
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnConstantNotEndOfLine() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation() {
+            @Override
+            protected Map<String, Integer> getConstants() {
+                Map<String, Integer> constMap = new HashMap<String, Integer>();
+                constMap.put("CONSTANT", 1);
+                return constMap;
+            }
+        };
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "bool", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnConstant1.c"), 
+            "#if (defined(a_eq_1)) {\n"
+            + "    // Do something\n"
+            + "#endif");
+    }
+    
+    /**
+     * Tests the replacement of a constant at the end of line.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnConstantEndOfLine() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation() {
+            @Override
+            protected Map<String, Integer> getConstants() {
+                Map<String, Integer> constMap = new HashMap<String, Integer>();
+                constMap.put("CONSTANT", 1);
+                return constMap;
+            }
+        };
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "bool", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnConstant2.c"), 
+            "#if defined(a_eq_1)\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Tests the replacement of two constants.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnTwoConstants() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation() {
+            @Override
+            protected Map<String, Integer> getConstants() {
+                Map<String, Integer> constMap = new HashMap<String, Integer>();
+                constMap.put("CONSTANT", 1);
+                return constMap;
+            }
+        };
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "bool", new int[] {1, 2}),
+            new FiniteIntegerVariable("b", "bool", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOn2Constants.c"), 
+            "#if (defined(a_eq_1) || defined(b_eq_1)) {\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
 
     /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
@@ -157,7 +232,7 @@ public class NonBooleanPreperationTest {
             }
             
             config.setValue(NonBooleanSettings.DESTINATION_DIR, OUT_FOLDER);
-            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}"));
+            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}+"));
             config.setValue(DefaultSettings.SOURCE_TREE, IN_FOLDER);
             
             return config;
