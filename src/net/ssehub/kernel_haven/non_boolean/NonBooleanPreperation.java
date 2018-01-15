@@ -615,7 +615,7 @@ public class NonBooleanPreperation implements IPreparation {
             replacement.append(")");
         }
         
-        return null != replacement ? replacement.toString() : null;
+        return replacement.toString();
     }
     
     private void appendTwoEqualValues(StringBuffer replacement, NonBooleanVariable var1, NonBooleanVariable var2,
