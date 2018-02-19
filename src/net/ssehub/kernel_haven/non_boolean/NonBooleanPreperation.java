@@ -373,7 +373,7 @@ public class NonBooleanPreperation implements IPreparation {
             try (BufferedWriter out = new BufferedWriter(new FileWriter(to))) {
                 
                 String line;
-                while ((line = in.readLine()) != null) {
+                while (continueReading(line = in.readLine())) {
                     // Replace variable occurrences of #if's and #elif's
                     if (CPPUtils.isIfOrElifStatement(line)) {
                         
@@ -397,6 +397,16 @@ public class NonBooleanPreperation implements IPreparation {
                 
             }
         }
+    }
+    
+    /**
+     * Specifies when to abort copying a code file (line-based copying).
+     * @param line The line which will be copied
+     * @return <tt>true</tt> if this line should still be copied, <tt>false</tt> if this line and all subsequent lines
+     *     shall be discarded (default when the end of the file is reached, i.e., <tt>line !=null</tt>).
+     */
+    protected boolean continueReading(String line) {
+        return line != null;
     }
     
     private String replaceInLine(String line) {
