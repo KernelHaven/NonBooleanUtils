@@ -105,8 +105,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
-            "#if ((((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
-            + "|| (defined(a_eq_3) && defined(b_eq_3))))) {\n"
+            "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
+            + "|| (defined(a_eq_3) && defined(b_eq_3)))) {\n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -125,8 +125,68 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
-                "#if ((((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2))) "
-                        + "&& !defined(a_eq_0) && !defined(b_eq_3))) {\n"
+                "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2))"
+                        + ")) {\n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
+     * Tests that a &lt; b is translated correctly.
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testLessThanOnTwoVars() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "tristate", new int[] {1, 2}),
+            new FiniteIntegerVariable("b", "tristate", new int[] {1, 2, 3}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "lessThan.c"), 
+            "#if (((defined(a_eq_1) && defined(b_eq_2)) || (defined(a_eq_1) && defined(b_eq_3)) || "
+                    + "(defined(a_eq_2) && defined(b_eq_3))))\n"
+                    + "    // Do something\n"
+                    + "#endif");
+    }
+    
+    /**
+     * Tests that a != b is translated correctly.
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testUnequalOnTwoVars() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("a", "tristate", new int[] {1, 2}),
+                new FiniteIntegerVariable("b", "tristate", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "unequal.c"), 
+                "#if (((defined(a_eq_1) && defined(b_eq_2)) || (defined(a_eq_2) && defined(b_eq_1))"
+                        + "))\n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
+     * Tests that a != b is translated correctly.
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testGreaterThanOrEqualOnTwoVars() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("a", "tristate", new int[] {1, 2}),
+                new FiniteIntegerVariable("b", "tristate", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "greaterOrEqual.c"), 
+                "#if ((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_1)) "
+                        + "|| (defined(a_eq_2) && defined(b_eq_2)))\n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -203,7 +263,7 @@ public class NonBooleanPreperationTest {
                 + "    // Do something\n"
                 + "#endif");
     }
-
+    
     /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.

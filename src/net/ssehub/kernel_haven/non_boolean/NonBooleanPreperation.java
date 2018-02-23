@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.LongStream;
 
 import net.ssehub.kernel_haven.IPreparation;
 import net.ssehub.kernel_haven.PipelineConfigurator;
@@ -502,7 +502,12 @@ public class NonBooleanPreperation implements IPreparation {
             if (var1.constants.length > 0 || var2.constants.length > 0) {
                 switch (op) {
                 case "==":
-                    String expaned = expandComparison(var1, var2);
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                case "!=":
+                    String expaned = expandComparison(var1, op, var2);
                     if (null != expaned) {
                         replacement = expaned;
                     }
@@ -543,100 +548,89 @@ public class NonBooleanPreperation implements IPreparation {
         return replacement;
     }
     
-    private String expandComparison(NonBooleanVariable var1, NonBooleanVariable var2) {
-        StringBuffer replacement = null;
-        List<Long> sameConstants = new ArrayList<>();
-        List<Long> constantsOfVar1 = new ArrayList<>();
-        List<Long> constantsOfVar2 = new ArrayList<>();
+    private static class Pair {
+        private long value1;
+        private long value2;
         
-        for (int i = 0; i < var1.constants.length; i++) {
-            long c = var1.constants[i];
-            boolean contains = LongStream.of(var2.constants).anyMatch(x -> x == c);
-            if (contains) {
-                sameConstants.add(c);
-            } else {
-                constantsOfVar1.add(c);
+        public Pair(long value1, long value2) {
+            this.value1 = value1;
+            this.value2 = value2;
+        }
+    }
+    
+    private String expandComparison(NonBooleanVariable var1, String op, NonBooleanVariable var2) {
+        StringBuffer replacement = new StringBuffer();
+        List<Pair> pairs = new LinkedList<>();
+        
+        /*
+         * collect "pairs" of values for var1 and var2 that fulfill op
+         * 
+         * e.g., if op is "==" annd var1 has values {0, 1, 2} and var2 has values {1, 2, 3},
+         * pairs would be {(1, 1), (2, 2)}
+         * 
+         * for op = "<", and same var1 and var2, pairs would be {(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)}
+         */
+        
+        for (long value1 : var1.constants) {
+            for (long value2 : var2.constants) {
+                
+                boolean add;
+                switch (op) {
+                case "==":
+                    add = (value1 == value2);
+                    break;
+                case "<":
+                    add = (value1 < value2);
+                    break;
+                case "<=":
+                    add = (value1 <= value2);
+                    break;
+                case ">":
+                    add = (value1 > value2);
+                    break;
+                case ">=":
+                    add = (value1 >= value2);
+                    break;
+                case "!=":
+                    add = (value1 != value2);
+                    break;
+                default:
+                    LOGGER.logWarning("Unkown operator: " + op);
+                    continue;
+                }
+                
+                if (add) {
+                    pairs.add(new Pair(value1, value2));
+                }
+                
             }
         }
-        for (int i = 0; i < var2.constants.length; i++) {
-            long c = var2.constants[i];
-            if (!sameConstants.contains(c)) {
-                constantsOfVar2.add(c);
-                
-            }
-        }
         
-        if (nonBooleanModelRead) {
-            /*
-             * We can expect that our list is complete, if the variability model was imported
-             * Prohibit illegal values
-             */
-            if (!sameConstants.isEmpty()) {
-                // There exist an overlapping
-                
-                replacement = new StringBuffer("((");
-                appendTwoEqualValues(replacement, var1, var2, sameConstants.get(0));
-                // Add supported equalities
-                for (int i = 1; i < sameConstants.size(); i++) {
-                    replacement.append(" || ");
-                    appendTwoEqualValues(replacement, var1, var2, sameConstants.get(i));
-                }
-                
-                replacement.append(")"); // First bracket
-                // Disallow elements which are not part of the intersection
-                for (int i = 0; i < constantsOfVar1.size(); i++) {
-                    replacement.append(" && !defined(");
-                    replacement.append(var1.getConstantName(constantsOfVar1.get(i)));
-                    replacement.append(")");
-                }
-                for (int i = 0; i < constantsOfVar2.size(); i++) {
-                    replacement.append(" && !defined(");
-                    replacement.append(var2.getConstantName(constantsOfVar2.get(i)));
-                    replacement.append(")");
-                }
-                
-                replacement.append(")"); // Second bracket
-            } else {
-                // There exist no overlapping
-                replacement = new StringBuffer(" 0 ");
-                LOGGER.logWarning(var1.name + " == " + var2.name + " could not be replaced, since the ranges do not"
-                    + " overlap!");
-            }
+        if (pairs.isEmpty()) {
+            // There exist no overlapping
+            replacement = new StringBuffer(" 0 ");
+            LOGGER.logWarning(var1.name + " " + op + " " + var2.name +
+                    " could not be replaced, since the ranges do not overlap!");
             
         } else {
-            /*
-             * Heuristic was used to gather constants, maybe we don't know all constants.
-             * Create union of all constants and allow all combinations
-             * TODO: This algorithm is ultra ugly
-             */
-            Set<Long> tmpUnion = new HashSet<>(sameConstants);
-            tmpUnion.addAll(constantsOfVar1);
-            tmpUnion.addAll(constantsOfVar2);
-            sameConstants.clear();
-            sameConstants.addAll(tmpUnion);
+            replacement.append("(");
             
-            replacement = new StringBuffer("(");
-            appendTwoEqualValues(replacement, var1, var2, sameConstants.get(0));
-            // Add supported equalities
-            for (int i = 1; i < sameConstants.size(); i++) {
-                replacement.append(" || ");
-                appendTwoEqualValues(replacement, var1, var2, sameConstants.get(i));
+            for (Pair pair : pairs) {
+                replacement.append("(");
+                
+                replacement.append("defined(").append(var1.getConstantName(pair.value1)).append(")");
+                replacement.append(" && ");
+                replacement.append("defined(").append(var2.getConstantName(pair.value2)).append(")");
+                
+                replacement.append(") || ");
             }
+            
+            // remove trailing " || "
+            replacement.replace(replacement.length() - " || ".length(), replacement.length(), "");
             replacement.append(")");
         }
         
         return replacement.toString();
-    }
-    
-    private void appendTwoEqualValues(StringBuffer replacement, NonBooleanVariable var1, NonBooleanVariable var2,
-        long constant) {
-        
-        replacement.append("(defined(");
-        replacement.append(var1.getConstantName(constant));
-        replacement.append(") && defined(");
-        replacement.append(var2.getConstantName(constant));
-        replacement.append("))");
-        
     }
     
     private void printErr(String line, int index) {
