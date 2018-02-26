@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -562,6 +563,39 @@ public class NonBooleanPreperation implements IPreparation {
         StringBuffer replacement = new StringBuffer();
         List<Pair> pairs = new LinkedList<>();
         
+        long[] var1Values = var1.constants;
+        long[] var2Values = var2.constants;
+        
+        if (!nonBooleanModelRead) {
+            /*
+             * We used a heuristic to get var1 and var2 constants; there may be some missing, so we use the joined
+             * set of constants for both variables.
+             * 
+             * Example: a has constants {0, 1}, and b has constants {1, 2}; then we (temporarily) handle a and b as if
+             * they both have the constants {0, 1, 2}
+             * 
+             * TODO: this is probably still not enough, since we  only "expand" the values for this one comparison;
+             *       what should actually happen is that the newly added constants are also considered in all other
+             *       comparisons
+             */
+            Set<Long> allValues = new TreeSet<Long>();
+            for (long l : var1Values) {
+                allValues.add(l);
+            }
+            for (long l : var2Values) {
+                allValues.add(l);
+            }
+            
+            long[] newValues = new long[allValues.size()];
+            int i = 0;
+            for (Long l : allValues) {
+                newValues[i++] = l;
+            }
+            
+            var1Values = newValues;
+            var2Values = newValues;
+        }
+        
         /*
          * collect "pairs" of values for var1 and var2 that fulfill op
          * 
@@ -571,8 +605,8 @@ public class NonBooleanPreperation implements IPreparation {
          * for op = "<", and same var1 and var2, pairs would be {(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)}
          */
         
-        for (long value1 : var1.constants) {
-            for (long value2 : var2.constants) {
+        for (long value1 : var1Values) {
+            for (long value2 : var2Values) {
                 
                 boolean add;
                 switch (op) {
