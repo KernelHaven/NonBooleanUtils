@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.AllTests;
@@ -20,7 +19,6 @@ import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.test_utils.FileContentsAssertion;
 import net.ssehub.kernel_haven.test_utils.PseudoVariabilityExtractor;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
 /**
@@ -33,14 +31,6 @@ public class NonBooleanPreperationTest {
     private static final File TESTDATA_FOLDER = new File(AllTests.TESTDATA, "nonBooleanPreparation");
     private static final File IN_FOLDER = new File(TESTDATA_FOLDER, "inDir");
     private static final File OUT_FOLDER = new File(TESTDATA_FOLDER, "outDir");
-    
-    /**
-     * Inits the logger.
-     */
-    @BeforeClass
-    public static void beforeClass() {
-        Logger.init();
-    }
     
     /**
      * Wipes the {@link #OUT_FOLDER} for testing.
