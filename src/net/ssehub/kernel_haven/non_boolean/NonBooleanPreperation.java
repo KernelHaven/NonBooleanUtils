@@ -579,8 +579,28 @@ public class NonBooleanPreperation implements IPreparation {
                     
                     break;
                 }
-                // Only replace if we had no error, i.e., if we could resolve all parts
-                cppLine = cppLine.replace(whole, replacement);
+                
+                /* 
+                 * Only replace if we had no error, i.e., if we could resolve all parts
+                 * Took replacing function from https://stackoverflow.com/a/16229133, which should be faster than JDK
+                 * version. Also avoid multiple replacements, since they may lead to unexpected side effects
+                 */
+                int start = 0;
+                int end = cppLine.indexOf(whole, start);
+                int replLength = whole.length();
+                int increase = replacement.length() - replLength;
+                increase = (increase < 0 ? 0 : increase);
+                StringBuffer buf = new StringBuffer(cppLine.length() + increase);
+                buf.append(cppLine.substring(start, end));
+                buf.append(replacement);
+                start = end + replLength;
+                buf.append(cppLine.substring(start));
+                cppLine = buf.toString();
+//                
+//                cppLine = cppLine.replace(whole, replacement);
+                
+                // Find new match after string has been changed!
+                m = relationalExpressionPattern.matcher(cppLine);
             }
         }
         return cppLine;
