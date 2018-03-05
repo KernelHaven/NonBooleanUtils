@@ -255,6 +255,40 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests the replacement of number equals variable (wrong order of elements).
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnNumberAndVar() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("VAR", "tristate", new int[] {0, 1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnNumberAndVar.c"), 
+            "#if defined(VAR_eq_2)\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Tests the replacement of number not equals variable (wrong order of elements).
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testInequalityOnNumberAndVar() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("VAR", "tristate", new int[] {0, 1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "inequalityOnNumberAndVar.c"), 
+            "#if !defined(VAR_eq_2)\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability

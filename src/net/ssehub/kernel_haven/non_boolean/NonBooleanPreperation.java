@@ -72,19 +72,21 @@ public class NonBooleanPreperation implements IPreparation {
     
     private Pattern variableNamePattern;
     private Pattern leftSide;
+    private Pattern rightSide;
     
-    /**
-     * Checks that a variable stands on the <b>left</b> side of an expression.<br/>
-     * <tt> &lt;variable&gt; &lt;operator&gt; * </tt>
-     */
-    private Pattern comparisonLeft;
-    
-    /**
-     * Checks that a variable stands on the <b>right</b> side of an expression.<br/>
-     * <tt> * &lt;operator&gt; &lt;variable&gt; </tt>
-     */
-    private Pattern comparisonRight;
+//    /**
+//     * Checks that a variable stands on the <b>left</b> side of an expression.<br/>
+//     * <tt> &lt;variable&gt; &lt;operator&gt; * </tt>
+//     */
+//    private Pattern comparisonLeft;
+//    
+//    /**
+//     * Checks that a variable stands on the <b>right</b> side of an expression.<br/>
+//     * <tt> * &lt;operator&gt; &lt;variable&gt; </tt>
+//     */
+//    private Pattern comparisonRight;
     private Pattern leftSideFinder;
+    private Pattern rightSideFinder;
     private Pattern twoVariablesExpression;
     
     /**
@@ -126,6 +128,7 @@ public class NonBooleanPreperation implements IPreparation {
         
         try {
             
+            // <variable> <operator> <value>
             leftSide = Pattern.compile("^"
                 + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
                 + "\\s*"
@@ -133,18 +136,27 @@ public class NonBooleanPreperation implements IPreparation {
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
                 + ".*");
-
-            comparisonLeft = Pattern.compile("^"
-                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
-                + "\\s*"
-                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
-                + ".*");
             
-            comparisonRight = Pattern.compile(".*"
+            // <value> <operator> <variable>
+            rightSide = Pattern.compile("^"
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
-                + "$");
+                + ".*");
+
+//            comparisonLeft = Pattern.compile("^"
+//                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
+//                + "\\s*"
+//                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+//                + ".*");
+//            
+//            comparisonRight = Pattern.compile(".*"
+//                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+//                + "\\s*"
+//                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
+//                + "$");
             
             leftSideFinder = Pattern.compile(
                 createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
@@ -152,6 +164,13 @@ public class NonBooleanPreperation implements IPreparation {
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"));
+            
+            rightSideFinder = Pattern.compile(
+                createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                + "\\s*"
+                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+                + "\\s*"
+                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex));
             
             twoVariablesExpression = Pattern.compile(
                 createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
@@ -214,9 +233,9 @@ public class NonBooleanPreperation implements IPreparation {
         private long value;
 
         /**
-         * .
-         * @param operator .
-         * @param value .
+         * Sole constructor
+         * @param operator One of {@link NonBooleanPreperation#SUPPORTED_OPERATORS_REGEX}
+         * @param value A number
          */
         public NonBooleanOperation(String operator, long value) {
             this.operator = operator;
@@ -431,7 +450,60 @@ public class NonBooleanPreperation implements IPreparation {
             }
         }
         
-        m = leftSideFinder.matcher(result);
+        result = convertRelationalExpressionOnVarAndValue(result, leftSideFinder);
+        result = convertRelationalExpressionOnVarAndValue(result, rightSideFinder);
+        
+        
+        // Check if it is a comparison between two variables and try it again
+        m = twoVariablesExpression.matcher(result);
+        while (m.find()) {
+            String whole = m.group();
+            String firstVar = m.group(GROUP_NAME_VARIABLE);
+            String op = m.group(GROUP_NAME_OPERATOR);
+            String secondVar = m.group(GROUP_NAME_VALUE);
+            
+            NonBooleanVariable var1 = getVariableForced(firstVar);
+            NonBooleanVariable var2 = getVariableForced(secondVar);
+            String replacement = whole;
+            
+            if (var1.constants.length > 0 || var2.constants.length > 0) {
+                switch (op) {
+                case "==":
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                case "!=":
+                    String expaned = expandComparison(var1, op, var2);
+                    if (null != expaned) {
+                        replacement = expaned;
+                    }
+                    
+                    LOGGER.logDebug("Exchanged", whole, "to", replacement);
+                    break;
+                    
+                default :
+                    LOGGER.logWarning("Could not prepare non boolean expression because of unsuppoted type: " + whole);
+                    break;
+                }
+            }
+            result = result.replace(whole, replacement);
+        }
+        
+        return result;
+    }
+
+    /**
+     * Converts all occurrences of specified pattern with a variable equals constant expressions.
+     * @param cppLine One preprocessor line, which shall be checked and potentially rewritten.
+     * @param relationalExpressionPattern A pattern to identify variable, operator, and constant.
+     *     One of {@link #leftSideFinder} or {@link #rightSideFinder}
+     * 
+     * @return The rewritten results, maybe the original input (if the pattern was not found).
+     */
+    private String convertRelationalExpressionOnVarAndValue(String cppLine, Pattern relationalExpressionPattern) {
+        Matcher m;
+        m = relationalExpressionPattern.matcher(cppLine);
         while (m.find()) {
             String whole = m.group();
             String name = m.group(GROUP_NAME_VARIABLE);
@@ -484,47 +556,10 @@ public class NonBooleanPreperation implements IPreparation {
                     break;
                 }
                 // Only replace if we had no error, i.e., if we could resolve all parts
-                result = result.replace(whole, replacement);
+                cppLine = cppLine.replace(whole, replacement);
             }
         }
-        
-        // Check if it is a comparison between two variables and try it again
-        m = twoVariablesExpression.matcher(result);
-        while (m.find()) {
-            String whole = m.group();
-            String firstVar = m.group(GROUP_NAME_VARIABLE);
-            String op = m.group(GROUP_NAME_OPERATOR);
-            String secondVar = m.group(GROUP_NAME_VALUE);
-            
-            NonBooleanVariable var1 = getVariableForced(firstVar);
-            NonBooleanVariable var2 = getVariableForced(secondVar);
-            String replacement = whole;
-            
-            if (var1.constants.length > 0 || var2.constants.length > 0) {
-                switch (op) {
-                case "==":
-                case "<":
-                case ">":
-                case "<=":
-                case ">=":
-                case "!=":
-                    String expaned = expandComparison(var1, op, var2);
-                    if (null != expaned) {
-                        replacement = expaned;
-                    }
-                    
-                    LOGGER.logDebug("Exchanged", whole, "to", replacement);
-                    break;
-                    
-                default :
-                    LOGGER.logWarning("Could not prepare non boolean expression because of unsuppoted type: " + whole);
-                    break;
-                }
-            }
-            result = result.replace(whole, replacement);
-        }
-        
-        return result;
+        return cppLine;
     }
 
     /**
@@ -599,7 +634,7 @@ public class NonBooleanPreperation implements IPreparation {
         /*
          * collect "pairs" of values for var1 and var2 that fulfill op
          * 
-         * e.g., if op is "==" annd var1 has values {0, 1, 2} and var2 has values {1, 2, 3},
+         * e.g., if op is "==" and var1 has values {0, 1, 2} and var2 has values {1, 2, 3},
          * pairs would be {(1, 1), (2, 2)}
          * 
          * for op = "<", and same var1 and var2, pairs would be {(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)}
@@ -667,13 +702,13 @@ public class NonBooleanPreperation implements IPreparation {
         return replacement.toString();
     }
     
-    private void printErr(String line, int index) {
-        System.err.println(line);
-        for (int i = 0; i < index; i++) {
-            System.err.print(' ');
-        }
-        System.err.println('^');
-    }
+//    private void printErr(String line, int index) {
+//        System.err.println(line);
+//        for (int i = 0; i < index; i++) {
+//            System.err.print(' ');
+//        }
+//        System.err.println('^');
+//    }
     
     private void putNonBooleanOperation(String variable, String operator, long value) {
         Set<NonBooleanOperation> l = nonBooleanOperations.get(variable);
@@ -696,27 +731,45 @@ public class NonBooleanPreperation implements IPreparation {
             int index = variableNameMatcher.start();
             String left = line.substring(index);
             
-            String name = variableNameMatcher.group();
             
-            String right = line.substring(0, index + name.length());
-            
-            Matcher m = leftSide.matcher(left);
-            if (m.matches()) {
-                // Expression is in form of: <variable> <operator> <constant>
-                putNonBooleanOperation(m.group(GROUP_NAME_VARIABLE), m.group(GROUP_NAME_OPERATOR),
-                    Long.parseLong(m.group(GROUP_NAME_VALUE)));
-            } else {
-                boolean leftMatch = comparisonLeft.matcher(left).matches();
-                boolean rightMatch = comparisonRight.matcher(right).matches();
-                if (leftMatch || rightMatch) {
-                    burntVariables.add(name);
-                    printErr(line, index);
-                }
-                
+            // Expression is in form of: <variable> <operator> <constant>
+            boolean handled = identifyNonBooleanOperation(left, leftSide); 
+            if (!handled) {
+                handled = identifyNonBooleanOperation(left, rightSide); 
             }
             
+//            if (!handled) {
+//                String name = variableNameMatcher.group();
+//                String right = line.substring(0, index + name.length());
+//                
+//                boolean leftMatch = comparisonLeft.matcher(left).matches();
+//                boolean rightMatch = comparisonRight.matcher(right).matches();
+//                
+//                if (leftMatch || rightMatch) {
+//                    burntVariables.add(name);
+//                    printErr(line, index);
+//                }
+//            }
         }
         
+    }
+
+    /**
+     * Identifies {@link NonBooleanOperation}s in preprocessor blocks.
+     * @param expression The expression to expression of the preprocessor block to test
+     * @param variableValuePattern The expression to identify a {@link NonBooleanOperation}, one of {@link #leftSide}
+     *     or {@link #rightSide}
+     * @return <tt>true</tt> if the location matches to the given pattern, <tt>false</tt> otherwise.
+     */
+    private boolean identifyNonBooleanOperation(String expression, Pattern variableValuePattern) {
+        boolean matchFound = false;
+        Matcher m = variableValuePattern.matcher(expression);
+        if (m.matches()) {
+            matchFound = true;
+            putNonBooleanOperation(m.group(GROUP_NAME_VARIABLE), m.group(GROUP_NAME_OPERATOR),
+                Long.parseLong(m.group(GROUP_NAME_VALUE)));
+        }
+        return matchFound;
     }
     
     /**
