@@ -306,6 +306,26 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests the replacement of the following expression: <tt>((VAR1 == VAR2) && (VAR3 == 2))</tt>.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testComplexExpression() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("VAR1", "bool", new int[] {0, 1}),
+                new FiniteIntegerVariable("VAR2", "bool", new int[] {0, 1}),
+                new FiniteIntegerVariable("VAR3", "tristate", new int[] {0, 1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "complexExpression.c"), 
+            "#if ((((defined(VAR1_eq_0) && defined(VAR2_eq_0)) || (defined(VAR1_eq_1) && defined(VAR2_eq_1)))) "
+                + "&& (defined(VAR3_eq_2)))\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability
@@ -333,7 +353,7 @@ public class NonBooleanPreperationTest {
             }
             
             config.setValue(NonBooleanSettings.DESTINATION_DIR, OUT_FOLDER);
-            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}+"));
+            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}+\\w*"));
             config.setValue(DefaultSettings.SOURCE_TREE, IN_FOLDER);
             
             return config;

@@ -45,6 +45,7 @@ public class NonBooleanPreperation implements IPreparation {
     private static final String GROUP_NAME_OPERATOR = "operator";
     private static final String GROUP_NAME_VALUE = "value";
     private static final String SUPPORTED_OPERATORS_REGEX = "==|!=|<|>|<=|>=";
+    private static final String SEPARATOR_REGEX = "[(|)|\\s]{1}+";
     
     private static final Logger LOGGER = Logger.get();
     
@@ -166,7 +167,8 @@ public class NonBooleanPreperation implements IPreparation {
                 + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"));
             
             rightSideFinder = Pattern.compile(
-                createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                SEPARATOR_REGEX
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
@@ -487,7 +489,10 @@ public class NonBooleanPreperation implements IPreparation {
                     break;
                 }
             }
-            result = result.replace(whole, replacement);
+            if (!whole.equals(replacement)) {
+                result = result.replace(whole, replacement);
+                m = twoVariablesExpression.matcher(result);
+            }
         }
         
         return result;
@@ -585,6 +590,10 @@ public class NonBooleanPreperation implements IPreparation {
                  * Took replacing function from https://stackoverflow.com/a/16229133, which should be faster than JDK
                  * version. Also avoid multiple replacements, since they may lead to unexpected side effects
                  */
+                if (!variableOnLeftSide) {
+                    // If we analyze <value> <operator> <variable> we need to skip first character
+                    whole = whole.substring(1);
+                }
                 int start = 0;
                 int end = cppLine.indexOf(whole, start);
                 int replLength = whole.length();
