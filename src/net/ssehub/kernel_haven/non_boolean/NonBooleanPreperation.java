@@ -450,8 +450,8 @@ public class NonBooleanPreperation implements IPreparation {
             }
         }
         
-        result = convertRelationalExpressionOnVarAndValue(result, leftSideFinder);
-        result = convertRelationalExpressionOnVarAndValue(result, rightSideFinder);
+        result = convertRelationalExpressionOnVarAndValue(result, leftSideFinder, true);
+        result = convertRelationalExpressionOnVarAndValue(result, rightSideFinder, false);
         
         
         // Check if it is a comparison between two variables and try it again
@@ -498,10 +498,14 @@ public class NonBooleanPreperation implements IPreparation {
      * @param cppLine One preprocessor line, which shall be checked and potentially rewritten.
      * @param relationalExpressionPattern A pattern to identify variable, operator, and constant.
      *     One of {@link #leftSideFinder} or {@link #rightSideFinder}
+     * @param variableOnLeftSide Depending on the pattern, variable is expected on left side of operation
+     *     (<tt>true</tt>) or on right side (<tt>false</tt>).
      * 
      * @return The rewritten results, maybe the original input (if the pattern was not found).
      */
-    private String convertRelationalExpressionOnVarAndValue(String cppLine, Pattern relationalExpressionPattern) {
+    private String convertRelationalExpressionOnVarAndValue(String cppLine, Pattern relationalExpressionPattern,
+        boolean variableOnLeftSide) {
+        
         Matcher m;
         m = relationalExpressionPattern.matcher(cppLine);
         while (m.find()) {
@@ -530,8 +534,14 @@ public class NonBooleanPreperation implements IPreparation {
                     List<Long> greaterValuesToAdd = new ArrayList<>(var.getConstants().length);
                     
                     for (long c : var.getConstants()) {
-                        if (c >= value) {
-                            greaterValuesToAdd.add(c);
+                        if (variableOnLeftSide) {
+                            if (c >= value) {
+                                greaterValuesToAdd.add(c);
+                            }
+                        } else {
+                            if (c <= value) {
+                                greaterValuesToAdd.add(c);
+                            }
                         }
                     }
                     
@@ -546,8 +556,14 @@ public class NonBooleanPreperation implements IPreparation {
                     List<Long> lesserValuesToAdd = new ArrayList<>(var.getConstants().length);
                     
                     for (long c : var.getConstants()) {
-                        if (c <= value) {
-                            lesserValuesToAdd.add(c);
+                        if (variableOnLeftSide) {
+                            if (c <= value) {
+                                lesserValuesToAdd.add(c);
+                            }
+                        } else {
+                            if (c >= value) {
+                                lesserValuesToAdd.add(c);
+                            }
                         }
                     }
                     
