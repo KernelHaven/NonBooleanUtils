@@ -64,28 +64,10 @@ public class NonBooleanPreperation implements IPreparation {
      */
     private Map<String, NonBooleanVariable> variables;
     
-    /**
-     * A set of burnt variables. A variable is burnt, if we found a non boolean expression with it, that we cannot
-     * handle. Currently, these are only logged to console (info level). In the future, this set may be used to
-     * remove them from any analysis, since the results may be screwed.
-     */
-    private Set<String> burntVariables;
-    
     private Pattern variableNamePattern;
     private Pattern leftSide;
     private Pattern rightSide;
     
-//    /**
-//     * Checks that a variable stands on the <b>left</b> side of an expression.<br/>
-//     * <tt> &lt;variable&gt; &lt;operator&gt; * </tt>
-//     */
-//    private Pattern comparisonLeft;
-//    
-//    /**
-//     * Checks that a variable stands on the <b>right</b> side of an expression.<br/>
-//     * <tt> * &lt;operator&gt; &lt;variable&gt; </tt>
-//     */
-//    private Pattern comparisonRight;
     private Pattern leftSideFinder;
     private Pattern rightSideFinder;
     private Pattern twoVariablesExpression;
@@ -146,18 +128,6 @@ public class NonBooleanPreperation implements IPreparation {
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
                 + ".*");
-
-//            comparisonLeft = Pattern.compile("^"
-//                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
-//                + "\\s*"
-//                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
-//                + ".*");
-//            
-//            comparisonRight = Pattern.compile(".*"
-//                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
-//                + "\\s*"
-//                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
-//                + "$");
             
             leftSideFinder = Pattern.compile(
                 createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
@@ -276,7 +246,6 @@ public class NonBooleanPreperation implements IPreparation {
         copiedSourceTree.mkdir();
         
         nonBooleanOperations = new HashMap<>();
-        burntVariables = new HashSet<>();
         
         // walk through all *.c and *.h files in the source_tree, and collect non boolean operations.
         // this fills this.nonBooleanOperations and this.burntVariables
@@ -299,10 +268,6 @@ public class NonBooleanPreperation implements IPreparation {
         // if the variability model contains FiniteIntegerVariables, use them instead of our heuristic
         // this fills this.variables
         gatherConstantValues();
-        
-        LOGGER.logInfo("Burnt variables: " + burntVariables);
-//        LOGGER.logInfo("Variables: " + variables);
-        
         
         // copy the source_tree to destination, while replacing the approiapte expressions with NonBoolean variables
         LOGGER.logDebug("Copying from " + originalSourceTree.getAbsolutePath() + " to " + copiedSourceTree.getAbsolutePath());
@@ -495,6 +460,29 @@ public class NonBooleanPreperation implements IPreparation {
             }
         }
         
+        Pattern p = Pattern.compile("(\\p{Digit}+)\\s*(==)\\s*(\\p{Digit}+)");
+        m = p.matcher(result);
+        while (m.find()) {
+            String whole = m.group();
+            String firstValue = m.group(1);
+            String secondValue = m.group(3);
+            
+            try {
+                int value1 = Integer.parseInt(firstValue);
+                int value2 = Integer.parseInt(secondValue);
+                
+                if (value1 == value2) {
+                    result = result.replace(whole, "1");
+                } else {
+                    result = result.replace(whole, "0");
+                }
+                
+                m = p.matcher(result);
+            } catch (NumberFormatException exc) {
+                LOGGER.logInfo("Could not simplify constant expression: " + whole);
+            }
+        }
+        
         return result;
     }
 
@@ -605,8 +593,6 @@ public class NonBooleanPreperation implements IPreparation {
                 start = end + replLength;
                 buf.append(cppLine.substring(start));
                 cppLine = buf.toString();
-//                
-//                cppLine = cppLine.replace(whole, replacement);
                 
                 // Find new match after string has been changed!
                 m = relationalExpressionPattern.matcher(cppLine);
@@ -755,14 +741,6 @@ public class NonBooleanPreperation implements IPreparation {
         return replacement.toString();
     }
     
-//    private void printErr(String line, int index) {
-//        System.err.println(line);
-//        for (int i = 0; i < index; i++) {
-//            System.err.print(' ');
-//        }
-//        System.err.println('^');
-//    }
-    
     private void putNonBooleanOperation(String variable, String operator, long value) {
         Set<NonBooleanOperation> l = nonBooleanOperations.get(variable);
         if (l == null) {
@@ -790,19 +768,6 @@ public class NonBooleanPreperation implements IPreparation {
             if (!handled) {
                 handled = identifyNonBooleanOperation(left, rightSide); 
             }
-            
-//            if (!handled) {
-//                String name = variableNameMatcher.group();
-//                String right = line.substring(0, index + name.length());
-//                
-//                boolean leftMatch = comparisonLeft.matcher(left).matches();
-//                boolean rightMatch = comparisonRight.matcher(right).matches();
-//                
-//                if (leftMatch || rightMatch) {
-//                    burntVariables.add(name);
-//                    printErr(line, index);
-//                }
-//            }
         }
         
     }

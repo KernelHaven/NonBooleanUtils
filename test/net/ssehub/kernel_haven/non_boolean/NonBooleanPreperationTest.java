@@ -326,6 +326,22 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Special case, tests comparison between same constant.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfOne() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifOne.c"), 
+            "#if 1 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability
