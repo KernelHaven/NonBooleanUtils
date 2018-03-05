@@ -528,7 +528,11 @@ public class NonBooleanPreperation implements IPreparation {
                     break;
                     
                 case ">":
-                    value++;
+                    if (variableOnLeftSide) {
+                        value++;
+                    } else {
+                        value--;
+                    }
                     // fall through
                 case ">=":
                     List<Long> greaterValuesToAdd = new ArrayList<>(var.getConstants().length);
@@ -550,7 +554,11 @@ public class NonBooleanPreperation implements IPreparation {
                     break;
                     
                 case "<":
-                    value--;
+                    if (variableOnLeftSide) {
+                        value--;
+                    } else {
+                        value++; 
+                    }
                     // fall through
                 case "<=":
                     List<Long> lesserValuesToAdd = new ArrayList<>(var.getConstants().length);

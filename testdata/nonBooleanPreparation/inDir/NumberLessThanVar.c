@@ -1,3 +1,3 @@
-#if 2 < VAR
+#if 0 < VAR
     // Do something
 #endif
