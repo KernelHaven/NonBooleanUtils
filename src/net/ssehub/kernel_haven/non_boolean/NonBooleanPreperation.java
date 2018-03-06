@@ -375,7 +375,7 @@ public class NonBooleanPreperation implements IPreparation {
                         }
                         
                         line = line.trim();
-                        line = replaceInLine(line);
+                        line = replaceInLine(line, from);
                     }
                     
                     out.write(line);
@@ -396,7 +396,7 @@ public class NonBooleanPreperation implements IPreparation {
         return line != null;
     }
     
-    private String replaceInLine(String line) {
+    private String replaceInLine(String line, File from) {
         String result = line;
         Matcher m;
         
@@ -460,12 +460,17 @@ public class NonBooleanPreperation implements IPreparation {
             }
         }
         
-        Pattern p = Pattern.compile("(\\p{Digit}+)\\s*(==)\\s*(\\p{Digit}+)");
+        // Replace comparison on two constant numbers
+        String terminal = "[(|)|\\|\\||&&]{1}+";
+        Pattern p = Pattern.compile(SEPARATOR_REGEX
+                + createdNamedCaptureGroup("constantcomparison", "(\\p{Digit}+)\\s*(==)\\s*(\\p{Digit}+)")
+                // Expect separator or end of line after detected expression
+                + "((|)|\\s|$){1}+");
         m = p.matcher(result);
         while (m.find()) {
-            String whole = m.group();
-            String firstValue = m.group(1);
-            String secondValue = m.group(3);
+            String whole = m.group("constantcomparison");
+            String firstValue = m.group(2);
+            String secondValue = m.group(4);
             
             try {
                 int value1 = Integer.parseInt(firstValue);
@@ -480,6 +485,30 @@ public class NonBooleanPreperation implements IPreparation {
                 m = p.matcher(result);
             } catch (NumberFormatException exc) {
                 LOGGER.logInfo("Could not simplify constant expression: " + whole);
+            }
+        }
+        
+        // Replace #if (VAR)
+        p = Pattern.compile(terminal + "\\s*" + "(" + variableNamePattern + ")" + "\\s*" + terminal);
+        m = p.matcher(result);
+        while (m.find()) {
+            String varCandidate = m.group(1);
+            
+            // Avoid double replacement...
+            if (!"defined".equals(varCandidate) && !varCandidate.contains("_eq_")) {
+                NonBooleanVariable var1 = getVariableForced(varCandidate);
+                
+                if (var1.constants.length > 0) {
+                    String replacement = "!defined(" + var1.getConstantName(0) + ")";
+                    if (!varCandidate.equals(replacement)) {
+                        result = result.replace(varCandidate, replacement);
+                        m = p.matcher(result); 
+                    }
+                } else {
+                    LOGGER.logWarning("Found variable without a relational expresion, which is also not known by the "
+                        + "variability model. Don't know how to handle " + result + " in file "
+                        + from.getAbsolutePath());
+                }
             }
         }
         

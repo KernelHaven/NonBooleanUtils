@@ -326,7 +326,7 @@ public class NonBooleanPreperationTest {
     }
     
     /**
-     * Special case, tests comparison between same constant.
+     * Special case: Tests comparison between same constant.
      * @throws SetUpException If setup fails, should not happen.
      */
     @Test
@@ -339,6 +339,24 @@ public class NonBooleanPreperationTest {
             "#if 1 \n"
                 + "    // Do something\n"
                 + "#endif");
+    }
+    
+    /**
+     * Special case: Tests handling of numeric variables in an <tt>if</tt> without a comparison.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testBooleanNumbersInIf() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("VAR1", "bool", new int[] {0, 1}),
+            new FiniteIntegerVariable("VAR2", "bool", new int[] {0, 1}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "booleanNumbersInIf.c"), 
+                "#if (!defined(VAR1_eq_0) || !defined(VAR2_eq_0)) \n"
+                        + "    // Do something\n"
+                        + "#endif");
     }
     
     /**
