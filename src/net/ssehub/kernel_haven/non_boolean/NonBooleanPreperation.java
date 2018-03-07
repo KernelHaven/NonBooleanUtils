@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public class NonBooleanPreperation implements IPreparation {
     private static final String GROUP_NAME_VALUE = "value";
     private static final String SUPPORTED_OPERATORS_REGEX = "==|!=|<|>|<=|>=";
     private static final String SEPARATOR_REGEX = "[(|)|\\s]{1}+";
+    private static final boolean REMOVE_CONSISTENCY_CHECKS = true;
     
     private static final Logger LOGGER = Logger.get();
     
@@ -357,7 +359,7 @@ public class NonBooleanPreperation implements IPreparation {
     private void copySourceFile(File from, File to) throws IOException {
         try (BufferedReader in = new BufferedReader(new FileReader(from))) {
             
-            try (BufferedWriter out = new BufferedWriter(new FileWriter(to))) {
+            try (Writer out = createWriter(to)) {
                 
                 String line;
                 while (continueReading(line = in.readLine())) {
@@ -379,11 +381,32 @@ public class NonBooleanPreperation implements IPreparation {
                     }
                     
                     out.write(line);
-                    out.write("\n");
+                    if (out instanceof BufferedWriter) {
+                        out.write("\n");
+                    }
                 }
                 
             }
         }
+    }
+    
+    /**
+     * Creates the writer to use (either {@link BufferedWriter} or {@link CppBufferedWriter}.
+     * @param to The destination where to save the copied file.
+     * @return The writer to use.
+     * @throws IOException If the file exists but is a directory rather than a regular file, does not exist
+     *     but cannot be created, or cannot be opened for any other reason
+     */
+    private Writer createWriter(File to) throws IOException {
+        Writer writer;
+        BufferedWriter out = new BufferedWriter(new FileWriter(to));
+        if (REMOVE_CONSISTENCY_CHECKS) {
+            writer = new CppBufferedWriter(out);
+        } else {
+            writer = out;
+        }
+        
+        return writer;
     }
     
     /**
