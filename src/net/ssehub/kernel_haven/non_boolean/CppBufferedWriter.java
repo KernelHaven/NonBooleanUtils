@@ -63,6 +63,7 @@ public class CppBufferedWriter extends Writer {
      * @param line The line to test (if it contains an error statement) and to write
      * @throws IOException If writing the output is not possible.
      */
+    @Override
     public void write(String line) throws IOException {
         String trimedLine = line.trim();
         if (trimedLine.startsWith("#if")) {
