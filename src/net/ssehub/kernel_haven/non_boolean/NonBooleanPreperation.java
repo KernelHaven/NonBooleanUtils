@@ -512,17 +512,36 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         // Replace #if (VAR)
-        p = Pattern.compile(terminal + "\\s*" + "(" + variableNamePattern + ")" + "\\s*" + terminal);
-        m = p.matcher(result);
+        result = convertBooleanVariableExpressions(from, result,
+            Pattern.compile(terminal + "\\s*" + "(" + variableNamePattern + ")" + "\\s*" + terminal), true);
+        // Replace #if (!VAR)
+        result = convertBooleanVariableExpressions(from, result,
+            Pattern.compile(terminal + "\\s*" + "(!" + variableNamePattern + ")" + "\\s*" + terminal), false);
+        
+        return result;
+    }
+
+    /**
+     * Replaces expressions in the sense of if (BOOLEAN_VAR) without any operators.
+     * @param from The source file which is currently converted (used to produce sufficient error logs).
+     * @param result The currently processed line, which is converted.
+     * @param p The regular expression, to detect such boolean expressions.
+     * @param negate <tt>true</tt> for the detection of if(VAR) (must be reflected by the pattern,
+     *     <tt>false</tt> for the detection of if(<b>!</b>VAR)
+     * @return The converted line, maybe the same line as passed as input if nothing could be changed.
+     */
+    private String convertBooleanVariableExpressions(File from, String result, Pattern p, boolean negate) {
+        Matcher m = p.matcher(result);
         while (m.find()) {
             String varCandidate = m.group(1);
             
             // Avoid double replacement...
-            if (!"defined".equals(varCandidate) && !varCandidate.contains("_eq_")) {
-                NonBooleanVariable var1 = getVariableForced(varCandidate);
+            if (!"defined".equals(varCandidate) && !"!defined".equals(varCandidate) && !varCandidate.contains("_eq_")) {
+                NonBooleanVariable var1 = negate ? getVariableForced(varCandidate)
+                    : getVariableForced(varCandidate.substring(1));
                 
                 if (var1.constants.length > 0) {
-                    String replacement = "!defined(" + var1.getConstantName(0) + ")";
+                    String replacement = (negate ? "!defined(" : "defined(") + var1.getConstantName(0) + ")";
                     if (!varCandidate.equals(replacement)) {
                         result = result.replace(varCandidate, replacement);
                         m = p.matcher(result); 
@@ -534,7 +553,6 @@ public class NonBooleanPreperation implements IPreparation {
                 }
             }
         }
-        
         return result;
     }
 
