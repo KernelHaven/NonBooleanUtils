@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- author: Sascha El-Sharkawy, Adam -->
-<project name="NonBooleanUtils" default="jenkins" basedir="." xmlns:jacoco="antlib:org.jacoco.ant" xmlns:cs="antlib:com.puppycrawl.tools.checkstyle.ant">
-	<description>Builds, tests, and runs the project DummyAnalysis.</description>
+<project name="NonBooleanUtils" default="jenkins" basedir=".">
+	<description>Utilities for for replacing non-boolean conditions</description>
 
 	<!-- Load Marcros on Jenkins -->
 	<include file="../../KernelHaven_Infrastructure/workspace/KernelHavenMacros.xml" as="KH_Common" optional="true" />
@@ -24,4 +24,5 @@
 		<antcall target="KH_Common.prepare.folders" />
 		<get src="${infrastructure.location}" dest="${dependencies.dir}/kernelhaven.jar" />
 	</target>
+
 </project>
