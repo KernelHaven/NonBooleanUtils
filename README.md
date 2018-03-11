@@ -15,3 +15,7 @@ To use this preparation, set `preparation.class.0` to `net.ssehub.kernel_haven.n
 ## Dependencies
 
 This plugin has no additional dependencies other than KernelHaven.
+
+## License
+
+This plugin is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.html).
