@@ -1,6 +1,6 @@
 # NonBooleanUtils
 
-![Build Status](http://jenkins.sse.uni-hildesheim.de/buildStatus/icon?job=KernelHaven_NonBooleanUtils)
+![Build Status](https://jenkins.sse.uni-hildesheim.de/buildStatus/icon?job=KernelHaven_NonBooleanUtils)
 
 A utility plugin for [KernelHaven](https://github.com/KernelHaven/KernelHaven).
 
