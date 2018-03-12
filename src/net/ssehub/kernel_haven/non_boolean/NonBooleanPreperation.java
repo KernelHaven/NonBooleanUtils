@@ -46,6 +46,7 @@ public class NonBooleanPreperation implements IPreparation {
     private static final String GROUP_NAME_OPERATOR = "operator";
     private static final String GROUP_NAME_VALUE = "value";
     private static final String SUPPORTED_OPERATORS_REGEX = "==|!=|<|>|<=|>=";
+    private static final String INTEGER_REGEX = "-?[0-9]+U?L{0,2}";
     private static final String SEPARATOR_REGEX = "[(|)|\\s]{1}+";
     private static final boolean REMOVE_CONSISTENCY_CHECKS = true;
     
@@ -120,12 +121,12 @@ public class NonBooleanPreperation implements IPreparation {
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
-                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX)
                 + ".*");
             
             // <value> <operator> <variable>
             rightSide = Pattern.compile("^"
-                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
@@ -133,15 +134,16 @@ public class NonBooleanPreperation implements IPreparation {
                 + ".*");
             
             leftSideFinder = Pattern.compile(
-                createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
+                    SEPARATOR_REGEX
+                + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
-                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"));
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX));
             
             rightSideFinder = Pattern.compile(
                 SEPARATOR_REGEX
-                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
@@ -272,7 +274,7 @@ public class NonBooleanPreperation implements IPreparation {
         // this fills this.variables
         gatherConstantValues();
         
-        // copy the source_tree to destination, while replacing the approiapte expressions with NonBoolean variables
+        // copy the source_tree to destination, while replacing the relational expressions with NonBoolean variables
         LOGGER.logDebug("Copying from " + originalSourceTree.getAbsolutePath() + " to " + copiedSourceTree.getAbsolutePath());
         copy(originalSourceTree, copiedSourceTree);
     }
@@ -450,11 +452,11 @@ public class NonBooleanPreperation implements IPreparation {
             + "\\s*"
             + createdNamedCaptureGroup("bitOperator", "&|^|\\|")
             + "\\s*"
-            + createdNamedCaptureGroup("bitValue", "-?[0-9]+")
+            + createdNamedCaptureGroup("bitValue", INTEGER_REGEX)
             + "\\s*\\)\\s*"
             + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
             + "\\s*"
-            + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+            + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX)
             // Expect separator or end of line after detected expression
             + "((|)|\\s|$){1}+");
         m = p.matcher(result);
@@ -467,20 +469,20 @@ public class NonBooleanPreperation implements IPreparation {
             String value = m.group(GROUP_NAME_VALUE);
             
             NonBooleanVariable var = getVariableForced(variable);
-            Integer tmpBit = null;
+            Long tmpBit = null;
             try {
-                tmpBit = Integer.valueOf(bitValue);
+                tmpBit = parseConstant(bitValue);
             } catch (NumberFormatException exc) {
                 LOGGER.logException("Could not parse Bit in expression: " + whole, exc);
             }
-            final Integer bit = tmpBit;
-            Integer tmpConstantValue = null;
+            final Long bit = tmpBit;
+            Long tmpConstantValue = null;
             try {
-                tmpConstantValue = Integer.valueOf(value);
+                tmpConstantValue = parseConstant(value);
             } catch (NumberFormatException exc) {
                 LOGGER.logException("Could not parse constant in expression: " + whole, exc);
             }
-            final Integer constantValue = tmpConstantValue;
+            final Long constantValue = tmpConstantValue;
             
             if (var.constants.length > 0 && null != bit && null != constantValue) {
                 List<Long> matchesList = new ArrayList<>(var.getConstants().length);
@@ -545,11 +547,11 @@ public class NonBooleanPreperation implements IPreparation {
         String terminal = "[(|)|\\|\\||&&]{1}+";
         p = Pattern.compile(SEPARATOR_REGEX
             + createdNamedCaptureGroup("constantcomparison",
-                createdNamedCaptureGroup(GROUP_NAME_VARIABLE, "-?[0-9]+")
+                createdNamedCaptureGroup(GROUP_NAME_VARIABLE, INTEGER_REGEX)
                 + "\\s*"
                 + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
                 + "\\s*"
-                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"))
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, INTEGER_REGEX))
             // Expect separator or end of line after detected expression
             + "((|)|\\s|$){1}+");
         result = convertRelationalExpressionsOnNumbers(result, p);
@@ -564,28 +566,42 @@ public class NonBooleanPreperation implements IPreparation {
         return result;
     }
     
-    private Long bitOperation(long number, long bit, String bitOp, String whole) {
+    private Long parseConstant(String constant) {
+        while (!constant.isEmpty() && (constant.endsWith("L") || constant.endsWith("U"))) {
+            constant = constant.substring(0, constant.length() - 1);
+        }
+        
+        return Long.valueOf(constant);
+    }
+    
+    private Long bitOperation(long number, Long bit, String bitOp, String whole) {
         Long result;
-        switch (bitOp) {
-        case "&":
-            result = number & bit;
-            break;
-        case "|":
-            result = number | bit;
-            break;
-        case "^":
-            result = number ^ bit;
-            break;
-        default:
+        
+        if (null != bit) {
+            switch (bitOp) {
+            case "&":
+                result = number & bit;
+                break;
+            case "|":
+                result = number | bit;
+                break;
+            case "^":
+                result = number ^ bit;
+                break;
+            default:
+                result = null;
+                LOGGER.logError("Could not parse Bit expression, due to unexpected Bit operator: " + whole);
+                break;
+            }
+        } else {
             result = null;
-            LOGGER.logError("Could not parse Bit expression, due to unexpected Bit operator: " + whole);
-            break;
+            LOGGER.logError("Could not parse Bit expression, due unparsed Bit value: " + whole);
         }
         
         return result;
     }
     
-    private boolean bitComparion(Long resultOfBitOperation, int constantValue, String op, String whole) {
+    private boolean bitComparion(Long resultOfBitOperation, long constantValue, String op, String whole) {
         boolean matches = false;
         
         if (null != resultOfBitOperation) {
@@ -632,8 +648,8 @@ public class NonBooleanPreperation implements IPreparation {
             String secondValue = m.group(GROUP_NAME_VALUE);
             
             try {
-                int value1 = Integer.parseInt(firstValue);
-                int value2 = Integer.parseInt(secondValue);
+                long value1 = parseConstant(firstValue);
+                long value2 = parseConstant(secondValue);
                 
                 switch (op) {
                 case "==":
@@ -771,7 +787,7 @@ public class NonBooleanPreperation implements IPreparation {
             String whole = m.group();
             String name = m.group(GROUP_NAME_VARIABLE);
             String op = m.group(GROUP_NAME_OPERATOR);
-            long value = Long.parseLong(m.group(GROUP_NAME_VALUE));
+            long value = parseConstant(m.group(GROUP_NAME_VALUE));
             
             String replacement = "ERROR_WHILE_REPLACING";
             NonBooleanVariable var = variables.get(name);
@@ -844,10 +860,8 @@ public class NonBooleanPreperation implements IPreparation {
                  * Took replacing function from https://stackoverflow.com/a/16229133, which should be faster than JDK
                  * version. Also avoid multiple replacements, since they may lead to unexpected side effects
                  */
-                if (!variableOnLeftSide) {
-                    // If we analyze <value> <operator> <variable> we need to skip first character
-                    whole = whole.substring(1);
-                }
+                // Skip first character which is an separator
+                whole = whole.substring(1);
                 cppLine = replace(cppLine, whole, replacement);
                 
                 // Find new match after string has been changed!
@@ -1082,7 +1096,7 @@ public class NonBooleanPreperation implements IPreparation {
         if (m.matches()) {
             matchFound = true;
             putNonBooleanOperation(m.group(GROUP_NAME_VARIABLE), m.group(GROUP_NAME_OPERATOR),
-                Long.parseLong(m.group(GROUP_NAME_VALUE)));
+                parseConstant(m.group(GROUP_NAME_VALUE)));
         }
         return matchFound;
     }
