@@ -620,7 +620,7 @@ public class NonBooleanPreperation implements IPreparation {
                         m = p.matcher(result);
                     }
                 } else {
-                    LOGGER.logWarning("Found variable without a relational expresion, which is also not known by the "
+                    LOGGER.logWarning("Found variable without a relational expression, which is also not known by the "
                         + "variability model. Don't know how to handle " + result + " in file "
                         + from.getAbsolutePath());
                 }
