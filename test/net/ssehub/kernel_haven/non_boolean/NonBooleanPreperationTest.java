@@ -342,6 +342,22 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Special case: Tests comparison between different constant numbers.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnNumbers() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnNumbers.c"), 
+                "#if (0) \n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
      * Special case: Tests greater than expression between two numbers.
      * @throws SetUpException If setup fails, should not happen.
      */
