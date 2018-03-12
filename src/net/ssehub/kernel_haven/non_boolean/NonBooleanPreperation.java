@@ -341,6 +341,14 @@ public class NonBooleanPreperation implements IPreparation {
         return variable;
     }
     
+    private NonBooleanVariable getVariableForcedIfHeuristic(String name) {
+        if (nonBooleanModelRead) {
+            return variables.get(name);
+        } else {
+            return getVariableForced(name);
+        }
+    }
+    
     private void copy(File from, File to) throws IOException {
         for (File f : from.listFiles()) {
             
@@ -465,7 +473,8 @@ public class NonBooleanPreperation implements IPreparation {
             String whole = m.group();
             String variable = m.group(GROUP_NAME_VARIABLE);
             String bitOpTmp = null;
-            NonBooleanVariable var = variables.get(variable);
+            
+            NonBooleanVariable var = getVariableForcedIfHeuristic(variable);
             if (var == null) {
                 continue;
             }
@@ -531,8 +540,8 @@ public class NonBooleanPreperation implements IPreparation {
             String op = m.group(GROUP_NAME_OPERATOR);
             String secondVar = m.group(GROUP_NAME_VALUE);
             
-            NonBooleanVariable var1 = variables.get(firstVar);
-            NonBooleanVariable var2 = variables.get(secondVar);
+            NonBooleanVariable var1 = getVariableForcedIfHeuristic(firstVar);
+            NonBooleanVariable var2 = getVariableForcedIfHeuristic(secondVar);
             
             if (var1 == null || var2 == null) {
                 continue;
@@ -789,11 +798,7 @@ public class NonBooleanPreperation implements IPreparation {
                     }
                 } else {
                     LOGGER.logWarning("Found variable without a relational expression, which is also not known by the "
-                        + "variability model. In " + result + " in file " +from.getAbsolutePath(),
-                        "Using variable name only");
-                    String replacement = (negate ? "!defined(" : "defined(") + var1.name + ")";
-                    result = replace(result, varCandidate, replacement, m.start());
-                    m = p.matcher(result);
+                        + "variability model. Don't know how to handle " + result + " in file " + from.getAbsolutePath());
                 }
             }
         }
