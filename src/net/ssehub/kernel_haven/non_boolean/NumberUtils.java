@@ -1,7 +1,5 @@
 package net.ssehub.kernel_haven.non_boolean;
 
-import java.math.BigInteger;
-
 /**
  * Utility functions for string to number operations.
  * 
@@ -38,7 +36,8 @@ public class NumberUtils {
     }
     
     /**
-     * Converts a string into a number (considering correct sub class, e.g., Integer or Double).
+     * Converts a string into a number (considering correct sub class, e.g., Long or Double).
+     * 
      * @param str The string to convert.
      * @return A number or <tt>null</tt> if it could not be converted.
      */
@@ -46,24 +45,26 @@ public class NumberUtils {
         Number result = null;
         
         if (isInteger(str, 10)) {
-            // Convert integer
-            result = Integer.valueOf(str);
-        } else if (str.startsWith("0x") && isInteger(str.substring(2), 16)) {
-            // Convert hex value
-            BigInteger tmpResult = new BigInteger(str.substring(2), 16);
+            // Convert normal long
             try {
-                // Cast to Integer if possible
-                result = tmpResult.intValueExact();
-            } catch (ArithmeticException exc) {
-                result = tmpResult;
+                result = Long.valueOf(str, 10);
+            } catch (NumberFormatException e) {
+                // ignore, just return null
+            }
+        } else if (str.startsWith("0x") && isInteger(str.substring(2), 16)) {
+            // Convert hex value to long
+            try {
+                result = Long.valueOf(str.substring(2), 16);
+            } catch (NumberFormatException e) {
+                // ignore, just return null
             }
         } else {
             // Convert it into a double
             try {
                 Double tmpResult = Double.valueOf(str);
                 if ((tmpResult == Math.floor(tmpResult)) && !Double.isInfinite(tmpResult)) {
-                 // Cast to Integer if possible (e.g., if it ends with .0)
-                    result = tmpResult.intValue();
+                    // Cast to Long if possible (e.g., if it ends with .0)
+                    result = tmpResult.longValue();
                 } else {
                     result = tmpResult;
                 }
