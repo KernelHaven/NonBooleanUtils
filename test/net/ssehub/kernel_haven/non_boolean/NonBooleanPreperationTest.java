@@ -542,6 +542,24 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests that modulo with a constants works correctly in "(VAR1 % 2) == 0".
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testModuloWithConstants() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("VAR1", "enumeration", new int[] {0, 1, 2, 3, 4}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "modulo.c"), 
+            "#if (defined(VAR1_eq_0) || defined(VAR1_eq_2) || defined(VAR1_eq_4)) \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * 
