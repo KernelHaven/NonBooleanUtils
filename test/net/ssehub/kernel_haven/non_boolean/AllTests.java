@@ -11,6 +11,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     CPPUtilsTest.class,
     NonBooleanPreperationTest.class,
+    NonBooleanPreperationScenarioTest.class,
     NumberUtilsTest.class,
     CppBufferedWriterTest.class
     })

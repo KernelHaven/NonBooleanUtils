@@ -29,8 +29,8 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 public class NonBooleanPreperationTest {
     
     private static final File TESTDATA_FOLDER = new File(AllTests.TESTDATA, "nonBooleanPreparation");
-    private static final File IN_FOLDER = new File(TESTDATA_FOLDER, "inDir");
-    private static final File OUT_FOLDER = new File(TESTDATA_FOLDER, "outDir");
+    private static final File IN_FOLDER = new File(TESTDATA_FOLDER, "inDir/singleElements");
+    private static final File OUT_FOLDER = new File(TESTDATA_FOLDER, "outDir/singleElements");
     
     /**
      * Wipes the {@link #OUT_FOLDER} for testing.
