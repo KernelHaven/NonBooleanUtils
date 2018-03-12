@@ -486,23 +486,79 @@ public class NonBooleanPreperation implements IPreparation {
         // Replace comparison on two constant numbers
         String terminal = "[(|)|\\|\\||&&]{1}+";
         Pattern p = Pattern.compile(SEPARATOR_REGEX
-                + createdNamedCaptureGroup("constantcomparison", "(\\p{Digit}+)\\s*(==)\\s*(\\p{Digit}+)")
+                + createdNamedCaptureGroup("constantcomparison",
+                        createdNamedCaptureGroup(GROUP_NAME_VARIABLE, "-?[0-9]+")
+                        + "\\s*"
+                        + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+                        + "\\s*"
+                        + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"))
                 // Expect separator or end of line after detected expression
                 + "((|)|\\s|$){1}+");
         m = p.matcher(result);
         while (m.find()) {
             String whole = m.group("constantcomparison");
-            String firstValue = m.group(2);
-            String secondValue = m.group(4);
+            String firstValue = m.group(GROUP_NAME_VARIABLE);
+            String op = m.group(GROUP_NAME_OPERATOR);
+            String secondValue = m.group(GROUP_NAME_VALUE);
             
             try {
                 int value1 = Integer.parseInt(firstValue);
                 int value2 = Integer.parseInt(secondValue);
                 
-                if (value1 == value2) {
-                    result = result.replace(whole, "1");
-                } else {
-                    result = result.replace(whole, "0");
+                switch (op) {
+                case "==":
+                    if (value1 == value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+                case "<":
+                    if (value1 < value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+                case ">":
+                    if (value1 > value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+                case "<=":
+                    if (value1 <= value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+                case ">=":
+                    if (value1 >= value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+                case "!=":
+                    if (value1 != value2) {
+                        result = result.replace(whole, "1");
+                    } else {
+                        result = result.replace(whole, "0");
+                    }
+                    m = p.matcher(result);
+                    break;
+
+                default:
+                    LOGGER.logWarning("Could not simplify constant expression, since an unexpected operator was used: "
+                        + whole);
+                    break;
                 }
                 
                 m = p.matcher(result);

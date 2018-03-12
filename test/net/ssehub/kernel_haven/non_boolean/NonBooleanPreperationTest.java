@@ -342,6 +342,70 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Special case: Tests greater than expression between two numbers.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfNumberGreaterThanNumberIsTrue() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifNumberGreaterThanNumberIsTrue.c"), 
+            "#if 1 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Special case: Tests greater than expression between two numbers.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfNumberGreaterThanNumberIsFalse() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifNumberGreaterThanNumberIsFalse.c"), 
+            "#if 0 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Special case: Tests greater than expression between two numbers.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfNumberLessThanNumberIsTrue() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifNumberLessThanNumberIsTrue.c"), 
+            "#if 1 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Special case: Tests greater than expression between two numbers.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfNumberLessThanNumberIsFalse() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifNumberLessThanNumberIsFalse.c"), 
+            "#if 0 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Special case: Tests handling of numeric variables in an <tt>if</tt> without a comparison.
      * @throws SetUpException If setup fails, should not happen.
      */
