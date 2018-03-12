@@ -450,7 +450,7 @@ public class NonBooleanPreperation implements IPreparation {
         Pattern p = Pattern.compile("\\(\\s*" 
             + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
             + "\\s*"
-            + createdNamedCaptureGroup("bitOperator", "%|&|^|\\|")
+            + createdNamedCaptureGroup("bitOperator", Pattern.quote("%") + "|" + Pattern.quote("&") + "|" + Pattern.quote("^") + "|" + Pattern.quote("|"))
             + "\\s*"
             + createdNamedCaptureGroup("bitValue", INTEGER_REGEX)
             + "\\s*\\)\\s*"
