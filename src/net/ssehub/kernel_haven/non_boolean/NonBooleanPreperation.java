@@ -460,49 +460,64 @@ public class NonBooleanPreperation implements IPreparation {
             // Expect separator or end of line after detected expression
             + "((|)|\\s|$){1}+");
         m = p.matcher(result);
+        
         while (m.find()) {
             String whole = m.group();
             String variable = m.group(GROUP_NAME_VARIABLE);
-            String bitOp = m.group("bitOperator");
-            String bitValue = m.group("bitValue");
-            String op = m.group(GROUP_NAME_OPERATOR);
-            String value = m.group(GROUP_NAME_VALUE);
-            
+            String bitOpTmp = null;
             NonBooleanVariable var = variables.get(variable);
             if (var == null) {
                 continue;
             }
-            
-            Long tmpBit = null;
             try {
-                tmpBit = parseConstant(bitValue);
-            } catch (NumberFormatException exc) {
-                LOGGER.logException("Could not parse Bit in expression: " + whole, exc);
+                bitOpTmp = m.group("bitOperator");
+            } catch (IllegalArgumentException exc) {
+                LOGGER.logException("Could not determine Bit operator in expression :" + whole, exc);
             }
-            final Long bit = tmpBit;
-            Long tmpConstantValue = null;
-            try {
-                tmpConstantValue = parseConstant(value);
-            } catch (NumberFormatException exc) {
-                LOGGER.logException("Could not parse constant in expression: " + whole, exc);
-            }
-            final Long constantValue = tmpConstantValue;
+            final String bitOp = bitOpTmp;
             
-            if (var.constants.length > 0 && null != bit && null != constantValue) {
-                List<Long> matchesList = new ArrayList<>(var.getConstants().length);
+            String bitValue = null;
+            try {
+                bitValue = m.group("bitValue");
+            } catch (IllegalArgumentException exc) {
+                LOGGER.logException("Could not determine Bit value in expression :" + whole, exc);
+            }
+            
+            String op = m.group(GROUP_NAME_OPERATOR);
+            String value = m.group(GROUP_NAME_VALUE);
+            
+            if (null != bitOp && null != bitValue) {
+                Long tmpBit = null;
+                try {
+                    tmpBit = parseConstant(bitValue);
+                } catch (NumberFormatException exc) {
+                    LOGGER.logException("Could not parse Bit in expression: " + whole, exc);
+                }
+                final Long bit = tmpBit;
+                Long tmpConstantValue = null;
+                try {
+                    tmpConstantValue = parseConstant(value);
+                } catch (NumberFormatException exc) {
+                    LOGGER.logException("Could not parse constant in expression: " + whole, exc);
+                }
+                final Long constantValue = tmpConstantValue;
                 
-                Arrays.stream(var.constants)
-                    .filter(l -> bitComparion(bitOperation(l, bit, bitOp, whole), constantValue, op, whole))
-                    .forEach(matchesList::add);
-                
-                if (!matchesList.isEmpty()) {
-                    String replacement = expandComparison(var, matchesList);
-                    if (!whole.equals(replacement)) {
-                        result = result.replace(whole, replacement);
-                        m = twoVariablesExpression.matcher(result);
+                if (var.constants.length > 0 && null != bit && null != constantValue) {
+                    List<Long> matchesList = new ArrayList<>(var.getConstants().length);
+                    
+                    Arrays.stream(var.constants)
+                        .filter(l -> bitComparion(bitOperation(l, bit, bitOp, whole), constantValue, op, whole))
+                        .forEach(matchesList::add);
+                    
+                    if (!matchesList.isEmpty()) {
+                        String replacement = expandComparison(var, matchesList);
+                        if (!whole.equals(replacement)) {
+                            result = result.replace(whole, replacement);
+                            m = twoVariablesExpression.matcher(result);
+                        }
+                    } else {
+                        LOGGER.logWarning("Bit expression does not allow any legal values: " + whole);
                     }
-                } else {
-                    LOGGER.logWarning("Bit expression does not allow any legal values: " + whole);
                 }
             }
         }
