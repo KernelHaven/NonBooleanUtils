@@ -544,22 +544,27 @@ public class NonBooleanPreperationTest {
     /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
+     * 
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability
      *     model or the complete list of relevant variables.
+     * 
      * @return {@link CodeExtractorConfiguration}, which is needed for testing the {@link NonBooleanPreperation}.
      */
     private Configuration createConfig(VariabilityVariable... variables) {
-        Properties prop = new Properties();
-        boolean usesVarModel = null != variables && variables.length > 0;
-        if (usesVarModel) {
-            PseudoVariabilityExtractor.configure(new File("this is a mock"), variables);
-            prop.put("variability.extractor.class", PseudoVariabilityExtractor.class.getName());
-        } 
-        
-        prop.setProperty("source_tree", IN_FOLDER.getAbsolutePath());
         try {
-            Configuration config = new TestConfiguration(prop);
+            Configuration config = new TestConfiguration(new Properties());
             NonBooleanSettings.registerAllSettings(config);
+            config.setValue(NonBooleanSettings.DESTINATION_DIR, OUT_FOLDER);
+            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}+\\w*"));
+            config.setValue(DefaultSettings.SOURCE_TREE, IN_FOLDER);
+            
+            boolean usesVarModel = null != variables && variables.length > 0;
+            if (usesVarModel) {
+                PseudoVariabilityExtractor.configure(new File("this is a mock"), variables);
+                config.setValue(DefaultSettings.VARIABILITY_EXTRACTOR_CLASS,
+                        PseudoVariabilityExtractor.class.getName());
+            } 
+            
             PipelineConfigurator.instance().init(config);
             PipelineConfigurator.instance().instantiateExtractors();
             PipelineConfigurator.instance().createProviders();
@@ -567,10 +572,6 @@ public class NonBooleanPreperationTest {
             if (usesVarModel) {
                 PipelineConfigurator.instance().getVmProvider().start();
             }
-            
-            config.setValue(NonBooleanSettings.DESTINATION_DIR, OUT_FOLDER);
-            config.setValue(NonBooleanSettings.VARIABLE_REGEX, Pattern.compile("\\p{Alpha}+\\w*"));
-            config.setValue(DefaultSettings.SOURCE_TREE, IN_FOLDER);
             
             return config;
             
