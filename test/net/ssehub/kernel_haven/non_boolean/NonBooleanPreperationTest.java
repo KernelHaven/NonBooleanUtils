@@ -358,6 +358,7 @@ public class NonBooleanPreperationTest {
                         + "    // Do something\n"
                         + "#endif");
     }
+    
     /**
      * Special case: Tests handling of numeric variables in an <tt>if</tt> without a comparison, but negated.
      * @throws SetUpException If setup fails, should not happen.
@@ -372,6 +373,41 @@ public class NonBooleanPreperationTest {
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "booleanNumbersInIfNegated.c"), 
                 "#if (defined(VAR1_eq_0) || defined(VAR2_eq_0)) \n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
+     * Tests that if defines are not replaced as they are already handled.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfdef() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("VAR1", "bool", new int[] {0, 1}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifdef.c"), 
+                "#if defined(VAR1) \n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
+     * Tests that if defines are not replaced but the variable without an surrounding defined or relational expression
+     * is still handled.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfdefWeiredCombination() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("VAR1", "bool", new int[] {0, 1}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifdefWeiredCombination.c"), 
+                "#if (defined(VAR1) || defined(VAR1)) \n"
                         + "    // Do something\n"
                         + "#endif");
     }

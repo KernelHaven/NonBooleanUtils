@@ -536,7 +536,9 @@ public class NonBooleanPreperation implements IPreparation {
             String varCandidate = m.group(1);
             
             // Avoid double replacement...
-            if (!"defined".equals(varCandidate) && !"!defined".equals(varCandidate) && !varCandidate.contains("_eq_")) {
+            if (!"defined".equals(varCandidate) && !"!defined".equals(varCandidate) && !varCandidate.contains("_eq_")
+                && !result.contains("defined(" + varCandidate + ")")) {
+                
                 NonBooleanVariable var1 = negate ? getVariableForced(varCandidate)
                     : getVariableForced(varCandidate.substring(1));
                 
