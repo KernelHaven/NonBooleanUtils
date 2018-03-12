@@ -577,6 +577,26 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests that unnecessary brackets (e.g. "((a) == b)") are handled correctly.
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testUnnecessaryBrackets() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "tristate", new int[] {1, 2, 3}),
+            new FiniteIntegerVariable("b", "tristate", new int[] {1, 2, 3}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "unnecessaryBrackets.c"), 
+            "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
+            + "|| (defined(a_eq_3) && defined(b_eq_3)))) {\n"
+            + "    // Do something\n"
+            + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * 

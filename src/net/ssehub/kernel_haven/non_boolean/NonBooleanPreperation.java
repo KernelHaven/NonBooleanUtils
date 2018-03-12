@@ -50,6 +50,8 @@ public class NonBooleanPreperation implements IPreparation {
     private static final String SEPARATOR_REGEX = "[(|)|\\s]{1}+";
     private static final boolean REMOVE_CONSISTENCY_CHECKS = true;
     
+    private static final Pattern UNECESSARY_BRACKET_PATTERN = Pattern.compile("[^\\w](\\((\\w[\\s\\w]*)\\))");
+    
     private static final Logger LOGGER = Logger.get();
     
     private File originalSourceTree;
@@ -430,8 +432,24 @@ public class NonBooleanPreperation implements IPreparation {
         return line != null;
     }
     
+    /**
+     * Removes unnecessary brackets from the given formula.
+     * 
+     * @param condition The unparsed condition from which the unnecessary brackets shall be detected and removed from.
+     * @return An equivalent condition with removed unnecessary brackets, maybe the same instance if the condition does
+     *     not contain any unnecessary brackets.
+     */
+    private static String removeUnnecessaryBrackets(String condition) {
+        Matcher matcher = UNECESSARY_BRACKET_PATTERN.matcher(condition);
+        while (matcher.find()) {
+            condition = condition.replace(matcher.group(1), matcher.group(2));
+            matcher = UNECESSARY_BRACKET_PATTERN.matcher(condition);
+        }
+        return condition;
+    }
+    
     private String replaceInLine(String line, File from) {
-        String result = line;
+        String result = removeUnnecessaryBrackets(line);
         Matcher m;
         
         // replace known constants in result
