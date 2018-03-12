@@ -468,7 +468,11 @@ public class NonBooleanPreperation implements IPreparation {
             String op = m.group(GROUP_NAME_OPERATOR);
             String value = m.group(GROUP_NAME_VALUE);
             
-            NonBooleanVariable var = getVariableForced(variable);
+            NonBooleanVariable var = variables.get(variable);
+            if (var == null) {
+                continue;
+            }
+            
             Long tmpBit = null;
             try {
                 tmpBit = parseConstant(bitValue);
@@ -512,8 +516,13 @@ public class NonBooleanPreperation implements IPreparation {
             String op = m.group(GROUP_NAME_OPERATOR);
             String secondVar = m.group(GROUP_NAME_VALUE);
             
-            NonBooleanVariable var1 = getVariableForced(firstVar);
-            NonBooleanVariable var2 = getVariableForced(secondVar);
+            NonBooleanVariable var1 = variables.get(firstVar);
+            NonBooleanVariable var2 = variables.get(secondVar);
+            
+            if (var1 == null || var2 == null) {
+                continue;
+            }
+            
             String replacement = whole;
             
             if (var1.constants.length > 0 || var2.constants.length > 0) {
@@ -765,8 +774,11 @@ public class NonBooleanPreperation implements IPreparation {
                     }
                 } else {
                     LOGGER.logWarning("Found variable without a relational expression, which is also not known by the "
-                        + "variability model. Don't know how to handle " + result + " in file "
-                        + from.getAbsolutePath());
+                        + "variability model. In " + result + " in file " +from.getAbsolutePath(),
+                        "Using variable name only");
+                    String replacement = (negate ? "!defined(" : "defined(") + var1.name + ")";
+                    result = replace(result, varCandidate, replacement, m.start());
+                    m = p.matcher(result);
                 }
             }
         }
