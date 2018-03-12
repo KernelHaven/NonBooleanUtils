@@ -493,6 +493,23 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests support for bit operations bitwise AND and containment of binary 2.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testBitOperationHas2() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+                new FiniteIntegerVariable("VAR", "enumeration", new int[] {0, 1, 2, 3, 4, 5, 6}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "bitOperationHas2.c"), 
+                "#if ((defined(VAR_eq_2) || defined(VAR_eq_3) || defined(VAR_eq_6))) \n"
+                        + "    // Do something\n"
+                        + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * @param variables Should be <tt>null</tt> or empty if the preparation should be tested without a variability

@@ -66,6 +66,7 @@ public class NonBooleanPreperation implements IPreparation {
      */
     private Map<String, NonBooleanVariable> variables;
     
+    private String variableRegex ;
     private Pattern variableNamePattern;
     private Pattern leftSide;
     private Pattern rightSide;
@@ -109,7 +110,7 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         variableNamePattern = config.getValue(NonBooleanSettings.VARIABLE_REGEX);
-        String variableRegex = variableNamePattern.pattern();
+        variableRegex = variableNamePattern.pattern();
         
         try {
             
@@ -442,6 +443,63 @@ public class NonBooleanPreperation implements IPreparation {
         
         result = convertRelationalExpressionOnVarAndValue(result, leftSideFinder, true);
         result = convertRelationalExpressionOnVarAndValue(result, rightSideFinder, false);
+
+        // Convert bit operators
+        Pattern p = Pattern.compile("\\(\\s*" 
+            + createdNamedCaptureGroup(GROUP_NAME_VARIABLE, variableRegex)
+            + "\\s*"
+            + createdNamedCaptureGroup("bitOperator", "&|^|\\|")
+            + "\\s*"
+            + createdNamedCaptureGroup("bitValue", "-?[0-9]+")
+            + "\\s*\\)\\s*"
+            + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+            + "\\s*"
+            + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+")
+            // Expect separator or end of line after detected expression
+            + "((|)|\\s|$){1}+");
+        m = p.matcher(result);
+        while (m.find()) {
+            String whole = m.group();
+            String variable = m.group(GROUP_NAME_VARIABLE);
+            String bitOp = m.group("bitOperator");
+            String bitValue = m.group("bitValue");
+            String op = m.group(GROUP_NAME_OPERATOR);
+            String value = m.group(GROUP_NAME_VALUE);
+            
+            NonBooleanVariable var = getVariableForced(variable);
+            Integer tmpBit = null;
+            try {
+                tmpBit = Integer.valueOf(bitValue);
+            } catch (NumberFormatException exc) {
+                LOGGER.logException("Could not parse Bit in expression: " + whole, exc);
+            }
+            final Integer bit = tmpBit;
+            Integer tmpConstantValue = null;
+            try {
+                tmpConstantValue = Integer.valueOf(value);
+            } catch (NumberFormatException exc) {
+                LOGGER.logException("Could not parse constant in expression: " + whole, exc);
+            }
+            final Integer constantValue = tmpConstantValue;
+            
+            if (var.constants.length > 0 && null != bit && null != constantValue) {
+                List<Long> matchesList = new ArrayList<>(var.getConstants().length);
+                
+                Arrays.stream(var.constants)
+                    .filter(l -> bitComparion(bitOperation(l, bit, bitOp, whole), constantValue, op, whole))
+                    .forEach(matchesList::add);
+                
+                if (!matchesList.isEmpty()) {
+                    String replacement = expandComparison(var, matchesList);
+                    if (!whole.equals(replacement)) {
+                        result = result.replace(whole, replacement);
+                        m = twoVariablesExpression.matcher(result);
+                    }
+                } else {
+                    LOGGER.logWarning("Bit expression does not allow any legal values: " + whole);
+                }
+            }
+        }
         
         
         // Check if it is a comparison between two variables and try it again
@@ -485,16 +543,88 @@ public class NonBooleanPreperation implements IPreparation {
         
         // Replace comparison on two constant numbers
         String terminal = "[(|)|\\|\\||&&]{1}+";
-        Pattern p = Pattern.compile(SEPARATOR_REGEX
-                + createdNamedCaptureGroup("constantcomparison",
-                        createdNamedCaptureGroup(GROUP_NAME_VARIABLE, "-?[0-9]+")
-                        + "\\s*"
-                        + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
-                        + "\\s*"
-                        + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"))
-                // Expect separator or end of line after detected expression
-                + "((|)|\\s|$){1}+");
-        m = p.matcher(result);
+        p = Pattern.compile(SEPARATOR_REGEX
+            + createdNamedCaptureGroup("constantcomparison",
+                createdNamedCaptureGroup(GROUP_NAME_VARIABLE, "-?[0-9]+")
+                + "\\s*"
+                + createdNamedCaptureGroup(GROUP_NAME_OPERATOR, SUPPORTED_OPERATORS_REGEX)
+                + "\\s*"
+                + createdNamedCaptureGroup(GROUP_NAME_VALUE, "-?[0-9]+"))
+            // Expect separator or end of line after detected expression
+            + "((|)|\\s|$){1}+");
+        result = convertRelationalExpressionsOnNumbers(result, p);
+        
+        // Replace #if (VAR)
+        result = convertBooleanVariableExpressions(from, result,
+            Pattern.compile(terminal + "\\s*" + "(" + variableNamePattern + ")" + "\\s*" + terminal), true);
+        // Replace #if (!VAR)
+        result = convertBooleanVariableExpressions(from, result,
+            Pattern.compile(terminal + "\\s*" + "(!" + variableNamePattern + ")" + "\\s*" + terminal), false);
+        
+        return result;
+    }
+    
+    private Long bitOperation(long number, long bit, String bitOp, String whole) {
+        Long result;
+        switch (bitOp) {
+        case "&":
+            result = number & bit;
+            break;
+        case "|":
+            result = number | bit;
+            break;
+        case "^":
+            result = number ^ bit;
+            break;
+        default:
+            result = null;
+            LOGGER.logError("Could not parse Bit expression, due to unexpected Bit operator: " + whole);
+            break;
+        }
+        
+        return result;
+    }
+    
+    private boolean bitComparion(Long resultOfBitOperation, int constantValue, String op, String whole) {
+        boolean matches = false;
+        
+        if (null != resultOfBitOperation) {
+            switch (op) {
+            case "==":
+                matches = resultOfBitOperation == constantValue;
+                break;
+            case "<":
+                matches = resultOfBitOperation < constantValue;
+                break;
+            case ">":
+                matches = resultOfBitOperation > constantValue;
+                break;
+            case "<=":
+                matches = resultOfBitOperation <= constantValue;
+                break;
+            case ">=":
+                matches = resultOfBitOperation >= constantValue;
+                break;
+            case "!=":
+                matches = resultOfBitOperation != constantValue;
+                break;
+            default:
+                LOGGER.logError("Could not parse Bit expression, due to unexpected relational operator: " + whole);
+                break;
+            }
+        }
+        
+        return matches;
+    }
+
+    /**
+     * Replaces expressions in the sense of <tt>if &lt;number&gt; &lt;operator&gt; &lt;number&gt;</tt>.
+     * @param result The currently processed line, which is converted.
+     * @param p The regular expression, to detect such expressions.
+     * @return The converted line, maybe the same line as passed as input if nothing could be changed.
+     */
+    private String convertRelationalExpressionsOnNumbers(String result, Pattern p) {
+        Matcher m = p.matcher(result);
         while (m.find()) {
             String whole = m.group("constantcomparison");
             String firstValue = m.group(GROUP_NAME_VARIABLE);
@@ -566,13 +696,6 @@ public class NonBooleanPreperation implements IPreparation {
                 LOGGER.logInfo("Could not simplify constant expression: " + whole);
             }
         }
-        
-        // Replace #if (VAR)
-        result = convertBooleanVariableExpressions(from, result,
-            Pattern.compile(terminal + "\\s*" + "(" + variableNamePattern + ")" + "\\s*" + terminal), true);
-        // Replace #if (!VAR)
-        result = convertBooleanVariableExpressions(from, result,
-            Pattern.compile(terminal + "\\s*" + "(!" + variableNamePattern + ")" + "\\s*" + terminal), false);
         
         return result;
     }
