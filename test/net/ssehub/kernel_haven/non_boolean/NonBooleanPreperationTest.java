@@ -206,6 +206,23 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests that a variable and an unknown symbol are not replaced.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testEqualityOnUnknown() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("a", "bool", new int[] {1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnUnknown.c"), 
+            "#if (a == UNKNOWN) {\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Tests the replacement of a constant at the end of line.
      * @throws SetUpException If setup fails, should not happen.
      */
