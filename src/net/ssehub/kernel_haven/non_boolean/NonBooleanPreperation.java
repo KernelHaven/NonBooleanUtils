@@ -595,7 +595,7 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         // Replace comparison on two constant numbers
-        String terminal = "(if|$|\\(|\\)|\\|\\||&&)";
+        String terminal = "(#if|#elif|$|\\(|\\)|\\|\\||&&)";
         p = Pattern.compile(SEPARATOR_REGEX
             + createdNamedCaptureGroup("constantcomparison",
                 createdNamedCaptureGroup(GROUP_NAME_VARIABLE, INTEGER_REGEX)
