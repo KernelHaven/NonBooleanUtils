@@ -189,9 +189,9 @@ public class NonBooleanPreperationTest {
     public void testEqualityOnConstantNotEndOfLine() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation() {
             @Override
-            protected Map<String, Integer> getConstants() {
-                Map<String, Integer> constMap = new HashMap<String, Integer>();
-                constMap.put("CONSTANT", 1);
+            protected Map<String, Long> getConstants() {
+                Map<String, Long> constMap = new HashMap<>();
+                constMap.put("CONSTANT", 1L);
                 return constMap;
             }
         };
@@ -230,9 +230,9 @@ public class NonBooleanPreperationTest {
     public void testEqualityOnConstantEndOfLine() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation() {
             @Override
-            protected Map<String, Integer> getConstants() {
-                Map<String, Integer> constMap = new HashMap<String, Integer>();
-                constMap.put("CONSTANT", 1);
+            protected Map<String, Long> getConstants() {
+                Map<String, Long> constMap = new HashMap<>();
+                constMap.put("CONSTANT", 1L);
                 return constMap;
             }
         };
@@ -254,9 +254,9 @@ public class NonBooleanPreperationTest {
     public void testEqualityOnTwoConstants() throws SetUpException {
         NonBooleanPreperation preparator = new NonBooleanPreperation() {
             @Override
-            protected Map<String, Integer> getConstants() {
-                Map<String, Integer> constMap = new HashMap<String, Integer>();
-                constMap.put("CONSTANT", 1);
+            protected Map<String, Long> getConstants() {
+                Map<String, Long> constMap = new HashMap<>();
+                constMap.put("CONSTANT", 1L);
                 return constMap;
             }
         };

@@ -435,7 +435,7 @@ public class NonBooleanPreperation implements IPreparation {
         Matcher m;
         
         // replace known constants in result
-        Map<String, Integer> constants = getConstants();
+        Map<String, Long> constants = getConstants();
         if (!constants.isEmpty()) {
             m = variableNamePattern.matcher(result);
             while (m.find()) {
@@ -1144,7 +1144,7 @@ public class NonBooleanPreperation implements IPreparation {
      * 
      * @return A {@link Map} of constant variables.
      */
-    protected Map<String, Integer> getConstants() {
+    protected Map<String, Long> getConstants() {
         // we don't have any source to get constants from.
         // other preparations may inherit from this class and overwrite this method, if they do have a source of constants.
         return new HashMap<>();
