@@ -352,6 +352,22 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifOneUL.c"), 
+            "#if 1 \n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
+     * Special case: Tests consideration of integer suffixes.
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfOneUL2() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig();
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifOneUL2.c"), 
                 "#if 1 \n"
                         + "    // Do something\n"
                         + "#endif");

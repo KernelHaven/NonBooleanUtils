@@ -46,7 +46,7 @@ public class NonBooleanPreperation implements IPreparation {
     private static final String GROUP_NAME_OPERATOR = "operator";
     private static final String GROUP_NAME_VALUE = "value";
     private static final String SUPPORTED_OPERATORS_REGEX = "==|!=|<|>|<=|>=";
-    private static final String INTEGER_REGEX = "-?[0-9]+U?L{0,2}";
+    private static final String INTEGER_REGEX = "-?[0-9]+[U|u]?[L|l]{0,2}";
     private static final String SEPARATOR_REGEX = "[(|)|\\s]{1}+";
     private static final boolean REMOVE_CONSISTENCY_CHECKS = true;
     
@@ -567,7 +567,9 @@ public class NonBooleanPreperation implements IPreparation {
     }
     
     private Long parseConstant(String constant) {
-        while (!constant.isEmpty() && (constant.endsWith("L") || constant.endsWith("U"))) {
+        while (!constant.isEmpty() && (constant.endsWith("L") || constant.endsWith("l")
+            || constant.endsWith("u") || constant.endsWith("U"))) {
+            
             constant = constant.substring(0, constant.length() - 1);
         }
         
