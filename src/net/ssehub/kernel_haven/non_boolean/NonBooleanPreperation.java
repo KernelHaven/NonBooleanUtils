@@ -595,7 +595,7 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         // Replace comparison on two constant numbers
-        String terminal = "[(|)|\\|\\||&&]{1}+";
+        String terminal = "(if|$|\\(|\\)|\\|\\||&&)";
         p = Pattern.compile(SEPARATOR_REGEX
             + createdNamedCaptureGroup("constantcomparison",
                 createdNamedCaptureGroup(GROUP_NAME_VARIABLE, INTEGER_REGEX)
@@ -785,7 +785,7 @@ public class NonBooleanPreperation implements IPreparation {
         Matcher m = p.matcher(result);
         
         while (m.find()) {
-            String varCandidate = m.group(1);
+            String varCandidate = m.group(2);
             
             // Check that we did not find a key word
             boolean handle = !"defined".equals(varCandidate) && !"!defined".equals(varCandidate);

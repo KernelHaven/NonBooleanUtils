@@ -597,6 +597,24 @@ public class NonBooleanPreperationTest {
     }
     
     /**
+     * Tests whether an #if without defined() is translated correctly.
+     * 
+     * @throws SetUpException If setup fails, should not happen.
+     */
+    @Test
+    public void testIfWithoutDefined() throws SetUpException {
+        NonBooleanPreperation preparator = new NonBooleanPreperation();
+        Configuration config = createConfig(
+            new FiniteIntegerVariable("VAR", "tristate", new int[] {0, 1, 2}));
+        preparator.run(config);
+        
+        FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifWithoutDefined.c"), 
+            "#if !defined(VAR_eq_0)\n"
+                + "    // Do something\n"
+                + "#endif");
+    }
+    
+    /**
      * Configures the {@link PipelineConfigurator} and creates the {@link Configuration}, which is needed
      * for testing the {@link NonBooleanPreperation}.
      * 
