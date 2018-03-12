@@ -407,7 +407,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifdefWeiredCombination.c"), 
-                "#if (defined(VAR1) || defined(VAR1)) \n"
+                "#if (defined(VAR1) || !defined(VAR1_eq_0)) \n"
                         + "    // Do something\n"
                         + "#endif");
     }

@@ -532,12 +532,27 @@ public class NonBooleanPreperation implements IPreparation {
      */
     private String convertBooleanVariableExpressions(File from, String result, Pattern p, boolean negate) {
         Matcher m = p.matcher(result);
+        
         while (m.find()) {
             String varCandidate = m.group(1);
             
+            // Check that we did not find a key word
+            boolean handle = !"defined".equals(varCandidate) && !"!defined".equals(varCandidate);
+            // Check that we did not find an already replaced variable
+            if (handle) {
+                handle = !varCandidate.contains("_eq_");
+            }
+            // Check that we did not detect a whole define statement
+            if (handle) {
+                // Consider arbitrary white spaces before and after brackets
+                int startIndex = Math.max(0, m.start() - 9);
+                int endIndex = Math.min(result.length(), m.end() + 2);
+                String region = result.substring(startIndex, endIndex).replace(" ", "");
+                handle = !region.contains("defined(" + varCandidate + ")");
+            }
+            
             // Avoid double replacement...
-            if (!"defined".equals(varCandidate) && !"!defined".equals(varCandidate) && !varCandidate.contains("_eq_")
-                && !result.contains("defined(" + varCandidate + ")")) {
+            if (handle) {
                 
                 NonBooleanVariable var1 = negate ? getVariableForced(varCandidate)
                     : getVariableForced(varCandidate.substring(1));
@@ -545,8 +560,8 @@ public class NonBooleanPreperation implements IPreparation {
                 if (var1.constants.length > 0) {
                     String replacement = (negate ? "!defined(" : "defined(") + var1.getConstantName(0) + ")";
                     if (!varCandidate.equals(replacement)) {
-                        result = result.replace(varCandidate, replacement);
-                        m = p.matcher(result); 
+                        result = replace(result, varCandidate, replacement, m.start());
+                        m = p.matcher(result);
                     }
                 } else {
                     LOGGER.logWarning("Found variable without a relational expresion, which is also not known by the "
@@ -654,23 +669,54 @@ public class NonBooleanPreperation implements IPreparation {
                     // If we analyze <value> <operator> <variable> we need to skip first character
                     whole = whole.substring(1);
                 }
-                int start = 0;
-                int end = cppLine.indexOf(whole, start);
-                int replLength = whole.length();
-                int increase = replacement.length() - replLength;
-                increase = (increase < 0 ? 0 : increase);
-                StringBuffer buf = new StringBuffer(cppLine.length() + increase);
-                buf.append(cppLine.substring(start, end));
-                buf.append(replacement);
-                start = end + replLength;
-                buf.append(cppLine.substring(start));
-                cppLine = buf.toString();
+                cppLine = replace(cppLine, whole, replacement);
                 
                 // Find new match after string has been changed!
                 m = relationalExpressionPattern.matcher(cppLine);
             }
         }
         return cppLine;
+    }
+
+    /**
+     * Replaces only a single (<b>first</b>) occurrence of a substring in the whole String.
+     * Based on <a href="https://stackoverflow.com/a/16229133">Stackoverflow / Apache IO</a> and uses a StringBuffer
+     * to be faster.
+     * @param whole The complete String in which a part shall be replaced
+     * @param old The old substring to be replaced
+     * @param replacement The replacement for the old substring.
+     * @return The complete String, where the old part was replaced if it could be found.
+     */
+    private String replace(String whole, String old, String replacement) {
+        return replace(whole, old, replacement, 0);
+    }
+    
+    /**
+     * Replaces only a single occurrence of a substring in the whole String.
+     * Based on <a href="https://stackoverflow.com/a/16229133">Stackoverflow / Apache IO</a> and uses a StringBuffer
+     * to be faster.
+     * @param whole The complete String in which a part shall be replaced
+     * @param old The old substring to be replaced
+     * @param replacement The replacement for the old substring.
+     * @param startIndex The 0-based index at which the element may be found for the first time (earlier matches will be
+     *     ignored).
+     * @return The complete String, where the old part was replaced if it could be found.
+     */
+    private String replace(String whole, String old, String replacement, int startIndex) {
+        int start = 0;
+        int end = whole.indexOf(old, startIndex);
+        int replacementLength = old.length();
+        int increase = replacement.length() - replacementLength;
+        
+        increase = (increase < 0 ? 0 : increase);
+        StringBuffer buf = new StringBuffer(whole.length() + increase);
+        buf.append(whole.substring(start, end));
+        buf.append(replacement);
+        start = end + replacementLength;
+        buf.append(whole.substring(start));
+        whole = buf.toString();
+        
+        return whole;
     }
 
     /**
