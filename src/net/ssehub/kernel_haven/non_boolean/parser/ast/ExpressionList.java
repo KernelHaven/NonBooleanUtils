@@ -1,0 +1,68 @@
+package net.ssehub.kernel_haven.non_boolean.parser.ast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A temporary element in the AST while is parsed. Contains a flat list of {@link CppExpression}s.
+ *
+ * @author Adam
+ */
+public class ExpressionList extends CppExpression {
+
+    private List<CppExpression> expressions;
+    
+    /**
+     * Creates a new {@link ExpressionList} with no nested expressions.
+     */
+    public ExpressionList() {
+        this.expressions = new ArrayList<>();
+    }
+    
+    /**
+     * Returns the number of nested expressions.
+     * 
+     * @return The number of nested expressions.
+     */
+    public int getExpressionSize() {
+        return expressions.size();
+    }
+    
+    /**
+     * Returns the expression at the given index.
+     * 
+     * @param index The index to get the exrepssion at.
+     * 
+     * @return The nested expressoin.
+     */
+    public CppExpression getExpression(int index) {
+        return expressions.get(index);
+    }
+    
+    /**
+     * Adds a nested expression to the end of the list.
+     * 
+     * @param expression The expression to add.
+     */
+    public void addExpression(CppExpression expression) {
+        expressions.add(expression);
+    }
+    
+    @Override
+    public <T> T accept(ICppExressionVisitor<T> visitor) {
+        return visitor.visitExpressionList(this);
+    }
+
+    @Override
+    protected String toString(String indentation) {
+        StringBuilder result = new StringBuilder(indentation).append("ExpressionList");
+        
+        indentation += '\t';
+        for (CppExpression expr : expressions) {
+            result.append('\n').append(expr.toString(indentation));
+        }
+        
+        return result.toString();
+    }
+    
+}
