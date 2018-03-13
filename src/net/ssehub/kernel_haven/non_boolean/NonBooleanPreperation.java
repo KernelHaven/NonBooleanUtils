@@ -410,10 +410,6 @@ public class NonBooleanPreperation implements IPreparation {
         return result;
     }
     
-    private Long parseConstant(String constant) {
-        return parseConstant(null, constant);
-    }
-    
     private Long parseConstant(File file, String constant) {
         while (!constant.isEmpty() && (constant.endsWith("L") || constant.endsWith("l")
                 || constant.endsWith("u") || constant.endsWith("U"))) {
