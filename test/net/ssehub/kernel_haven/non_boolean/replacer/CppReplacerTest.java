@@ -81,23 +81,49 @@ public class CppReplacerTest {
                  */
                 new Object[] {"#if (VAR_A == 1)", "#if defined(VAR_A_eq_1)", "Var equals Literal"},
                 new Object[] {"#if (1 == VAR_A)", "#if defined(VAR_A_eq_1)", "Var equals Literal (reversed)"},
+                new Object[] {"#if (VAR_A != 1)", "#if !(defined(VAR_A_eq_1))", "Var not equals Literal"},
+                new Object[] {"#if (1 != VAR_A)", "#if !(defined(VAR_A_eq_1))", "Var not equals Literal (reversed)"},
+                new Object[] {"#if (VAR_A > 1)", "#if defined(VAR_A_eq_2)", "Var gt Literal"},
+                new Object[] {"#if (1 < VAR_A)", "#if defined(VAR_A_eq_2)", "Var gt Literal (reversed)"},
+                new Object[] {"#if (VAR_A < 1)", "#if defined(VAR_A_eq_0)", "Var lt Literal"},
+                new Object[] {"#if (1 > VAR_A)", "#if defined(VAR_A_eq_0)", "Var lt Literal (reversed)"},
+                new Object[] {"#if (VAR_A <= 1)", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))", "Var le Literal"},
+                new Object[] {"#if (1 >= VAR_A)", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))", "Var le Literal (reversed)"},
+                new Object[] {"#if (VAR_A >= 1)", "#if (defined(VAR_A_eq_1)) || (defined(VAR_A_eq_2))", "Var ge Literal"},
+                new Object[] {"#if (1 <= VAR_A)", "#if (defined(VAR_A_eq_1)) || (defined(VAR_A_eq_2))", "Var ge Literal (reversed)"},
                 
                 
                 /*
-                 * Var OP Var
+                 * Var CMP_OP Var
                  * + reversed
                  */
                 new Object[] {"#if (VAR_A == VAR_C)", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "Var equals Var"},
                 new Object[] {"#if (VAR_C == VAR_A)", "#if ((defined(VAR_C_eq_0)) && (defined(VAR_A_eq_0))) || ((defined(VAR_C_eq_1)) && (defined(VAR_A_eq_1)))", "Var equals Var (reveresed)"},
+                new Object[] {"#if (VAR_A != VAR_C)", "#if !(((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1))))", "Var not equals Var"},
+                new Object[] {"#if (VAR_C != VAR_A)", "#if !(((defined(VAR_C_eq_0)) && (defined(VAR_A_eq_0))) || ((defined(VAR_C_eq_1)) && (defined(VAR_A_eq_1))))", "Var not equals Var (reveresed)"},
+                new Object[] {"#if (VAR_A < VAR_C)", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_1))", "Var lt Var"},
+                new Object[] {"#if (VAR_C > VAR_A)", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_1))", "Var gt Var"},
+                new Object[] {"#if (VAR_A <= VAR_C)", "#if (((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_1)))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "Var le Var"},
+                new Object[] {"#if (VAR_C >= VAR_A)", "#if (((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_1)))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "Var ge Var"},
                 
                 new Object[] {"#if VAR_A + 10 == VAR_B", "#if 0", "Var equals Var with no overlap"},
                 
                 /*
-                 * Var OP Const
+                 * Var CMP_OP Const
                  * + reversed
                  */
                 new Object[] {"#if (VAR_A == CONST_A)", "#if defined(VAR_A_eq_1)", "Var equals Constant"},
                 new Object[] {"#if (CONST_A == VAR_A)", "#if defined(VAR_A_eq_1)", "Var equals Constant (reversed)"},
+                new Object[] {"#if (VAR_A != CONST_A)", "#if !(defined(VAR_A_eq_1))", "Var not equals Constant"},
+                new Object[] {"#if (CONST_A != VAR_A)", "#if !(defined(VAR_A_eq_1))", "Var not equals Constant (reversed)"},
+                new Object[] {"#if (VAR_A < CONST_A)", "#if defined(VAR_A_eq_0)", "Var lt Constant"},
+                new Object[] {"#if (CONST_A > VAR_A)", "#if defined(VAR_A_eq_0)", "Var lt Constant (reversed)"},
+                new Object[] {"#if (VAR_A <= CONST_A)", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))", "Var le Constant"},
+                new Object[] {"#if (CONST_A >= VAR_A)", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))", "Var le Constant (reversed)"},
+                new Object[] {"#if (VAR_A > CONST_A)", "#if defined(VAR_A_eq_2)", "Var gt Constant"},
+                new Object[] {"#if (CONST_A < VAR_A)", "#if defined(VAR_A_eq_2)", "Var gt Constant (reversed)"},
+                new Object[] {"#if (VAR_A >= CONST_A)", "#if (defined(VAR_A_eq_1)) || (defined(VAR_A_eq_2))", "Var ge Constant"},
+                new Object[] {"#if (CONST_A <= VAR_A)", "#if (defined(VAR_A_eq_1)) || (defined(VAR_A_eq_2))", "Var ge Constant (reversed)"},
                 
                 /*
                  * defined(Var)
@@ -105,15 +131,16 @@ public class CppReplacerTest {
                 new Object[] {"#if defined(VAR_A)", "#if defined(VAR_A)", "Defined with Var"},
                 
                 /*
-                 * Var, Unknown without defined()
+                 * Var, Var with calculation, Unknown without defined()
                  */
                 new Object[] {"#if VAR_A", "#if (!defined(VAR_A_eq_0))", "Missing defined with Var"},
-                new Object[] {"#if VAR_UNKNOWN", "#if !defined(VAR_UNKNOWN_eq_0)", "Missing defined with Unknown"},
                 new Object[] {"#if VAR_A / 2", "#if (!defined(VAR_A_eq_0) && !defined(VAR_A_eq_1))", "Missing defined with Var multiple 0 values"},
                 new Object[] {"#if VAR_A + 1", "#if 1", "Missing defined with Var no 0 values"},
+                new Object[] {"#if VAR_UNKNOWN", "#if !defined(VAR_UNKNOWN_eq_0)", "Missing defined with Unknown"},
                 
                 /*
-                 * Unknown OP Literal
+                 * Unknown CMP_OP Literal
+                 * +reversed
                  */
                 new Object[] {"#if VAR_UNKNOWN == 1", "#if defined(VAR_UNKNOWN_eq_1)", "Unknown equals Literal"},
                 new Object[] {"#if VAR_UNKNOWN != 1", "#if !(defined(VAR_UNKNOWN_eq_1))", "Unknown not equals Literal"},
@@ -121,16 +148,28 @@ public class CppReplacerTest {
                 new Object[] {"#if VAR_UNKNOWN > 1", "#if defined(VAR_UNKNOWN_gt_1)", "Unknown gt Literal"},
                 new Object[] {"#if VAR_UNKNOWN <= 1", "#if defined(VAR_UNKNOWN_le_1)", "Unknown le Literal"},
                 new Object[] {"#if VAR_UNKNOWN < 1", "#if defined(VAR_UNKNOWN_lt_1)", "Unknown lt Literal"},
+                new Object[] {"#if 1 == VAR_UNKNOWN", "#if defined(VAR_UNKNOWN_eq_1)", "Literal equals Unknown"},
+                new Object[] {"#if 1 != VAR_UNKNOWN", "#if !(defined(VAR_UNKNOWN_eq_1))", "Literal not equals Unknown"},
+                new Object[] {"#if 1 <= VAR_UNKNOWN", "#if defined(VAR_UNKNOWN_ge_1)", "Literal le Unknown"},
+                new Object[] {"#if 1 < VAR_UNKNOWN", "#if defined(VAR_UNKNOWN_gt_1)", "Literal le Unknown"},
+                new Object[] {"#if 1 >= VAR_UNKNOWN", "#if defined(VAR_UNKNOWN_le_1)", "Literal ge Unknown"},
+                new Object[] {"#if 1 > VAR_UNKNOWN", "#if defined(VAR_UNKNOWN_lt_1)", "Literal gt Unknown"},
                 
                 /*
-                 * Var OP Literal
+                 * Var CMP_OP Literal
                  * Literal is out of range for allowed values of Var
+                 * +reversed
                  */
                 new Object[] {"#if VAR_A == 5", "#if 0", "Var equals Literal out of Range"},
                 new Object[] {"#if VAR_A > 5", "#if 0", "Var gt Literal out of Range"},
                 new Object[] {"#if VAR_A >= 5", "#if 0", "Var ge Literal out of Range"},
                 new Object[] {"#if VAR_A < -1", "#if 0", "Var lt Literal out of Range"},
                 new Object[] {"#if VAR_A <= -1", "#if 0", "Var le Literal out of Range"},
+                new Object[] {"#if 5 == VAR_A", "#if 0", "Var equals Literal out of Range (reversed)"},
+                new Object[] {"#if 5 < VAR_A", "#if 0", "Var gt Literal out of Range (reversed)"},
+                new Object[] {"#if 5 <= VAR_A", "#if 0", "Var ge Literal out of Range (reversed)"},
+                new Object[] {"#if -1 > VAR_A", "#if 0", "Var lt Literal out of Range (reversed)"},
+                new Object[] {"#if -1 >= VAR_A", "#if 0", "Var le Literal out of Range (reversed)"},
                 
                 /*
                  * Containing boolean operators &&, ||, !
@@ -138,7 +177,7 @@ public class CppReplacerTest {
                 new Object[] {"#if VAR_A == 1 || (!(VAR_B==1) && VAR_C==1)", "#if (defined(VAR_A_eq_1)) || ((!(defined(VAR_B_eq_1))) && (defined(VAR_C_eq_1)))", "Boolean Operators"},
                 
                 /*
-                 * Literal OP Literal
+                 * Literal CMP_OP Literal
                  */
                 new Object[] {"#if 1 == 2", "#if 0", "Literal equals Literal (false)"},
                 new Object[] {"#if 1 == 1", "#if 1", "Literal equals Literal (true)"},
@@ -164,7 +203,7 @@ public class CppReplacerTest {
                 new Object[] {"#if 10 + (-3 * 3) - 1", "#if 0", "Calculated Literal without comparison (false)"},
                 
                 /*
-                 * (Literal OP Literal) EQUAL Literal
+                 * (Literal INT_OP Literal) EQUAL Literal
                  */
                 new Object[] {"#if 1 + 2 == 3", "#if 1", "Literal calculation (ADD)"},
                 new Object[] {"#if 1 - 2 == -1", "#if 1", "Literal calculation (SUB)"},
@@ -184,7 +223,7 @@ public class CppReplacerTest {
                 new Object[] {"#if ~2 == " + (~2L), "#if 1", "Literal calculation (Bin INVERT)"},
                 
                 /*
-                 * (Var OP Literal) EQUAL Literal
+                 * (Var INT_OP Literal) EQUAL Literal
                  */
                 new Object[] {"#if VAR_A + 2 == 3", "#if defined(VAR_A_eq_1)", "Var calculation (ADD)"},
                 new Object[] {"#if VAR_A - 2 == 0", "#if defined(VAR_A_eq_2)", "Var calculation (SUB)"},
@@ -200,7 +239,7 @@ public class CppReplacerTest {
                 new Object[] {"#if ~VAR_A == " + (~1L), "#if defined(VAR_A_eq_1)", "Var calculation (Bin INVERT)"},
                 
                 /*
-                 * Var OP Unknown
+                 * Var CMP_OP Unknown
                  * + reversed
                  */
                 new Object[] {"#if VAR_A == VAR_UNKNOWN", "#if defined(VAR_A_eq_VAR_UNKNOWN)", "Var and Unknown comparison"},
@@ -214,7 +253,20 @@ public class CppReplacerTest {
                 new Object[] {"#if VAR_A > VAR_UNKNOWN", "#if defined(VAR_A_gt_VAR_UNKNOWN)", "Var and Unknown comparison"},
                 new Object[] {"#if VAR_UNKNOWN > VAR_A", "#if defined(VAR_A_lt_VAR_UNKNOWN)", "Var and Unknown comparison"},
                 new Object[] {"#if VAR_A >= VAR_UNKNOWN", "#if defined(VAR_A_ge_VAR_UNKNOWN)", "Var and Unknown comparison"},
-                new Object[] {"#if VAR_UNKNOWN >= VAR_A", "#if defined(VAR_A_le_VAR_UNKNOWN)", "Var and Unknown comparison"}
+                new Object[] {"#if VAR_UNKNOWN >= VAR_A", "#if defined(VAR_A_le_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                
+                /*
+                 * From old NonBooleanPreperationTest
+                 */
+                new Object[] {"#if ((VAR_A & 2) > 0)", "#if defined(VAR_A_eq_2)", "bitOperationHas2"},
+                new Object[] {"#if (VAR_A || VAR_B)", "#if ((!defined(VAR_A_eq_0))) || ((!defined(VAR_B_eq_0)))", "booleanNumbersInIf"},
+                new Object[] {"#if ((VAR_A) == VAR_C)", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "unnecessaryBrackets"},
+                new Object[] {"#if (VAR_A % 2) == 0", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_2))", "modulo"},
+                new Object[] {"#if 1l==1ul", "#if 1", "ifOneUL2"},
+                new Object[] {"#if 1L==1UL", "#if 1", "ifOneUL"},
+                new Object[] {"#if (defined(VAR_C) || VAR_C)", "#if (defined(VAR_C)) || ((!defined(VAR_C_eq_0)))", "ifdefWeirdCombination"},
+                new Object[] {"#if ((VAR_A == VAR_C) && (VAR_B == 2))", "#if (((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))) && (defined(VAR_B_eq_2))", "complexExpression"},
+                new Object[] {"#if (!VAR1 || !VAR2)", "#if (!(!defined(VAR1_eq_0))) || (!(!defined(VAR2_eq_0)))", "booleanNumbersInIfNegated"}
         );
     }
     
