@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
@@ -189,6 +190,34 @@ public class CppParserTest {
         
         CppExpression arg = assertFunctionCall(result, "defined");
         assertVariable(arg, "A");
+    }
+    
+    /**
+     * Tests that a function call without parameters is detected correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Ignore("This is currently not supported")
+    @Test
+    public void testFunctionCallWithNoParameters() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        CppExpression result = parser.parse("func()");
+        
+        CppExpression arg = assertFunctionCall(result, "func");
+        assertThat(arg, nullValue());
+    }
+    
+    /**
+     * Tests that a function call with more than 1 parameter correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testFunctionCallWithMoreParameters() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        parser.parse("func(a, b)");
     }
     
     /**

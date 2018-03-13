@@ -107,4 +107,89 @@ public class CppReplacerTest {
         assertThat(replacer.replace("#if (CONST_A == VAR_A)"), is("#if defined(VAR_A_eq_1)"));
     }
     
+    /**
+     * Tests that defined() call is translated correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testDefined() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if defined(VAR_A)"), is("#if defined(VAR_A)"));
+    }
+    
+    /**
+     * Tests that variables used without defined() are translated into VAR != 0.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testMissingDefined() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_A"), is("#if (!defined(VAR_A_eq_0))"));
+    }
+    
+    /**
+     * Tests that a function that is not defined(VAR) correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testInvalidFunction() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        replacer.replace("#if something(A)");
+    }
+    
+    /**
+     * Tests that a defined call with no simple variable inside correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testDefinedWithNoVariable() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        replacer.replace("#if defined(!A)");
+    }
+    
+    /**
+     * Tests that a variable that is not known is replaced correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testUnknownVariable() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_UNKNOWN == 1"), is("#if defined(VAR_UNKNOWN_eq_1)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN >= 1"), is("#if defined(VAR_UNKNOWN_ge_1)"));
+    }
+    
+    /**
+     * Tests that variables used without defined() are translated into VAR != 0.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testUnknownVariableMissingDefined() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_UNKNOWN"), is("#if (!defined(VAR_UNKNOWN_eq_0))"));
+    }
+    
+    /**
+     * Tests that a comparison with a variable that is out of range (value of the variable) is translated correctly
+     * to false.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testVarEqOutOfRange() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_A == 5"), is("#if 0"));
+    }
+    
 }
+
