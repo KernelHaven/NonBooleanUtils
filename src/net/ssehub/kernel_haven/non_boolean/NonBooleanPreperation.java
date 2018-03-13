@@ -253,21 +253,23 @@ public class NonBooleanPreperation implements IPreparation {
         copiedSourceTree.mkdir();
         
         nonBooleanOperations = new HashMap<>();
+        checkIfNonBooleanVarModelIsAvailable();
         
         // walk through all *.c and *.h files in the source_tree, and collect non boolean operations.
-        // this fills this.nonBooleanOperations and this.burntVariables
-        new PreprocessorConditionVisitor() {
-            
-            @Override
-            public void visit(File file, String line) {
-                try {
-                    collectNonBooleanFromLine(file, line);
-                } catch (IOException e) {
-                    e.printStackTrace();
+        // this fills this.nonBooleanOperations
+        if (!nonBooleanModelRead) {
+            new PreprocessorConditionVisitor() {
+                
+                @Override
+                public void visit(File file, String line) {
+                    try {
+                        collectNonBooleanFromLine(file, line);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }.visitAllFiles(originalSourceTree);
-        
+            }.visitAllFiles(originalSourceTree);
+        }
         
         variables = new HashMap<>();
         
@@ -281,6 +283,18 @@ public class NonBooleanPreperation implements IPreparation {
         copy(originalSourceTree, copiedSourceTree);
     }
 
+    private void checkIfNonBooleanVarModelIsAvailable() {
+        VariabilityModel varModel = PipelineConfigurator.instance().getVmProvider().getResult();
+        if (null != varModel) {
+            for (VariabilityVariable variable : varModel.getVariables()) {
+                if (null != variable && variable instanceof FiniteIntegerVariable) {
+                    nonBooleanModelRead = true;
+                    break;
+                }
+            }
+        }
+    }
+    
     private void gatherConstantValues() {
         VariabilityModel varModel = PipelineConfigurator.instance().getVmProvider().getResult();
         nonBooleanModelRead = false;
