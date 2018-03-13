@@ -256,6 +256,16 @@ public class CppReplacerTest {
                 new Object[] {"#if VAR_UNKNOWN >= VAR_A", "#if defined(VAR_A_le_VAR_UNKNOWN)", "Var and Unknown comparison"},
                 
                 /*
+                 * Unknown CMP_OP Unknown
+                 */
+                new Object[] {"#if UNKNOWN1 == UNKNOWN2", "#if defined(UNKNOWN1_eq_UNKNOWN2)", "Unknown and Unknown comparison"},
+                new Object[] {"#if UNKNOWN1 != UNKNOWN2", "#if !(defined(UNKNOWN1_eq_UNKNOWN2))", "Unknown and Unknown comparison"},
+                new Object[] {"#if UNKNOWN1 < UNKNOWN2", "#if defined(UNKNOWN1_lt_UNKNOWN2)", "Unknown and Unknown comparison"},
+                new Object[] {"#if UNKNOWN1 <= UNKNOWN2", "#if defined(UNKNOWN1_le_UNKNOWN2)", "Unknown and Unknown comparison"},
+                new Object[] {"#if UNKNOWN1 > UNKNOWN2", "#if defined(UNKNOWN2_lt_UNKNOWN1)", "Unknown and Unknown comparison"},
+                new Object[] {"#if UNKNOWN1 >= UNKNOWN2", "#if defined(UNKNOWN2_le_UNKNOWN1)", "Unknown and Unknown comparison"},
+                
+                /*
                  * From old NonBooleanPreperationTest
                  */
                 new Object[] {"#if ((VAR_A & 2) > 0)", "#if defined(VAR_A_eq_2)", "bitOperationHas2"},

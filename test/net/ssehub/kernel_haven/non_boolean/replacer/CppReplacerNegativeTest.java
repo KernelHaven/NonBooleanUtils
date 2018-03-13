@@ -124,7 +124,36 @@ public class CppReplacerNegativeTest {
                 new Object[] {"#if (UNKNOWN == 1) < Var_A", "Comparing on resolved unknown with Var (LT) (reversed)"},
                 new Object[] {"#if (UNKNOWN == 1) > Var_A", "Comparing on resolved unknown with Var (GT) (reversed)"},
                 new Object[] {"#if (UNKNOWN == 1) <= Var_A", "Comparing on resolved unknown with Var (LE) (reversed)"},
-                new Object[] {"#if (UNKNOWN == 1) >= Var_A", "Comparing on resolved unknown with Var (GE) (reversed)"}
+                new Object[] {"#if (UNKNOWN == 1) >= Var_A", "Comparing on resolved unknown with Var (GE) (reversed)"},
+                
+                /*
+                 * Calculating on Unknown
+                 */
+                // unary
+                new Object[] {"#if -UNKNOWN", "Calcating on Unknown (Unary MINUS)"},
+                new Object[] {"#if ~UNKNOWN", "Calcating on Unknown (Bin INVERT)"},
+                new Object[] {"#if UNKNOWN++", "Calcating on Unknown (INC Post)"},
+                new Object[] {"#if UNKNOWN--", "Calcating on Unknown (DEC Post)"},
+                new Object[] {"#if ++UNKNOWN", "Calcating on Unknown (INC Pre)"},
+                new Object[] {"#if --UNKNOWN", "Calcating on Unknown (DEC Pre)"},
+                // binary
+                new Object[] {"#if UNKNOWN + 1", "Calcating on Unknown (ADD)"},
+                new Object[] {"#if UNKNOWN - 1", "Calcating on Unknown (SUB)"},
+                new Object[] {"#if UNKNOWN * 1", "Calcating on Unknown (MUL)"},
+                new Object[] {"#if UNKNOWN / 1", "Calcating on Unknown (DIV)"},
+                new Object[] {"#if UNKNOWN % 1", "Calcating on Unknown (MOD)"},
+                new Object[] {"#if UNKNOWN & 1", "Calcating on Unknown (Bin AND)"},
+                new Object[] {"#if UNKNOWN | 1", "Calcating on Unknown (Bin OR)"},
+                new Object[] {"#if UNKNOWN ^ 1", "Calcating on Unknown (Bin XOR)"},
+                // binary reversed
+                new Object[] {"#if 1 + UNKNOWN", "Calcating on Unknown (ADD) (reversed)"},
+                new Object[] {"#if 1 - UNKNOWN", "Calcating on Unknown (SUB) (reversed)"},
+                new Object[] {"#if 1 * UNKNOWN", "Calcating on Unknown (MUL) (reversed)"},
+                new Object[] {"#if 1 / UNKNOWN", "Calcating on Unknown (DIV) (reversed)"},
+                new Object[] {"#if 1 % UNKNOWN", "Calcating on Unknown (MOD) (reversed)"},
+                new Object[] {"#if 1 & UNKNOWN", "Calcating on Unknown (Bin AND) (reversed)"},
+                new Object[] {"#if 1 | UNKNOWN", "Calcating on Unknown (Bin OR) (reversed)"},
+                new Object[] {"#if 1 ^ UNKNOWN", "Calcating on Unknown (Bin XOR) (reversed)"}
         );
     }
     
