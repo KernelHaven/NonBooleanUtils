@@ -86,7 +86,11 @@ public class CppParser {
 
         @Override
         public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
-            return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
+            CppExpression arg = call.getArgument();
+            if (arg != null) {
+                arg = arg.accept(this);
+            }
+            return new FunctionCall(call.getFunctionName(), arg);
         }
 
         @Override
@@ -135,7 +139,11 @@ public class CppParser {
 
         @Override
         public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
-            return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
+            CppExpression arg = call.getArgument();
+            if (arg != null) {
+                arg = arg.accept(this);
+            }
+            return new FunctionCall(call.getFunctionName(), arg);
         }
 
         @Override
@@ -197,6 +205,10 @@ public class CppParser {
                         // unpack argument list if we only have one element
                         if (nextExprList.getExpressionSize() == 1) {
                             nextExpr = nextExprList.getExpression(0);
+                            
+                        } else if (nextExprList.getExpressionSize() == 0) {
+                            // function with no arguments
+                            nextExpr = null;
                         }
                         
                         newList.addExpression(new FunctionCall(name, nextExpr));
@@ -306,9 +318,15 @@ public class CppParser {
          */
         private void parseParameters(ExpressionList expressionList, Operator operator, int operatorIndex) throws ExpressionFormatException {
             if (operator.getOperator().isUnary()) {
-                if (operatorIndex != 0 && operatorIndex != expressionList.getExpressionSize() - 1) {
-                    throw makeException(expression, "Found elements on both sides of unary operator");
-                    
+                if (operatorIndex != 0
+                        // special case: ++ and -- may be on right side
+                        && !(
+                                (operator.getOperator() == INT_DEC || operator.getOperator() == INT_INC)
+                                && operatorIndex == expressionList.getExpressionSize() - 1
+                            )) {
+                        
+                        throw makeException(expression, "Found elements on wrong side of unary operator");
+                        
                 } else {
                     ExpressionList nested = new ExpressionList();
                     for (int i = 0; i < expressionList.getExpressionSize(); i++) {
@@ -344,7 +362,11 @@ public class CppParser {
 
         @Override
         public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
-            return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
+            CppExpression arg = call.getArgument();
+            if (arg != null) {
+                arg = arg.accept(this);
+            }
+            return new FunctionCall(call.getFunctionName(), arg);
         }
 
         @Override

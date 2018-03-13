@@ -137,6 +137,17 @@ public class CppReplacerTest {
      * @throws ExpressionFormatException wanted.
      */
     @Test(expected = ExpressionFormatException.class)
+    public void testEmptyDefined() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        replacer.replace("#if defined()");
+    }
+    
+    /**
+     * Tests that a function that is not defined(VAR) correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
     public void testInvalidFunction() throws ExpressionFormatException {
         CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
         replacer.replace("#if something(A)");

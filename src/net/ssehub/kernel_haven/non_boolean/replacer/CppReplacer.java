@@ -63,8 +63,12 @@ public class CppReplacer {
                 result = new VariableResult(((Variable) call.getArgument()).getName());
                 
             } else {
+                String argumentClass = "null";
+                if (call.getArgument() != null) {
+                    argumentClass = call.getArgument().getClass().getSimpleName();
+                }
                 throw new ExpressionFormatException("Got function that isn't defined(VARIABLE):\n"
-                        + call.getFunctionName() + "(" + call.getArgument().getClass().getSimpleName() + ")");
+                        + call.getFunctionName() + "(" + argumentClass + ")");
             }
             
             return result;

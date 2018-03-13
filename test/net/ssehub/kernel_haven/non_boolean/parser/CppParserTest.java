@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
@@ -166,6 +165,40 @@ public class CppParserTest {
     }
     
     /**
+     * Tests that an unary operator with expressions on the wrong side correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testUnaryWithWrongSide() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+        
+        parser.parse("A!");
+    }
+    
+    /**
+     * Tests that unary ++ and -- can be also on the right side.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testUnaryOnRight() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        CppExpression result = parser.parse("A++");
+        
+        CppExpression[] op1 = assertOperator(result, CppOperator.INT_INC);
+        assertVariable(op1[0], "A");
+        assertThat(op1[1], nullValue());
+        
+        result = parser.parse("A--");
+        
+        op1 = assertOperator(result, CppOperator.INT_DEC);
+        assertVariable(op1[0], "A");
+        assertThat(op1[1], nullValue());
+    }
+    
+    /**
      * Tests that a binary operator without expressions on both sides correctly throws an exception.
      * 
      * @throws ExpressionFormatException wanted.
@@ -197,7 +230,6 @@ public class CppParserTest {
      * 
      * @throws ExpressionFormatException unwanted.
      */
-    @Ignore("This is currently not supported")
     @Test
     public void testFunctionCallWithNoParameters() throws ExpressionFormatException {
         CppParser parser = new CppParser();
@@ -299,7 +331,7 @@ public class CppParserTest {
      * @throws ExpressionFormatException unwanted.
      */
     @Test
-    public void testunaryPlus() throws ExpressionFormatException {
+    public void testUnaryPlus() throws ExpressionFormatException {
         CppParser parser = new CppParser();
 
         CppExpression result = parser.parse("+A");
