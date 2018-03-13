@@ -16,7 +16,6 @@ import net.ssehub.kernel_haven.non_boolean.replacer.AllReplacerTests;
     AllReplacerTests.class,
     
     CPPUtilsTest.class,
-    NonBooleanPreperationTest.class,
     NonBooleanPreperationScenarioTest.class,
     NumberUtilsTest.class,
     CppBufferedWriterTest.class
