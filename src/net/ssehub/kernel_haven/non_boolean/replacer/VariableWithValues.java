@@ -68,7 +68,7 @@ public class VariableWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value < o.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_lt_" + o.getVar());
             
@@ -88,7 +88,7 @@ public class VariableWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value <= o.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_le_" + o.getVar());
             
@@ -108,7 +108,7 @@ public class VariableWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value == o.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_eq_" + o.getVar());
             

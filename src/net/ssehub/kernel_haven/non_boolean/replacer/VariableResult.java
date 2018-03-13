@@ -17,6 +17,10 @@ public class VariableResult extends Result {
         this.unknownVariable = unknownVariable;
     }
     
+    public boolean isUnknownVariable() {
+        return unknownVariable;
+    }
+    
     @Override
     public Result cmpLt(Result other) throws ExpressionFormatException {
         if (!unknownVariable) {

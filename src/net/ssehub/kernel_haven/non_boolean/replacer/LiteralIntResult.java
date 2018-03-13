@@ -26,7 +26,7 @@ class LiteralIntResult extends Result {
             VariableWithValues o = (VariableWithValues) other;
             result = o.apply((value) -> this.value < value);
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(o.getVar() + "_gt_" + value);
             
@@ -47,7 +47,7 @@ class LiteralIntResult extends Result {
             VariableWithValues o = (VariableWithValues) other;
             result = o.apply((value) -> this.value <= value);
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(o.getVar() + "_ge_" + value);
             
@@ -68,7 +68,7 @@ class LiteralIntResult extends Result {
             VariableWithValues o = (VariableWithValues) other;
             result = o.apply((value) -> this.value == value);
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(o.getVar() + "_eq_" + value);
             
