@@ -224,7 +224,7 @@ public class VariableWithValues extends Result {
 
     @Override
     public String toCppString() {
-        String result = "0";
+        String result = "1";
         List<Long> originalValuesThatAreNowZero = new LinkedList<>();
         
         for (Value value : values) {
@@ -239,7 +239,7 @@ public class VariableWithValues extends Result {
             Iterator<Long> it = originalValuesThatAreNowZero.iterator();
             builder.append("!defined(").append(var).append("_eq_").append(it.next()).append(")");
             while (it.hasNext()) {
-                builder.append("&& !defined(").append(var).append("_eq_").append(it.next()).append(")");
+                builder.append(" && !defined(").append(var).append("_eq_").append(it.next()).append(")");
             }
             
             builder.append(")");

@@ -215,5 +215,159 @@ public class CppReplacerTest {
                 is("#if (defined(VAR_A_eq_1)) || ((!(defined(VAR_B_eq_1))) && (defined(VAR_C_eq_1)))"));
     }
     
-}
+    /**
+     * Tests that literal comparisons work correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testLiteralComparison() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if 1 == 2"), is("#if 0"));
+        assertThat(replacer.replace("#if 1 == 1"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 != 2"), is("#if !(0)"));
+        assertThat(replacer.replace("#if 1 != 1"), is("#if !(1)"));
+        assertThat(replacer.replace("#if 1 > 2"), is("#if 0"));
+        assertThat(replacer.replace("#if 2 > 1"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 >= 2"), is("#if 0"));
+        assertThat(replacer.replace("#if 1 >= 1"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 < 2"), is("#if 1"));
+        assertThat(replacer.replace("#if 2 < 1"), is("#if 0"));
+        assertThat(replacer.replace("#if 1 <= 2"), is("#if 1"));
+        assertThat(replacer.replace("#if 3 <= 2"), is("#if 0"));
+        assertThat(replacer.replace("#if -3 <= 2"), is("#if 1"));
+    }
+    
+    /**
+     * Tests that a literal without a comparison is replaced correctly. 
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testLiteralWithoutComparison() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if 1"), is("#if 1"));
+        assertThat(replacer.replace("#if 2"), is("#if 1"));
+        assertThat(replacer.replace("#if -2"), is("#if 1"));
+        assertThat(replacer.replace("#if 0"), is("#if 0"));
+        assertThat(replacer.replace("#if 10 + (-3 * 3) - 1"), is("#if 0"));
+    }
+    
+    /**
+     * Tests that literal calculations work as expected.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testLiteralCalculations() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if 1 + 2 == 3"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 - 2 == -1"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 * 2 == 2"), is("#if 1"));
+        assertThat(replacer.replace("#if 1 / 2 == 0"), is("#if 1"));
+        assertThat(replacer.replace("#if 9 / 2 == 4"), is("#if 1"));
+        assertThat(replacer.replace("#if 9 % 2 == 1"), is("#if 1"));
+        assertThat(replacer.replace("#if 10 % 2 == 0"), is("#if 1"));
+        assertThat(replacer.replace("#if -5 == -1 * 5"), is("#if 1"));
+        assertThat(replacer.replace("#if +5 == 5"), is("#if 1"));
+        
+        assertThat(replacer.replace("#if (5 & 2) == 0"), is("#if 1"));
+        assertThat(replacer.replace("#if (6 & 2) == 2"), is("#if 1"));
+        assertThat(replacer.replace("#if (5 | 2) == 7"), is("#if 1"));
+        assertThat(replacer.replace("#if (6 | 2) == 6"), is("#if 1"));
+        assertThat(replacer.replace("#if (5 ^ 2) == 7"), is("#if 1"));
+        assertThat(replacer.replace("#if (6 ^ 2) == 4"), is("#if 1"));
+        assertThat(replacer.replace("#if ~2 == " + (~2L)), is("#if 1"));
+    }
+    
+    /**
+     * Tests that literal calculations work as expected.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testVariableCaluations() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_A + 2 == 3"), is("#if defined(VAR_A_eq_1)"));
+        assertThat(replacer.replace("#if VAR_A - 2 == 0"), is("#if defined(VAR_A_eq_2)"));
+        assertThat(replacer.replace("#if VAR_A * 2 == 4"), is("#if defined(VAR_A_eq_2)"));
+        assertThat(replacer.replace("#if VAR_A / 3 == 0"), is("#if ((defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))) || (defined(VAR_A_eq_2))"));
+        assertThat(replacer.replace("#if VAR_A % 2 == 0"), is("#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_2))"));
+        assertThat(replacer.replace("#if VAR_A % 2 == 1"), is("#if defined(VAR_A_eq_1)"));
+        assertThat(replacer.replace("#if -VAR_A == -1"), is("#if defined(VAR_A_eq_1)"));
+        assertThat(replacer.replace("#if +VAR_A == 1"), is("#if defined(VAR_A_eq_1)"));
+        
+        assertThat(replacer.replace("#if (VAR_A & 1) == 1"), is("#if defined(VAR_A_eq_1)"));
+        assertThat(replacer.replace("#if (VAR_A | 1) == 3"), is("#if defined(VAR_A_eq_2)"));
+        assertThat(replacer.replace("#if (VAR_A ^ 1) == 3"), is("#if defined(VAR_A_eq_2)"));
+        assertThat(replacer.replace("#if ~VAR_A == " + (~1L)), is("#if defined(VAR_A_eq_1)"));
+    }
+    
+    /**
+     * Tests that  #if VAR is correctly replaced, if more than one possible value of VAR become zero due to calculations.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testIfVarWithoutDefinedMoreThanOneBecomeZero() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
 
+        assertThat(replacer.replace("#if VAR_A / 2"), is("#if (!defined(VAR_A_eq_0) && !defined(VAR_A_eq_1))"));
+    }
+    
+    /**
+     * Tests that #if VAR is correctly replaced, if no possible value of VAR becomes zero due to calculations.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testIfVarWithoutDefinedNoneBecomeZero() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+
+        assertThat(replacer.replace("#if VAR_A + 1"), is("#if 1"));
+    }
+    
+    /**
+     * Tests that a comparison between two variables without an overlap is translated correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testVarEqVarNoOverlap() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+
+        assertThat(replacer.replace("#if VAR_A + 10 == VAR_B"), is("#if 0"));
+    }
+    
+    /**
+     * Tests that a comparison between a variable and an unknown is replaced correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testVarEqUnknown() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+
+        assertThat(replacer.replace("#if VAR_A == VAR_UNKNOWN"), is("#if defined(VAR_A_eq_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN == VAR_A"), is("#if defined(VAR_A_eq_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_A != VAR_UNKNOWN"), is("#if !(defined(VAR_A_eq_VAR_UNKNOWN))"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN != VAR_A"), is("#if !(defined(VAR_A_eq_VAR_UNKNOWN))"));
+        assertThat(replacer.replace("#if VAR_A < VAR_UNKNOWN"), is("#if defined(VAR_A_lt_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN < VAR_A"), is("#if defined(VAR_A_gt_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_A <= VAR_UNKNOWN"), is("#if defined(VAR_A_le_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN <= VAR_A"), is("#if defined(VAR_A_ge_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_A > VAR_UNKNOWN"), is("#if defined(VAR_A_gt_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN > VAR_A"), is("#if defined(VAR_A_lt_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_A >= VAR_UNKNOWN"), is("#if defined(VAR_A_ge_VAR_UNKNOWN)"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN >= VAR_A"), is("#if defined(VAR_A_le_VAR_UNKNOWN)"));
+    }
+    
+}

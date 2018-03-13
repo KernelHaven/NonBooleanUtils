@@ -146,7 +146,8 @@ class LiteralIntResult extends Result {
     
     @Override
     public String toCppString() {
-        return String.valueOf(value);
+        // everything except 0 is true
+        return value == 0 ? "0" : "1";
     }
 
     

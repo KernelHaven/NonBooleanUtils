@@ -28,13 +28,13 @@ public class VariableResult extends Result {
             LiteralIntResult lit = (LiteralIntResult) other;
             result = new VariableResult(var + "_lt_" + lit.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_lt_" + o.getVar());
             
         } else if (other instanceof VariableWithValues) {
             VariableWithValues o = (VariableWithValues) other;
-            result = new VariableResult(var + "_lt_" + o.getVar());
+            result = new VariableResult(o.getVar() + "_gt_" + var);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator < or > on " + other.getClass().getSimpleName());
@@ -57,13 +57,13 @@ public class VariableResult extends Result {
             LiteralIntResult lit = (LiteralIntResult) other;
             result = new VariableResult(var + "_le_" + lit.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_le_" + o.getVar());
             
         } else if (other instanceof VariableWithValues) {
             VariableWithValues o = (VariableWithValues) other;
-            result = new VariableResult(o.getVar() +  "_le_" + var);
+            result = new VariableResult(o.getVar() +  "_ge_" + var);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator <= or >= on " + other.getClass().getSimpleName());
@@ -82,7 +82,7 @@ public class VariableResult extends Result {
             LiteralIntResult lit = (LiteralIntResult) other;
             result = new VariableResult(var + "_eq_" + lit.getValue());
             
-        } else if (other instanceof VariableResult) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_eq_" + o.getVar());
             
