@@ -1,3 +1,3 @@
-#if (a == CONSTANT) {
+#if (a == CONSTANT)
     // Do something
 #endif

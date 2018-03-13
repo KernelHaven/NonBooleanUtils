@@ -14,7 +14,7 @@ import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_GE;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_GT;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_LE;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_LT;
-import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_UE;
+import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.CMP_NE;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.INT_ADD;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.INT_ADD_UNARY;
 import static net.ssehub.kernel_haven.non_boolean.parser.CppOperator.INT_DEC;
@@ -55,10 +55,8 @@ public class CppParser {
      */
     private static class UnaryOperatorFinder implements ICppExressionVisitor<CppExpression> {
 
-        
-        
         @Override
-        public CppExpression visitExpressionList(ExpressionList expressionList) {
+        public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             ExpressionList newList = new ExpressionList();
             
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
@@ -87,22 +85,22 @@ public class CppParser {
         }
 
         @Override
-        public CppExpression visitFunctionCall(FunctionCall call) {
+        public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
             return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
         }
 
         @Override
-        public CppExpression visitVariable(Variable variable) {
+        public CppExpression visitVariable(Variable variable) throws ExpressionFormatException {
             return variable;
         }
 
         @Override
-        public CppExpression visitOperator(Operator operator) {
+        public CppExpression visitOperator(Operator operator) throws ExpressionFormatException {
             return operator;
         }
 
         @Override
-        public CppExpression visitLiteral(IntegerLiteral literal) {
+        public CppExpression visitLiteral(IntegerLiteral literal) throws ExpressionFormatException {
             return literal;
         }
         
@@ -113,8 +111,6 @@ public class CppParser {
      */
     private static class LiteralFinder implements ICppExressionVisitor<CppExpression> {
 
-        private ExpressionFormatException exception;
-        
         private String expression;
         
         /**
@@ -126,19 +122,8 @@ public class CppParser {
             this.expression = expression;
         }
         
-        /**
-         * Sets the exception. Only stores the first exception.
-         * 
-         * @param exception The exception to store.
-         */
-        private void setException(ExpressionFormatException exception) {
-            if (exception != null) {
-                this.exception = exception;
-            }
-        }
-        
         @Override
-        public CppExpression visitExpressionList(ExpressionList expressionList) {
+        public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             ExpressionList newList = new ExpressionList();
             
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
@@ -149,30 +134,36 @@ public class CppParser {
         }
 
         @Override
-        public CppExpression visitFunctionCall(FunctionCall call) {
+        public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
             return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
         }
 
         @Override
-        public CppExpression visitVariable(Variable variable) {
+        public CppExpression visitVariable(Variable variable) throws ExpressionFormatException {
             CppExpression result = variable;
             if (Character.isDigit(variable.getName().charAt(0))) {
+                String literal = variable.getName().toLowerCase();
+                if (literal.endsWith("ul")) {
+                    literal = literal.substring(0, literal.length() - 2);
+                } else if (literal.endsWith("l")) {
+                        literal = literal.substring(0, literal.length() - 1);
+                }
                 try {
-                    result = new IntegerLiteral((Long) NumberUtils.convertToNumber(variable.getName()));
+                    result = new IntegerLiteral((Long) NumberUtils.convertToNumber(literal));
                 } catch (NumberFormatException e) {
-                    setException(makeException(expression, "Cannot parse literal " + variable.getName()));
+                    throw makeException(expression, "Cannot parse literal " + variable.getName());
                 }
             }
             return result;
         }
 
         @Override
-        public CppExpression visitOperator(Operator operator) {
+        public CppExpression visitOperator(Operator operator) throws ExpressionFormatException {
             return operator;
         }
 
         @Override
-        public CppExpression visitLiteral(IntegerLiteral literal) {
+        public CppExpression visitLiteral(IntegerLiteral literal) throws ExpressionFormatException {
             return literal;
         }
         
@@ -184,7 +175,7 @@ public class CppParser {
     private static class FunctionCallTranslator implements ICppExressionVisitor<CppExpression> {
         
         @Override
-        public CppExpression visitExpressionList(ExpressionList expressionList) {
+        public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             ExpressionList newList = new ExpressionList();
             
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
@@ -219,22 +210,22 @@ public class CppParser {
         }
 
         @Override
-        public CppExpression visitFunctionCall(FunctionCall call) {
-            throw new RuntimeException("This code cannot be reached");
+        public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
+            throw new ExpressionFormatException("This code cannot be reached");
         }
 
         @Override
-        public CppExpression visitVariable(Variable variable) {
+        public CppExpression visitVariable(Variable variable) throws ExpressionFormatException {
             return variable;
         }
 
         @Override
-        public CppExpression visitOperator(Operator operator) {
+        public CppExpression visitOperator(Operator operator) throws ExpressionFormatException {
             return operator;
         }
 
         @Override
-        public CppExpression visitLiteral(IntegerLiteral literal) {
+        public CppExpression visitLiteral(IntegerLiteral literal) throws ExpressionFormatException {
             return literal;
         }
         
@@ -245,8 +236,6 @@ public class CppParser {
      */
     private static class OperatorResolver implements ICppExressionVisitor<CppExpression> {
 
-        private ExpressionFormatException exception;
-        
         private String expression;
         
         /**
@@ -258,24 +247,12 @@ public class CppParser {
             this.expression = expression;
         }
         
-        /**
-         * Sets the exception. Only stores the first exception.
-         * 
-         * @param exception The exception to store.
-         */
-        private void setException(ExpressionFormatException exception) {
-            if (exception != null) {
-                this.exception = exception;
-            }
-        }
-        
         @Override
-        public CppExpression visitExpressionList(ExpressionList expressionList) {
+        public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             CppExpression result;
             
             if (expressionList.getExpressionSize() == 0) {
-                setException(makeException(expression, "Expected variable"));
-                result = expressionList;
+                throw makeException(expression, "Expected variable");
                 
             } else if (expressionList.getExpressionSize() == 1) {
                 result = expressionList.getExpression(0).accept(this); 
@@ -302,7 +279,7 @@ public class CppParser {
                 }
                 
                 if (highestOp == null) {
-                    setException(makeException(expression, "Couldn't find operator"));
+                    throw makeException(expression, "Couldn't find operator");
                     
                 } else {
                     parseParameters(expressionList, highestOpNode, highestOpPos);
@@ -323,10 +300,10 @@ public class CppParser {
          * @param operator The operator to parse the parameters for.
          * @param operatorIndex The index of the operator in <code>expressionList</code>.
          */
-        private void parseParameters(ExpressionList expressionList, Operator operator, int operatorIndex) {
+        private void parseParameters(ExpressionList expressionList, Operator operator, int operatorIndex) throws ExpressionFormatException {
             if (operator.getOperator().isUnary()) {
                 if (operatorIndex != 0 && operatorIndex != expressionList.getExpressionSize() - 1) {
-                    setException(makeException(expression, "Found elements on both sides of unary operator"));
+                    throw makeException(expression, "Found elements on both sides of unary operator");
                     
                 } else {
                     ExpressionList nested = new ExpressionList();
@@ -340,8 +317,7 @@ public class CppParser {
                 }
             } else {
                 if (operatorIndex == 0 || operatorIndex == expressionList.getExpressionSize() - 1) {
-                    setException(
-                            makeException(expression, "Didn't find elements on both sides of binary operator"));
+                    throw makeException(expression, "Didn't find elements on both sides of binary operator");
                     
                 } else {
                     ExpressionList leftSide = new ExpressionList();
@@ -363,22 +339,22 @@ public class CppParser {
         }
 
         @Override
-        public CppExpression visitFunctionCall(FunctionCall call) {
+        public CppExpression visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
             return new FunctionCall(call.getFunctionName(), call.getArgument().accept(this));
         }
 
         @Override
-        public CppExpression visitVariable(Variable variable) {
+        public CppExpression visitVariable(Variable variable) throws ExpressionFormatException {
             return variable;
         }
 
         @Override
-        public CppExpression visitOperator(Operator operator) {
+        public CppExpression visitOperator(Operator operator) throws ExpressionFormatException {
             return operator;
         }
 
         @Override
-        public CppExpression visitLiteral(IntegerLiteral literal) {
+        public CppExpression visitLiteral(IntegerLiteral literal) throws ExpressionFormatException {
             return literal;
         }
         
@@ -444,20 +420,10 @@ public class CppParser {
             result = resultList.getExpression(0);
         }
         
-        LiteralFinder finder = new LiteralFinder(expression);
-        result = result.accept(finder);
-        if (finder.exception != null) {
-            throw finder.exception;
-        }
-        
+        result = result.accept(new LiteralFinder(expression));
         result = result.accept(new FunctionCallTranslator());
         result = result.accept(new UnaryOperatorFinder());
-        
-        OperatorResolver resolver = new OperatorResolver(expression);
-        result = result.accept(resolver);
-        if (resolver.exception != null) {
-            throw resolver.exception;
-        }
+        result = result.accept(new OperatorResolver(expression));
         
         return result;
     }
@@ -579,7 +545,7 @@ public class CppParser {
         } else if (safeCheckChar(expr, exprPos, '=') && safeCheckChar(expr, exprPos + 1, '=')) {
             result = CMP_EQ;
         } else if (safeCheckChar(expr, exprPos, '!') && safeCheckChar(expr, exprPos + 1, '=')) {
-            result = CMP_UE;
+            result = CMP_NE;
         } else if (safeCheckChar(expr, exprPos, '<') && safeCheckChar(expr, exprPos + 1, '=')) {
             result = CMP_LE;
         } else if (safeCheckChar(expr, exprPos, '>') && safeCheckChar(expr, exprPos + 1, '=')) {

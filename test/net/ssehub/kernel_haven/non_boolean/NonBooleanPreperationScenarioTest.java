@@ -58,14 +58,14 @@ public class NonBooleanPreperationScenarioTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "scenario1.c"), 
-            "#if ((defined(B_eq_0))) \n"
-            + "#if ((defined(A_eq_0) || defined(A_eq_1))) \n"
+            "#if defined(B_eq_0) \n"
+            + "#if (defined(A_eq_0)) || (defined(A_eq_1)) \n"
             + "// Code\n"
             + "#endif \n"
             + "#endif \n"
             + "\n"
-            + "#if (defined(B_eq_1)) \n"
-            + "#if (defined(A_eq_2)) \n"
+            + "#if defined(B_eq_1) \n"
+            + "#if defined(A_eq_2) \n"
             + "// Code\n"
             + "#endif \n"
             + "#endif");

@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.parser.ast;
 
+import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
+
 /**
  * Abstract superclass for CPP expression AST.
  *
@@ -29,6 +31,6 @@ public abstract class CppExpression {
      * 
      * @return The return value of the visitor.
      */
-    public abstract <T> T accept(ICppExressionVisitor<T> visitor);
+    public abstract <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException;
     
 }

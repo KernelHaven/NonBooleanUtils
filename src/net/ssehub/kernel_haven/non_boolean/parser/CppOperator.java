@@ -22,7 +22,7 @@ public enum CppOperator {
     INT_DEC("--", 11, true),
     
     CMP_EQ("==", 6, false),
-    CMP_UE("!=", 6, false),
+    CMP_NE("!=", 6, false),
     CMP_LT("<", 7, false),
     CMP_LE("<=", 7, false),
     CMP_GT(">", 7, false),

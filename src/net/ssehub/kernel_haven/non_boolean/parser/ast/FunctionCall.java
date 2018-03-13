@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.parser.ast;
 
+import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
+
 /**
  * A function call.
  *
@@ -41,7 +43,7 @@ public class FunctionCall extends CppExpression {
     }
     
     @Override
-    public <T> T accept(ICppExressionVisitor<T> visitor) {
+    public <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException {
         return visitor.visitFunctionCall(this);
     }
 

@@ -1,6 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.parser.ast;
 
 import net.ssehub.kernel_haven.non_boolean.parser.CppOperator;
+import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
  * An operator.
@@ -70,7 +71,7 @@ public class Operator extends CppExpression {
     }
     
     @Override
-    public <T> T accept(ICppExressionVisitor<T> visitor) {
+    public <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException {
         return visitor.visitOperator(this);
     }
 

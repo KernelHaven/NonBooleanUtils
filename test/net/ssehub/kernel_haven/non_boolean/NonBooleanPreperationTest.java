@@ -58,7 +58,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "comparison.c"), 
-            "#if ((defined(a_eq_2))) \n"
+            "#if defined(a_eq_2) \n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -76,7 +76,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "comparison.c"), 
-            "#if ((defined(a_eq_2) || defined(a_eq_3))) \n"
+            "#if (defined(a_eq_2)) || (defined(a_eq_3)) \n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -95,8 +95,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
-            "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
-            + "|| (defined(a_eq_3) && defined(b_eq_3)))) {\n"
+            "#if (((defined(a_eq_1)) && (defined(b_eq_1))) || ((defined(a_eq_2)) && (defined(b_eq_2)))) "
+            + "|| ((defined(a_eq_3)) && (defined(b_eq_3)))\n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -115,8 +115,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnVars1.c"), 
-                "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2))"
-                        + ")) {\n"
+                "#if ((defined(a_eq_1)) && (defined(b_eq_1))) || ((defined(a_eq_2)) && (defined(b_eq_2)))"
+                        + "\n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -135,8 +135,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "lessThan.c"), 
-            "#if (((defined(a_eq_1) && defined(b_eq_2)) || (defined(a_eq_1) && defined(b_eq_3)) || "
-                    + "(defined(a_eq_2) && defined(b_eq_3))))\n"
+            "#if (((defined(a_eq_1)) && (defined(b_eq_2))) || ((defined(a_eq_1)) && (defined(b_eq_3)))) || "
+                    + "((defined(a_eq_2)) && (defined(b_eq_3)))\n"
                     + "    // Do something\n"
                     + "#endif");
     }
@@ -155,8 +155,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "unequal.c"), 
-                "#if (((defined(a_eq_1) && defined(b_eq_2)) || (defined(a_eq_2) && defined(b_eq_1))"
-                        + "))\n"
+                "#if !(((defined(a_eq_1)) && (defined(b_eq_1))) || ((defined(a_eq_2)) && (defined(b_eq_2))))"
+                        + "\n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -175,8 +175,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "greaterOrEqual.c"), 
-                "#if ((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_1)) "
-                        + "|| (defined(a_eq_2) && defined(b_eq_2)))\n"
+                "#if (((defined(b_eq_1)) && (defined(a_eq_1))) || ((defined(b_eq_1)) && (defined(a_eq_2)))) "
+                        + "|| ((defined(b_eq_2)) && (defined(a_eq_2)))\n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -200,7 +200,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnConstant1.c"), 
-            "#if (defined(a_eq_1)) {\n"
+            "#if defined(a_eq_1)\n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -217,7 +217,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnUnknown.c"), 
-            "#if (a == UNKNOWN) {\n"
+            "#if defined(a_eq_UNKNOWN)\n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -266,7 +266,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOn2Constants.c"), 
-            "#if (defined(a_eq_1) || defined(b_eq_1)) {\n"
+            "#if (defined(a_eq_1)) || (defined(b_eq_1))\n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -300,7 +300,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "inequalityOnNumberAndVar.c"), 
-            "#if !defined(VAR_eq_2)\n"
+            "#if !(defined(VAR_eq_2))\n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -317,7 +317,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "NumberLessThanVar.c"), 
-            "#if (defined(VAR_eq_1) || defined(VAR_eq_2))\n"
+            "#if (defined(VAR_eq_1)) || (defined(VAR_eq_2))\n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -336,8 +336,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "complexExpression.c"), 
-            "#if ((((defined(VAR1_eq_0) && defined(VAR2_eq_0)) || (defined(VAR1_eq_1) && defined(VAR2_eq_1)))) "
-                + "&& (defined(VAR3_eq_2)))\n"
+            "#if (((defined(VAR1_eq_0)) && (defined(VAR2_eq_0))) || ((defined(VAR1_eq_1)) && (defined(VAR2_eq_1)))) "
+                + "&& (defined(VAR3_eq_2))\n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -401,7 +401,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "equalityOnNumbers.c"), 
-                "#if (0) \n"
+                "#if 0 \n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -483,7 +483,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "booleanNumbersInIf.c"), 
-                "#if (!defined(VAR1_eq_0) || !defined(VAR2_eq_0)) \n"
+                "#if ((!defined(VAR1_eq_0))) || ((!defined(VAR2_eq_0))) \n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -501,7 +501,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "booleanNumbersInIfNegated.c"), 
-                "#if (defined(VAR1_eq_0) || defined(VAR2_eq_0)) \n"
+                "#if (!((!defined(VAR1_eq_0)))) || (!((!defined(VAR2_eq_0)))) \n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -536,7 +536,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifdefWeiredCombination.c"), 
-                "#if (defined(VAR1) || !defined(VAR1_eq_0)) \n"
+                "#if (defined(VAR1)) || ((!defined(VAR1_eq_0))) \n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -553,7 +553,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "bitOperationHas2.c"), 
-                "#if ((defined(VAR_eq_2) || defined(VAR_eq_3) || defined(VAR_eq_6))) \n"
+                "#if ((defined(VAR_eq_2)) || (defined(VAR_eq_3))) || (defined(VAR_eq_6)) \n"
                         + "    // Do something\n"
                         + "#endif");
     }
@@ -571,7 +571,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "modulo.c"), 
-            "#if (defined(VAR1_eq_0) || defined(VAR1_eq_2) || defined(VAR1_eq_4)) \n"
+            "#if ((defined(VAR1_eq_0)) || (defined(VAR1_eq_2))) || (defined(VAR1_eq_4)) \n"
                 + "    // Do something\n"
                 + "#endif");
     }
@@ -590,8 +590,8 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "unnecessaryBrackets.c"), 
-            "#if (((defined(a_eq_1) && defined(b_eq_1)) || (defined(a_eq_2) && defined(b_eq_2)) "
-            + "|| (defined(a_eq_3) && defined(b_eq_3)))) {\n"
+            "#if (((defined(a_eq_1)) && (defined(b_eq_1))) || ((defined(a_eq_2)) && (defined(b_eq_2)))) "
+            + "|| ((defined(a_eq_3)) && (defined(b_eq_3)))\n"
             + "    // Do something\n"
             + "#endif");
     }
@@ -609,7 +609,7 @@ public class NonBooleanPreperationTest {
         preparator.run(config);
         
         FileContentsAssertion.assertContents(new File(OUT_FOLDER, "ifWithoutDefined.c"), 
-            "#if !defined(VAR_eq_0)\n"
+            "#if (!defined(VAR_eq_0))\n"
                 + "    // Do something\n"
                 + "#endif");
     }

@@ -3,6 +3,8 @@ package net.ssehub.kernel_haven.non_boolean.parser.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
+
 /**
  * A temporary element in the AST while is parsed. Contains a flat list of {@link CppExpression}s.
  *
@@ -49,7 +51,7 @@ public class ExpressionList extends CppExpression {
     }
     
     @Override
-    public <T> T accept(ICppExressionVisitor<T> visitor) {
+    public <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException {
         return visitor.visitExpressionList(this);
     }
 

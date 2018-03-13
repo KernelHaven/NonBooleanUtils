@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.parser.ast;
 
+import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
+
 /**
  * A visitor for the {@link CppExpression} AST.
  *
@@ -16,7 +18,7 @@ public interface ICppExressionVisitor<T> {
      * 
      * @return Something.
      */
-    public T visitExpressionList(ExpressionList expressionList);
+    public T visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException;
     
     /**
      * Visits a {@link FunctionCall}.
@@ -25,7 +27,7 @@ public interface ICppExressionVisitor<T> {
      * 
      * @return Something.
      */
-    public T visitFunctionCall(FunctionCall call);
+    public T visitFunctionCall(FunctionCall call) throws ExpressionFormatException;
     
     /**
      * Visits a {@link Variable}.
@@ -34,7 +36,7 @@ public interface ICppExressionVisitor<T> {
      * 
      * @return Something.
      */
-    public T visitVariable(Variable variable);
+    public T visitVariable(Variable variable) throws ExpressionFormatException;
     
     /**
      * Visits an {@link Operator}.
@@ -43,7 +45,7 @@ public interface ICppExressionVisitor<T> {
      * 
      * @return Something.
      */
-    public T visitOperator(Operator operator);
+    public T visitOperator(Operator operator) throws ExpressionFormatException;
     
     /**
      * Visits an {@link IntegerLiteral}.
@@ -52,6 +54,6 @@ public interface ICppExressionVisitor<T> {
      * 
      * @return Something.
      */
-    public T visitLiteral(IntegerLiteral literal);
+    public T visitLiteral(IntegerLiteral literal) throws ExpressionFormatException;
     
 }

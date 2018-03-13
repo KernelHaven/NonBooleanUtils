@@ -1,3 +1,3 @@
-#if (a == UNKNOWN) {
+#if (a == UNKNOWN)
     // Do something
 #endif
