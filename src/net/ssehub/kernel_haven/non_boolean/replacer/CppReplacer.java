@@ -84,7 +84,7 @@ public class CppReplacer {
                     result = new VariableWithValues(variable.getName(), var.getConstants());
                     
                 } else {
-                    result = new VariableResult(variable.getName());
+                    result = new VariableResult(variable.getName(), true);
                 }
             }
             

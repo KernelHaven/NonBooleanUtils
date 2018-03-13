@@ -6,22 +6,21 @@ public class VariableResult extends Result {
     
     private String var;
     
+    private boolean unknownVariable;
+    
     public VariableResult(String var) {
         this.var = var;
     }
     
-    public boolean containsCheck() {
-        return var.contains("_eq_")
-                || var.contains("_le_")
-                || var.contains("_lt_")
-                || var.contains("_ge_")
-                || var.contains("_gt_");
+    public VariableResult(String var, boolean unknownVariable) {
+        this.var = var;
+        this.unknownVariable = unknownVariable;
     }
-
+    
     @Override
     public Result cmpLt(Result other) throws ExpressionFormatException {
-        if (containsCheck()) {
-            throw new ExpressionFormatException("Can't apply operator < or > on variable with check");
+        if (!unknownVariable) {
+            throw new ExpressionFormatException("Can't apply operator < or > on VariableResult");
         }
         
         Result result;
@@ -49,8 +48,8 @@ public class VariableResult extends Result {
 
     @Override
     public Result cmpLe(Result other) throws ExpressionFormatException {
-        if (containsCheck()) {
-            throw new ExpressionFormatException("Can't apply operator <= or => on variable with check");
+        if (!unknownVariable) {
+            throw new ExpressionFormatException("Can't apply operator <= or => on VariableResult");
         }
         
         Result result;
@@ -74,8 +73,8 @@ public class VariableResult extends Result {
     
     @Override
     public Result cmpEq(Result other) throws ExpressionFormatException {
-        if (containsCheck()) {
-            throw new ExpressionFormatException("Can't apply operator == or != on variable with check");
+        if (!unknownVariable) {
+            throw new ExpressionFormatException("Can't apply operator == or != on VariableResult");
         }
         
         Result result;
@@ -146,7 +145,18 @@ public class VariableResult extends Result {
     
     @Override
     public String toCppString() {
-        return "defined(" + var + ")";
+        String result;
+        
+        if (unknownVariable) {
+            // var was an unknown variable found outside of a defined()
+            result = "!defined(" + var + "_eq_0)";
+            
+        } else {
+            // var is something along the lines of VAR_eq_0
+            result = "defined(" + var + ")";
+        }
+        
+        return result;
     }
 
 }

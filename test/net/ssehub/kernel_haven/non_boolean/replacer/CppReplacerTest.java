@@ -175,7 +175,7 @@ public class CppReplacerTest {
     public void testUnknownVariableMissingDefined() throws ExpressionFormatException {
         CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
         
-        assertThat(replacer.replace("#if VAR_UNKNOWN"), is("#if (!defined(VAR_UNKNOWN_eq_0))"));
+        assertThat(replacer.replace("#if VAR_UNKNOWN"), is("#if !defined(VAR_UNKNOWN_eq_0)"));
     }
     
     /**
