@@ -1,25 +1,30 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * Tests the {@link CppReplacer}.
- * 
+ * Positive parameterized tests for the {@link CppReplacer}.
+ *
  * @author Adam
  */
+@RunWith(Parameterized.class)
 public class CppReplacerTest {
-
+    
     /**
      * <code><pre>
      * VAR_A = {0, 1, 2}
@@ -27,7 +32,7 @@ public class CppReplacerTest {
      * VAR_C = {0, 1}
      * </pre></code>
      */
-    private static final Map<String, NonBooleanVariable> DEFAULT_VARS = new HashMap<>();
+    static final Map<String, NonBooleanVariable> DEFAULT_VARS = new HashMap<>();
     
     /**
      * <code><pre>
@@ -36,7 +41,7 @@ public class CppReplacerTest {
      * CONST_C = 0
      * </pre></code>
      */
-    private static final Map<String, Long> DEFAULT_CONSTANTS = new HashMap<>();
+    static final Map<String, Long> DEFAULT_CONSTANTS = new HashMap<>();
     
     static {
         Set<Long> constants = new HashSet<>();
@@ -54,331 +59,181 @@ public class CppReplacerTest {
         DEFAULT_CONSTANTS.put("CONST_B", 2L);
         DEFAULT_CONSTANTS.put("CONST_C", 0L);
     }
-    
-    /**
-     * Tests that a line not starting with #if or #elif correctly throws an exception.
-     * 
-     * @throws ExpressionFormatException wanted.
-     */
-    @Test(expected = ExpressionFormatException.class)
-    public void testNonIfElif() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        replacer.replace("#ifdef A");
-    }
-    
-    /**
-     * Tests that a simple comparison with variable and literal is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVarEqLiteral() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if (VAR_A == 1)"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if (1 == VAR_A)"), is("#if defined(VAR_A_eq_1)"));
-    }
-    
-    /**
-     * Tests that a simple comparison with two variables is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVarEqVar() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if (VAR_A == VAR_C)"),
-                is("#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))"));
-        assertThat(replacer.replace("#if (VAR_C == VAR_A)"),
-                is("#if ((defined(VAR_C_eq_0)) && (defined(VAR_A_eq_0))) || ((defined(VAR_C_eq_1)) && (defined(VAR_A_eq_1)))"));
-    }
-    
-    /**
-     * Tests that a simple comparison with variable and literal is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVarEqConst() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if (VAR_A == CONST_A)"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if (CONST_A == VAR_A)"), is("#if defined(VAR_A_eq_1)"));
-    }
-    
-    /**
-     * Tests that defined() call is translated correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testDefined() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if defined(VAR_A)"), is("#if defined(VAR_A)"));
-    }
-    
-    /**
-     * Tests that variables used without defined() are translated into VAR != 0.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testMissingDefined() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_A"), is("#if (!defined(VAR_A_eq_0))"));
-    }
-    
-    /**
-     * Tests that a function that is not defined(VAR) correctly throws an exception.
-     * 
-     * @throws ExpressionFormatException wanted.
-     */
-    @Test(expected = ExpressionFormatException.class)
-    public void testEmptyDefined() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        replacer.replace("#if defined()");
-    }
-    
-    /**
-     * Tests that a function that is not defined(VAR) correctly throws an exception.
-     * 
-     * @throws ExpressionFormatException wanted.
-     */
-    @Test(expected = ExpressionFormatException.class)
-    public void testInvalidFunction() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        replacer.replace("#if something(A)");
-    }
-    
-    /**
-     * Tests that a defined call with no simple variable inside correctly throws an exception.
-     * 
-     * @throws ExpressionFormatException wanted.
-     */
-    @Test(expected = ExpressionFormatException.class)
-    public void testDefinedWithNoVariable() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        replacer.replace("#if defined(!A)");
-    }
-    
-    /**
-     * Tests that a variable that is not known is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testUnknownVariable() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_UNKNOWN == 1"), is("#if defined(VAR_UNKNOWN_eq_1)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN >= 1"), is("#if defined(VAR_UNKNOWN_ge_1)"));
-    }
-    
-    /**
-     * Tests that variables used without defined() are translated into VAR != 0.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testUnknownVariableMissingDefined() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_UNKNOWN"), is("#if !defined(VAR_UNKNOWN_eq_0)"));
-    }
-    
-    /**
-     * Tests that a comparison with a variable that is out of range (value of the variable) is translated correctly
-     * to false.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVarEqOutOfRange() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_A == 5"), is("#if 0"));
-    }
-    
-    /**
-     * Tests that an unsupported operator correctly throws an exception.
-     * 
-     * @throws ExpressionFormatException wanted.
-     */
-    @Test(expected = ExpressionFormatException.class)
-    public void testUnsupportedOperator() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        replacer.replace("#if VAR_A++");
-    }
-    
-    /**
-     * Tests that an expression containing boolean expressions is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testBooleanExpression() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_A == 1 || (!(VAR_B==1) && VAR_C==1)"),
-                is("#if (defined(VAR_A_eq_1)) || ((!(defined(VAR_B_eq_1))) && (defined(VAR_C_eq_1)))"));
-    }
-    
-    /**
-     * Tests that literal comparisons work correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testLiteralComparison() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if 1 == 2"), is("#if 0"));
-        assertThat(replacer.replace("#if 1 == 1"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 != 2"), is("#if !(0)"));
-        assertThat(replacer.replace("#if 1 != 1"), is("#if !(1)"));
-        assertThat(replacer.replace("#if 1 > 2"), is("#if 0"));
-        assertThat(replacer.replace("#if 2 > 1"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 >= 2"), is("#if 0"));
-        assertThat(replacer.replace("#if 1 >= 1"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 < 2"), is("#if 1"));
-        assertThat(replacer.replace("#if 2 < 1"), is("#if 0"));
-        assertThat(replacer.replace("#if 1 <= 2"), is("#if 1"));
-        assertThat(replacer.replace("#if 3 <= 2"), is("#if 0"));
-        assertThat(replacer.replace("#if -3 <= 2"), is("#if 1"));
-    }
-    
-    /**
-     * Tests that a literal without a comparison is replaced correctly. 
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testLiteralWithoutComparison() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if 1"), is("#if 1"));
-        assertThat(replacer.replace("#if 2"), is("#if 1"));
-        assertThat(replacer.replace("#if -2"), is("#if 1"));
-        assertThat(replacer.replace("#if 0"), is("#if 0"));
-        assertThat(replacer.replace("#if 10 + (-3 * 3) - 1"), is("#if 0"));
-    }
-    
-    /**
-     * Tests that literal calculations work as expected.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testLiteralCalculations() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if 1 + 2 == 3"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 - 2 == -1"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 * 2 == 2"), is("#if 1"));
-        assertThat(replacer.replace("#if 1 / 2 == 0"), is("#if 1"));
-        assertThat(replacer.replace("#if 9 / 2 == 4"), is("#if 1"));
-        assertThat(replacer.replace("#if 9 % 2 == 1"), is("#if 1"));
-        assertThat(replacer.replace("#if 10 % 2 == 0"), is("#if 1"));
-        assertThat(replacer.replace("#if -5 == -1 * 5"), is("#if 1"));
-        assertThat(replacer.replace("#if +5 == 5"), is("#if 1"));
-        
-        assertThat(replacer.replace("#if (5 & 2) == 0"), is("#if 1"));
-        assertThat(replacer.replace("#if (6 & 2) == 2"), is("#if 1"));
-        assertThat(replacer.replace("#if (5 | 2) == 7"), is("#if 1"));
-        assertThat(replacer.replace("#if (6 | 2) == 6"), is("#if 1"));
-        assertThat(replacer.replace("#if (5 ^ 2) == 7"), is("#if 1"));
-        assertThat(replacer.replace("#if (6 ^ 2) == 4"), is("#if 1"));
-        assertThat(replacer.replace("#if ~2 == " + (~2L)), is("#if 1"));
-    }
-    
-    /**
-     * Tests that literal calculations work as expected.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVariableCaluations() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-        assertThat(replacer.replace("#if VAR_A + 2 == 3"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if VAR_A - 2 == 0"), is("#if defined(VAR_A_eq_2)"));
-        assertThat(replacer.replace("#if VAR_A * 2 == 4"), is("#if defined(VAR_A_eq_2)"));
-        assertThat(replacer.replace("#if VAR_A / 3 == 0"), is("#if ((defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))) || (defined(VAR_A_eq_2))"));
-        assertThat(replacer.replace("#if VAR_A % 2 == 0"), is("#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_2))"));
-        assertThat(replacer.replace("#if VAR_A % 2 == 1"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if -VAR_A == -1"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if +VAR_A == 1"), is("#if defined(VAR_A_eq_1)"));
-        
-        assertThat(replacer.replace("#if (VAR_A & 1) == 1"), is("#if defined(VAR_A_eq_1)"));
-        assertThat(replacer.replace("#if (VAR_A | 1) == 3"), is("#if defined(VAR_A_eq_2)"));
-        assertThat(replacer.replace("#if (VAR_A ^ 1) == 3"), is("#if defined(VAR_A_eq_2)"));
-        assertThat(replacer.replace("#if ~VAR_A == " + (~1L)), is("#if defined(VAR_A_eq_1)"));
-    }
-    
-    /**
-     * Tests that  #if VAR is correctly replaced, if more than one possible value of VAR become zero due to calculations.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testIfVarWithoutDefinedMoreThanOneBecomeZero() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
 
-        assertThat(replacer.replace("#if VAR_A / 2"), is("#if (!defined(VAR_A_eq_0) && !defined(VAR_A_eq_1))"));
+    @Parameters(name = "{2}: {0}")
+    public static Collection<Object[]> getParameters() {
+        return Arrays.asList(
+                // input, expected, name
+                
+                /*
+                 * Key:
+                 *      Var = Known variable
+                 *      Constant = Known constant
+                 *      Unknown = Unknown variable
+                 *      Literal = Literal integer value
+                 *      Op = operator
+                 *          {equals, not equals, lt, le, gt, ge}
+                 */
+                
+                /*
+                 * Var OP Literal 
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A == 1)", "#if defined(VAR_A_eq_1)", "Var equals Literal"},
+                new Object[] {"#if (1 == VAR_A)", "#if defined(VAR_A_eq_1)", "Var equals Literal (reversed)"},
+                
+                
+                /*
+                 * Var OP Var
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A == VAR_C)", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "Var equals Var"},
+                new Object[] {"#if (VAR_C == VAR_A)", "#if ((defined(VAR_C_eq_0)) && (defined(VAR_A_eq_0))) || ((defined(VAR_C_eq_1)) && (defined(VAR_A_eq_1)))", "Var equals Var (reveresed)"},
+                
+                new Object[] {"#if VAR_A + 10 == VAR_B", "#if 0", "Var equals Var with no overlap"},
+                
+                /*
+                 * Var OP Const
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A == CONST_A)", "#if defined(VAR_A_eq_1)", "Var equals Constant"},
+                new Object[] {"#if (CONST_A == VAR_A)", "#if defined(VAR_A_eq_1)", "Var equals Constant (reversed)"},
+                
+                /*
+                 * defined(Var)
+                 */
+                new Object[] {"#if defined(VAR_A)", "#if defined(VAR_A)", "Defined with Var"},
+                
+                /*
+                 * Var, Unknown without defined()
+                 */
+                new Object[] {"#if VAR_A", "#if (!defined(VAR_A_eq_0))", "Missing defined with Var"},
+                new Object[] {"#if VAR_UNKNOWN", "#if !defined(VAR_UNKNOWN_eq_0)", "Missing defined with Unknown"},
+                new Object[] {"#if VAR_A / 2", "#if (!defined(VAR_A_eq_0) && !defined(VAR_A_eq_1))", "Missing defined with Var multiple 0 values"},
+                new Object[] {"#if VAR_A + 1", "#if 1", "Missing defined with Var no 0 values"},
+                
+                /*
+                 * Unknown OP Literal
+                 */
+                new Object[] {"#if VAR_UNKNOWN == 1", "#if defined(VAR_UNKNOWN_eq_1)", "Unknown equals Literal"},
+                new Object[] {"#if VAR_UNKNOWN != 1", "#if !(defined(VAR_UNKNOWN_eq_1))", "Unknown not equals Literal"},
+                new Object[] {"#if VAR_UNKNOWN >= 1", "#if defined(VAR_UNKNOWN_ge_1)", "Unknown ge Literal"},
+                new Object[] {"#if VAR_UNKNOWN > 1", "#if defined(VAR_UNKNOWN_gt_1)", "Unknown gt Literal"},
+                new Object[] {"#if VAR_UNKNOWN <= 1", "#if defined(VAR_UNKNOWN_le_1)", "Unknown le Literal"},
+                new Object[] {"#if VAR_UNKNOWN < 1", "#if defined(VAR_UNKNOWN_lt_1)", "Unknown lt Literal"},
+                
+                /*
+                 * Var OP Literal
+                 * Literal is out of range for allowed values of Var
+                 */
+                new Object[] {"#if VAR_A == 5", "#if 0", "Var equals Literal out of Range"},
+                new Object[] {"#if VAR_A > 5", "#if 0", "Var gt Literal out of Range"},
+                new Object[] {"#if VAR_A >= 5", "#if 0", "Var ge Literal out of Range"},
+                new Object[] {"#if VAR_A < -1", "#if 0", "Var lt Literal out of Range"},
+                new Object[] {"#if VAR_A <= -1", "#if 0", "Var le Literal out of Range"},
+                
+                /*
+                 * Containing boolean operators &&, ||, !
+                 */
+                new Object[] {"#if VAR_A == 1 || (!(VAR_B==1) && VAR_C==1)", "#if (defined(VAR_A_eq_1)) || ((!(defined(VAR_B_eq_1))) && (defined(VAR_C_eq_1)))", "Boolean Operators"},
+                
+                /*
+                 * Literal OP Literal
+                 */
+                new Object[] {"#if 1 == 2", "#if 0", "Literal equals Literal (false)"},
+                new Object[] {"#if 1 == 1", "#if 1", "Literal equals Literal (true)"},
+                new Object[] {"#if 1 != 2", "#if !(0)", "Literal not equals Literal (true)"},
+                new Object[] {"#if 1 != 1", "#if !(1)", "Literal not equals Literal (false)"},
+                new Object[] {"#if 1 > 2", "#if 0", "Literal gt Literal (false)"},
+                new Object[] {"#if 2 > 1", "#if 1", "Literal gt Literal (true)"},
+                new Object[] {"#if 1 >= 2", "#if 0", "Literal ge Literal (false)"},
+                new Object[] {"#if 1 >= 1", "#if 1", "Literal ge Literal (true)"},
+                new Object[] {"#if 1 < 2", "#if 1", "Literal lt Literal (true)"},
+                new Object[] {"#if 2 < 1", "#if 0", "Literal lt Literal (false)"},
+                new Object[] {"#if 1 <= 2", "#if 1", "Literal le Literal (true)"},
+                new Object[] {"#if 3 <= 2", "#if 0", "Literal le Literal (false)"},
+                new Object[] {"#if -3 <= 2", "#if 1", "Negative Literal le Literal (true)"},
+                
+                /*
+                 * Literal without comparison
+                 */
+                new Object[] {"#if 1", "#if 1", "Literal without comparison (true)"},
+                new Object[] {"#if 2", "#if 1", "Literal without comparison (true)"},
+                new Object[] {"#if -2", "#if 1", "Literal without comparison (true)"},
+                new Object[] {"#if 0", "#if 0", "Literal without comparison (false)"},
+                new Object[] {"#if 10 + (-3 * 3) - 1", "#if 0", "Calculated Literal without comparison (false)"},
+                
+                /*
+                 * (Literal OP Literal) EQUAL Literal
+                 */
+                new Object[] {"#if 1 + 2 == 3", "#if 1", "Literal calculation (ADD)"},
+                new Object[] {"#if 1 - 2 == -1", "#if 1", "Literal calculation (SUB)"},
+                new Object[] {"#if 1 * 2 == 2", "#if 1", "Literal calculation (MUL)"},
+                new Object[] {"#if 1 / 2 == 0", "#if 1", "Literal calculation (DIV)"},
+                new Object[] {"#if 9 / 2 == 4", "#if 1", "Literal calculation (DIV)"},
+                new Object[] {"#if 9 % 2 == 1", "#if 1", "Literal calculation (MOD)"},
+                new Object[] {"#if 10 % 2 == 0", "#if 1", "Literal calculation (MOD)"},
+                new Object[] {"#if -5 == -1 * 5", "#if 1", "Literal calculation (Unary MINUS)"},
+                new Object[] {"#if +5 == 5", "#if 1", "Literal calculation (Unary PLUS)"},
+                new Object[] {"#if (5 & 2) == 0", "#if 1", "Literal calculation (Bin AND)"},
+                new Object[] {"#if (6 & 2) == 2", "#if 1", "Literal calculation (Bin AND)"},
+                new Object[] {"#if (5 | 2) == 7", "#if 1", "Literal calculation (Bin OR)"},
+                new Object[] {"#if (6 | 2) == 6", "#if 1", "Literal calculation (Bin OR)"},
+                new Object[] {"#if (5 ^ 2) == 7", "#if 1", "Literal calculation (Bin XOR)"},
+                new Object[] {"#if (6 ^ 2) == 4", "#if 1", "Literal calculation (Bin XOR)"},
+                new Object[] {"#if ~2 == " + (~2L), "#if 1", "Literal calculation (Bin INVERT)"},
+                
+                /*
+                 * (Var OP Literal) EQUAL Literal
+                 */
+                new Object[] {"#if VAR_A + 2 == 3", "#if defined(VAR_A_eq_1)", "Var calculation (ADD)"},
+                new Object[] {"#if VAR_A - 2 == 0", "#if defined(VAR_A_eq_2)", "Var calculation (SUB)"},
+                new Object[] {"#if VAR_A * 2 == 4", "#if defined(VAR_A_eq_2)", "Var calculation (MUL)"},
+                new Object[] {"#if VAR_A / 3 == 0", "#if ((defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1))) || (defined(VAR_A_eq_2))", "Var calculation (DIV)"},
+                new Object[] {"#if VAR_A % 2 == 0", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_2))", "Var calculation (MOD)"},
+                new Object[] {"#if VAR_A % 2 == 1", "#if defined(VAR_A_eq_1)", "Var calculation (MOD)"},
+                new Object[] {"#if -VAR_A == -1", "#if defined(VAR_A_eq_1)", "Var calculation (Unary MINUS)"},
+                new Object[] {"#if +VAR_A == 1", "#if defined(VAR_A_eq_1)", "Var calculation (Unary PLUS)"},
+                new Object[] {"#if (VAR_A & 1) == 1", "#if defined(VAR_A_eq_1)", "Var calculation (Bin AND)"},
+                new Object[] {"#if (VAR_A | 1) == 3", "#if defined(VAR_A_eq_2)", "Var calculation (Bin OR)"},
+                new Object[] {"#if (VAR_A ^ 1) == 3", "#if defined(VAR_A_eq_2)", "Var calculation (Bin XOR)"},
+                new Object[] {"#if ~VAR_A == " + (~1L), "#if defined(VAR_A_eq_1)", "Var calculation (Bin INVERT)"},
+                
+                /*
+                 * Var OP Unknown
+                 * + reversed
+                 */
+                new Object[] {"#if VAR_A == VAR_UNKNOWN", "#if defined(VAR_A_eq_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN == VAR_A", "#if defined(VAR_A_eq_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_A != VAR_UNKNOWN", "#if !(defined(VAR_A_eq_VAR_UNKNOWN))", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN != VAR_A", "#if !(defined(VAR_A_eq_VAR_UNKNOWN))", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_A < VAR_UNKNOWN", "#if defined(VAR_A_lt_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN < VAR_A", "#if defined(VAR_A_gt_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_A <= VAR_UNKNOWN", "#if defined(VAR_A_le_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN <= VAR_A", "#if defined(VAR_A_ge_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_A > VAR_UNKNOWN", "#if defined(VAR_A_gt_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN > VAR_A", "#if defined(VAR_A_lt_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_A >= VAR_UNKNOWN", "#if defined(VAR_A_ge_VAR_UNKNOWN)", "Var and Unknown comparison"},
+                new Object[] {"#if VAR_UNKNOWN >= VAR_A", "#if defined(VAR_A_le_VAR_UNKNOWN)", "Var and Unknown comparison"}
+        );
     }
     
-    /**
-     * Tests that #if VAR is correctly replaced, if no possible value of VAR becomes zero due to calculations.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testIfVarWithoutDefinedNoneBecomeZero() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
-        
-
-        assertThat(replacer.replace("#if VAR_A + 1"), is("#if 1"));
+    private String input;
+    
+    private String expected;
+    
+    public CppReplacerTest(String input, String expected, String name) {
+        this.input = input;
+        this.expected = expected;
     }
     
-    /**
-     * Tests that a comparison between two variables without an overlap is translated correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
     @Test
-    public void testVarEqVarNoOverlap() throws ExpressionFormatException {
+    public void test() throws ExpressionFormatException {
         CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
         
-
-        assertThat(replacer.replace("#if VAR_A + 10 == VAR_B"), is("#if 0"));
-    }
-    
-    /**
-     * Tests that a comparison between a variable and an unknown is replaced correctly.
-     * 
-     * @throws ExpressionFormatException unwanted.
-     */
-    @Test
-    public void testVarEqUnknown() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        String actual = replacer.replace(input);
         
-
-        assertThat(replacer.replace("#if VAR_A == VAR_UNKNOWN"), is("#if defined(VAR_A_eq_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN == VAR_A"), is("#if defined(VAR_A_eq_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_A != VAR_UNKNOWN"), is("#if !(defined(VAR_A_eq_VAR_UNKNOWN))"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN != VAR_A"), is("#if !(defined(VAR_A_eq_VAR_UNKNOWN))"));
-        assertThat(replacer.replace("#if VAR_A < VAR_UNKNOWN"), is("#if defined(VAR_A_lt_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN < VAR_A"), is("#if defined(VAR_A_gt_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_A <= VAR_UNKNOWN"), is("#if defined(VAR_A_le_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN <= VAR_A"), is("#if defined(VAR_A_ge_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_A > VAR_UNKNOWN"), is("#if defined(VAR_A_gt_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN > VAR_A"), is("#if defined(VAR_A_lt_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_A >= VAR_UNKNOWN"), is("#if defined(VAR_A_ge_VAR_UNKNOWN)"));
-        assertThat(replacer.replace("#if VAR_UNKNOWN >= VAR_A"), is("#if defined(VAR_A_le_VAR_UNKNOWN)"));
+        assertEquals(expected, actual);
     }
     
 }

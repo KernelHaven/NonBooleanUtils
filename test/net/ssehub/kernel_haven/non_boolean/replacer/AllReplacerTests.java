@@ -7,6 +7,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     CppReplacerTest.class,
+    CppReplacerNegativeTest.class,
     })
 public class AllReplacerTests {
 
