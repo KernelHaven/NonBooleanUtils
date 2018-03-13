@@ -33,9 +33,9 @@ public class ExpressionList extends CppExpression {
     /**
      * Returns the expression at the given index.
      * 
-     * @param index The index to get the exrepssion at.
+     * @param index The index to get the expression at.
      * 
-     * @return The nested expressoin.
+     * @return The nested expression.
      */
     public CppExpression getExpression(int index) {
         return expressions.get(index);
