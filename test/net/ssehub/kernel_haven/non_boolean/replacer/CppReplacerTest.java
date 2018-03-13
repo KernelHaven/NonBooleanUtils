@@ -26,6 +26,8 @@ import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 public class CppReplacerTest {
     
     /**
+     * The set of variables used for all tests.
+     * 
      * <code><pre>
      * VAR_A = {0, 1, 2}
      * VAR_B = {0, 1, 2}
@@ -35,6 +37,8 @@ public class CppReplacerTest {
     static final Map<String, NonBooleanVariable> DEFAULT_VARS = new HashMap<>();
     
     /**
+     * The set of constants used for all tests.
+     * 
      * <code><pre>
      * CONST_A = 1
      * CONST_B = 2
@@ -59,7 +63,29 @@ public class CppReplacerTest {
         DEFAULT_CONSTANTS.put("CONST_B", 2L);
         DEFAULT_CONSTANTS.put("CONST_C", 0L);
     }
+    
+    private String input;
+    
+    private String expected;
+    
+    /**
+     * Creates a new {@link CppReplacerTest}.
+     * 
+     * @param input The input to pass to the replacer.
+     * @param expected The expected output of the replacer.
+     * @param name The name of this test.
+     */
+    public CppReplacerTest(String input, String expected, String name) {
+        this.input = input;
+        this.expected = expected;
+    }
 
+    /**
+     * Creates the parameters for this test.
+     * 
+     * @return The parameters of this test.
+     */
+    // CHECKSTYLE:OFF
     @Parameters(name = "{2}: {0}")
     public static Collection<Object[]> getParameters() {
         return Arrays.asList(
@@ -279,16 +305,13 @@ public class CppReplacerTest {
                 new Object[] {"#if (!VAR1 || !VAR2)", "#if (!(!defined(VAR1_eq_0))) || (!(!defined(VAR2_eq_0)))", "booleanNumbersInIfNegated"}
         );
     }
+    // CHECKSTYLE:ON
     
-    private String input;
-    
-    private String expected;
-    
-    public CppReplacerTest(String input, String expected, String name) {
-        this.input = input;
-        this.expected = expected;
-    }
-    
+    /**
+     * Checks that the input given in the constructor produces the expected output given in the constructor.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
     @Test
     public void test() throws ExpressionFormatException {
         CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);

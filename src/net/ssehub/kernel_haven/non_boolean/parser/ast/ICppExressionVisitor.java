@@ -17,6 +17,8 @@ public interface ICppExressionVisitor<T> {
      * @param expressionList The expression list to visit.
      * 
      * @return Something.
+     * 
+     * @throws ExpressionFormatException If the expression is malformed.
      */
     public T visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException;
     
@@ -26,6 +28,8 @@ public interface ICppExressionVisitor<T> {
      * @param call The function call to visit.
      * 
      * @return Something.
+     * 
+     * @throws ExpressionFormatException If the expression is malformed.
      */
     public T visitFunctionCall(FunctionCall call) throws ExpressionFormatException;
     
@@ -35,6 +39,8 @@ public interface ICppExressionVisitor<T> {
      * @param variable The variable to visit.
      * 
      * @return Something.
+     * 
+     * @throws ExpressionFormatException If the expression is malformed.
      */
     public T visitVariable(Variable variable) throws ExpressionFormatException;
     
@@ -44,6 +50,8 @@ public interface ICppExressionVisitor<T> {
      * @param operator The operator to visit.
      * 
      * @return Something.
+     * 
+     * @throws ExpressionFormatException If the expression is malformed.
      */
     public T visitOperator(Operator operator) throws ExpressionFormatException;
     
@@ -53,6 +61,8 @@ public interface ICppExressionVisitor<T> {
      * @param literal The literal to visit.
      * 
      * @return Something.
+     * 
+     * @throws ExpressionFormatException If the expression is malformed.
      */
     public T visitLiteral(IntegerLiteral literal) throws ExpressionFormatException;
     

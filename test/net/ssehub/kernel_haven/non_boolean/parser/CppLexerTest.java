@@ -40,10 +40,10 @@ public class CppLexerTest {
         CppParser parser = new CppParser();
         
         assertThat(parser.lex("(A)"), is(new CppToken[] {
-                new Bracket(0, false), new IdentifierToken(1, "A"), new Bracket(2, true)}));
+            new Bracket(0, false), new IdentifierToken(1, "A"), new Bracket(2, true)}));
         assertThat(parser.lex("()()(())"), is(new CppToken[] {
-                new Bracket(0, false), new Bracket(1, true), new Bracket(2, false), new Bracket(3, true),
-                new Bracket(4, false), new Bracket(5, false), new Bracket(6, true), new Bracket(7, true)}));
+            new Bracket(0, false), new Bracket(1, true), new Bracket(2, false), new Bracket(3, true),
+            new Bracket(4, false), new Bracket(5, false), new Bracket(6, true), new Bracket(7, true)}));
     }
     
     /**
@@ -92,9 +92,9 @@ public class CppLexerTest {
         CppParser parser = new CppParser();
         
         assertThat(parser.lex("A + (VAR_2 * -3)"), is(new CppToken[] {
-                new IdentifierToken(0, "A"), new OperatorToken(2, CppOperator.INT_ADD), new Bracket(4, false),
-                new IdentifierToken(5, "VAR_2"), new OperatorToken(11, CppOperator.INT_MUL),
-                new OperatorToken(13, CppOperator.INT_SUB), new IdentifierToken(14, "3"), new Bracket(15, true)}));
+            new IdentifierToken(0, "A"), new OperatorToken(2, CppOperator.INT_ADD), new Bracket(4, false),
+            new IdentifierToken(5, "VAR_2"), new OperatorToken(11, CppOperator.INT_MUL),
+            new OperatorToken(13, CppOperator.INT_SUB), new IdentifierToken(14, "3"), new Bracket(15, true)}));
     }
     
     /**

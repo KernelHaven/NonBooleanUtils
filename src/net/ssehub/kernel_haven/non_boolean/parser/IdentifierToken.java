@@ -56,5 +56,10 @@ class IdentifierToken extends CppToken {
         }
         return equal;
     }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode() + name.hashCode();
+    }
 
 }

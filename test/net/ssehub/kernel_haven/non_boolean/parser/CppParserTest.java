@@ -392,21 +392,48 @@ public class CppParserTest {
         parser.parse("123notaliteral");
     }
     
+    /**
+     * Asserts that the given expression is a {@link Variable}.
+     * 
+     * @param expression The expression that should be a {@link Variable}.
+     * @param name The expected name of the variable.
+     */
     public static void assertVariable(CppExpression expression, String  name) {
         assertThat(expression, instanceOf(Variable.class));
         Variable var = (Variable) expression;
         assertThat(var.getName(), is(name));
     }
     
+    /**
+     * Asserts that the given expression is an {@link Operator}.
+     * 
+     * @param expression The expression that should be an {@link Operator}.
+     * @param operator The expected operator.
+     * 
+     * @return A 2-element array containing the parameters. For unary operators, the second element is
+     *      <code>null</code>.
+     */
     public static CppExpression[] assertOperator(CppExpression expression, CppOperator operator) {
         assertThat(expression, instanceOf(Operator.class));
         Operator op = (Operator) expression;
         
         assertThat(op.getOperator(), is(operator));
         
+        if (operator.isUnary()) {
+            assertThat(op.getRightSide(), nullValue());
+        }
+        
         return new CppExpression[] {op.getLeftSide(), op.getRightSide()};
     }
     
+    /**
+     * Asserts that the given expression is an {@link FunctionCall}.
+     * 
+     * @param expression The expression that should be an {@link FunctionCall}.
+     * @param functionName The expected name of the called function.
+     * 
+     * @return The parameter of the function, may be <code>null</code>.
+     */
     public static CppExpression assertFunctionCall(CppExpression expression, String functionName) {
         assertThat(expression, instanceOf(FunctionCall.class));
         FunctionCall func = (FunctionCall) expression;
@@ -416,6 +443,12 @@ public class CppParserTest {
         return func.getArgument();
     }
     
+    /**
+     * Asserts that the given expression is an {@link IntegerLiteral}.
+     * 
+     * @param expression The expression that should be an {@link IntegerLiteral}.
+     * @param value The expected literal value.
+     */
     public static void assertLiteral(CppExpression expression, long value) {
         assertThat(expression, instanceOf(IntegerLiteral.class));
         IntegerLiteral literal = (IntegerLiteral) expression;

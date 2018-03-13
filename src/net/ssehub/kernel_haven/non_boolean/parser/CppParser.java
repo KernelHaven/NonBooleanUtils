@@ -154,7 +154,7 @@ public class CppParser {
                 if (literal.endsWith("ul")) {
                     literal = literal.substring(0, literal.length() - 2);
                 } else if (literal.endsWith("l")) {
-                        literal = literal.substring(0, literal.length() - 1);
+                    literal = literal.substring(0, literal.length() - 1);
                 }
                 try {
                     Number value = NumberUtils.convertToNumber(literal);
@@ -315,8 +315,12 @@ public class CppParser {
          * @param expressionList The {@link ExpressionList} containing all nodes of the current nesting depth.
          * @param operator The operator to parse the parameters for.
          * @param operatorIndex The index of the operator in <code>expressionList</code>.
+         * 
+         * @throws ExpressionFormatException If finding the parameters fails.
          */
-        private void parseParameters(ExpressionList expressionList, Operator operator, int operatorIndex) throws ExpressionFormatException {
+        private void parseParameters(ExpressionList expressionList, Operator operator, int operatorIndex)
+                throws ExpressionFormatException {
+            
             if (operator.getOperator().isUnary()) {
                 if (operatorIndex != 0
                         // special case: ++ and -- may be on right side
@@ -325,7 +329,7 @@ public class CppParser {
                                 && operatorIndex == expressionList.getExpressionSize() - 1
                             )) {
                         
-                        throw makeException(expression, "Found elements on wrong side of unary operator");
+                    throw makeException(expression, "Found elements on wrong side of unary operator");
                         
                 } else {
                     ExpressionList nested = new ExpressionList();

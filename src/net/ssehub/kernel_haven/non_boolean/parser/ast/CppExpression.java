@@ -30,6 +30,8 @@ public abstract class CppExpression {
      * @param <T> The return type of the visitor.
      * 
      * @return The return value of the visitor.
+     * 
+     * @throws ExpressionFormatException If the visitor throws an {@link ExpressionFormatException}.
      */
     public abstract <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException;
     

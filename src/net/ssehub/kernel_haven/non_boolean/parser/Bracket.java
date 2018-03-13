@@ -57,4 +57,9 @@ class Bracket extends CppToken {
         return equal;
     }
     
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Boolean.hashCode(this.closing);
+    }
+    
 }

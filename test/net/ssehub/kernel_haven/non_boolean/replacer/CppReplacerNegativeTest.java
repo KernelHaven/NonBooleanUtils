@@ -20,6 +20,24 @@ import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 @RunWith(Parameterized.class)
 public class CppReplacerNegativeTest {
 
+    private String input;
+    
+    /**
+     * Creates a new {@link CppReplacerNegativeTest}.
+     * 
+     * @param input The input value for the replacer.
+     * @param name The name of this test.
+     */
+    public CppReplacerNegativeTest(String input, String name) {
+        this.input = input;
+    }
+    
+    /**
+     * Creates the parameters for this test.
+     * 
+     * @return The parameters of this test.
+     */
+    // CHECKSTYLE:OFF
     @Parameters(name = "{1}: {0}")
     public static Collection<Object[]> getParameters() {
         return Arrays.asList(
@@ -156,13 +174,11 @@ public class CppReplacerNegativeTest {
                 new Object[] {"#if 1 ^ UNKNOWN", "Calcating on Unknown (Bin XOR) (reversed)"}
         );
     }
+    // CHECKSTYLE:ON
     
-    private String input;
-    
-    public CppReplacerNegativeTest(String input, String name) {
-        this.input = input;
-    }
-    
+    /**
+     * Tests that the input given in the constructor produces an {@link ExpressionFormatException}.
+     */
     @Test
     public void test() {
         CppReplacer replacer = new CppReplacer(CppReplacerTest.DEFAULT_VARS, CppReplacerTest.DEFAULT_CONSTANTS);

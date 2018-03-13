@@ -48,4 +48,9 @@ class OperatorToken extends CppToken {
         return equal;
     }
     
+    @Override
+    public int hashCode() {
+        return super.hashCode() + operator.hashCode();
+    }
+    
 }

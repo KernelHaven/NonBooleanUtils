@@ -46,4 +46,9 @@ abstract class CppToken {
         return equal;
     }
     
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(pos);
+    }
+    
 }

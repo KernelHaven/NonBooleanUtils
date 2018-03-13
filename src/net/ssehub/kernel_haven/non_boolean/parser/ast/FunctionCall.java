@@ -36,7 +36,7 @@ public class FunctionCall extends CppExpression {
     /**
      * Returns the expression inside the brackets of the function call.
      * 
-     * @return The argument of the function.
+     * @return The argument of the function. May be <code>null</code>.
      */
     public CppExpression getArgument() {
         return argument;

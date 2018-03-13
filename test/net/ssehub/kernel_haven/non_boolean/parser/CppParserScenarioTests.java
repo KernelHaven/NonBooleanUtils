@@ -13,7 +13,7 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * "Real world" test cases for the {@link CppParser}
+ * "Real world" test cases for the {@link CppParser}.
  * 
  * @author Adam
  */
