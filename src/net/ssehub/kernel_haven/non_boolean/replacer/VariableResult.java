@@ -2,21 +2,46 @@ package net.ssehub.kernel_haven.non_boolean.replacer;
 
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
-public class VariableResult extends Result {
+/**
+ * A variable with a string name. This can be an unknown variable, in which case {@link #isUnknownVariable()} returns
+ * true. An unknown variable can still be the target of comparisons. If this is not unknown, then this variable name
+ * is probably in the form of <code>VAR_eq_2</code> (except this was created as a result of a defined() call).
+ *
+ * @author Adam
+ */
+class VariableResult extends Result {
     
     private String var;
     
     private boolean unknownVariable;
     
+    /**
+     * Creates a new (not unknown) variable result with the given name. No operations can be done on this anymore.
+     * 
+     * @param var The name of this variable.
+     */
     public VariableResult(String var) {
         this.var = var;
     }
     
+    /**
+     * Creates a new variable. If unknownVariable is <code>true</code>, then there may be still be comparison operations
+     * done on this variable.
+     * 
+     * @param var The name of this variable.
+     * @param unknownVariable Whether this is an unknown variable or not.
+     */
     public VariableResult(String var, boolean unknownVariable) {
         this.var = var;
         this.unknownVariable = unknownVariable;
     }
     
+    /**
+     * Whether this represents an unknown (<code>true</code>) or an already "resolved" variable. "Resolved" variables
+     * cannot be used in operations anymore; unknown variables can be used in comparisons.
+     * 
+     * @return Whether this variable is unknown.
+     */
     public boolean isUnknownVariable() {
         return unknownVariable;
     }
@@ -46,6 +71,11 @@ public class VariableResult extends Result {
         return result;
     }
     
+    /**
+     * Returns the name of this variable.
+     * 
+     * @return The name of this variable.
+     */
     public String getVar() {
         return var;
     }

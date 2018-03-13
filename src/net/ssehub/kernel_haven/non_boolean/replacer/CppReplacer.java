@@ -13,6 +13,12 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.Operator;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Variable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
+/**
+ * A replacer that turns non-boolean expressions in the C preprocessor (CPP) into pure-boolean ones. This requires
+ * a set of {@link NonBooleanVariable}s (and optionally a map of constants) to work properly.
+ *
+ * @author Adam
+ */
 public class CppReplacer {
     
     private Map<String, NonBooleanVariable> variables;
@@ -21,12 +27,26 @@ public class CppReplacer {
     
     private CppParser parser;
     
+    /**
+     * Creates a new {@link CppReplacer}.
+     * 
+     * @param variables The known {@link NonBooleanVariable}s.
+     * @param constants A {@link Map} of constant values to replace in the expressions.
+     */
     public CppReplacer(Map<String, NonBooleanVariable> variables, Map<String, Long> constants) {
         this.variables = variables;
         this.constants = constants;
         this.parser = new CppParser();
     }
 
+    /**
+     * Takes a #if or #elif line from the CPP and replaces everything that is non-boolean.
+     * 
+     * @param cppLine The CPP line to replace.
+     * @return The replaced CPP line.
+     * 
+     * @throws ExpressionFormatException If parsing or evaluating the given CPP line fails.
+     */
     public String replace(String cppLine) throws ExpressionFormatException {
         String expression = null;
         String prepend = null;
@@ -49,6 +69,51 @@ public class CppReplacer {
         return cppLine;
     }
     
+    /**
+     * <p>
+     * A visitor that evaluates {@link CppExpression}s based on the given {@link NonBooleanVariable}s and constants.
+     * Every integer operation is calculated and resolved. Boolean operators are left as-is (new ones are obviously
+     * added).
+     * </p>
+     * <p>
+     * The {@link CppExpression} AST is evaluated bottom-up. Every node is turned into a {@link Result}:
+     *  <ul>
+     *      <li>Literals and Constants are turned into {@link LiteralIntResult}</li>
+     *      <li>{@link NonBooleanVariable}s are turned into {@link VariableWithValues}s</li>
+     *      <li>Unknown variables are turned into {@link VariableResult}s with
+     *      {@link VariableResult#isUnknownVariable()} set to <code>true</code></li>
+     *      <li><code>defined(VAR)</code> calls are turned into {@link VariableResult}s.</li>
+     *  </ul>
+     * </p>
+     * <p>
+     * The {@link Operator}s combine these {@link Result} to new {@link Result}:
+     *  <ul>
+     *      <li>Integer calculation operators on literals create new {@link LiteralIntResult}</li>
+     *      <li>Comparisons on {@link VariableResult}s with {@link VariableResult#isUnknownVariable()} create
+     *      no-unknown {@link VariableResult}s (in the form of <code>UNKNOWN_eq_2</code> or
+     *      <code>UNKNOWN_eq_VAR</code>)</li>
+     *      <li>Integer calculation operators on {@link VariableWithValues} modify their current value</li>
+     *      <li>Comparisons on {@link VariableWithValues} create boolean formulas that define which original values
+     *      of the {@link VariableWithValues} satisfy the condition</li>
+     *  </ul>
+     * Pretty much every other combination is not allowed an throws an {@link ExpressionFormatException} (e.g. adding
+     * a literal to a boolean value).
+     * </p>
+     * <p>
+     * After this we have a tree of {@link Result}s which contains only boolean operations. On this,
+     * {@link Result#toCppString()} is called to turn everything back into a CPP string:
+     *  <ul>
+     *      <li>{@link LiteralIntResult}s are turned into "1" (true) if they are not 0, "0" (false) otherwise</li>
+     *      <li>{@link VariableResult}s with not unknown variable content just add a defined() around their variable
+     *      name</li>
+     *      <li>{@link VariableResult}s with unknown variable content become !defined(UNKNOWN_VAR_NAME_eq_0)</li>
+     *      <li>{@link VariableWithValues}s that are left (i.e. there wasn't a comparison for them) turn every current
+     *      value that is 0 into a !defined() and AND them together (<code>#if VAR</code> is true for all cases where
+     *      VAR is not 0)</li>
+     *      <li>{@link BoolResult}s are just written in the obious way</li>
+     *  </ul>
+     * </p>
+     */
     private class AstEvaluator implements ICppExressionVisitor<Result> {
 
         @Override
@@ -96,8 +161,10 @@ public class CppReplacer {
             return result;
         }
 
+        // CHECKSTYLE:OFF // TODO: this method is too long
         @Override
         public Result visitOperator(Operator operator) throws ExpressionFormatException {
+        //CHECKSTYLE:ON
             Result leftSide = operator.getLeftSide().accept(this);
             Result rightSide = null;
             if (operator.getOperator().isBinary()) {

@@ -2,7 +2,12 @@ package net.ssehub.kernel_haven.non_boolean.replacer;
 
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
-public abstract class BoolResult extends Result {
+/**
+ * A boolean {@link Result}. This is an operator (&&, ||, !) or a {@link LiteralBoolResult}.
+ *
+ * @author Adam
+ */
+abstract class BoolResult extends Result {
 
     @Override
     public Result cmpLt(Result other) throws ExpressionFormatException {

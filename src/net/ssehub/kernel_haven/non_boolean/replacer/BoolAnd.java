@@ -1,20 +1,41 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
-public class BoolAnd extends BoolResult {
+/**
+ * A boolean conjunction of two {@link Result}s.
+ *
+ * @author Adam
+ */
+class BoolAnd extends BoolResult {
 
     private Result leftSide;
     
     private Result rightSide;
     
+    /**
+     * Creates this conjunction.
+     * 
+     * @param leftSide The left side.
+     * @param rightSide The right side.
+     */
     public BoolAnd(Result leftSide, Result rightSide) {
         this.leftSide = leftSide;
         this.rightSide = rightSide;
     }
     
+    /**
+     * Returns the left side.
+     * 
+     * @return The left side.
+     */
     public Result getLeftSide() {
         return leftSide;
     }
     
+    /**
+     * Returns the right side.
+     * 
+     * @return The right side.
+     */
     public Result getRightSide() {
         return rightSide;
     }
