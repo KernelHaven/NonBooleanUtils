@@ -259,9 +259,9 @@ public class NonBooleanPreperation implements IPreparation {
         new PreprocessorConditionVisitor() {
             
             @Override
-            public void visit(String line) {
+            public void visit(File file, String line) {
                 try {
-                    collectNonBooleanFromLine(line);
+                    collectNonBooleanFromLine(file, line);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -618,13 +618,29 @@ public class NonBooleanPreperation implements IPreparation {
     }
     
     private Long parseConstant(String constant) {
+        return parseConstant(null, constant);
+    }
+    
+    private Long parseConstant(File file, String constant) {
         while (!constant.isEmpty() && (constant.endsWith("L") || constant.endsWith("l")
-            || constant.endsWith("u") || constant.endsWith("U"))) {
+                || constant.endsWith("u") || constant.endsWith("U"))) {
             
             constant = constant.substring(0, constant.length() - 1);
         }
         
-        return Long.valueOf(constant);
+        Long result;
+        try {
+            result = Long.valueOf(constant);
+        } catch (NumberFormatException exc) {
+            if (null != file) {
+                LOGGER.logException("Could not parse \"" + constant + "\" in " + file.getAbsolutePath(), exc);
+            } else {
+                LOGGER.logException("Could not parse \"" + constant + "\"", exc);
+            }
+            throw exc;
+        }
+        
+        return result;
     }
     
     private Long bitOperation(long number, Long bit, String bitOp, String whole) {
@@ -1121,18 +1137,17 @@ public class NonBooleanPreperation implements IPreparation {
      * @param line A CPP expression (e.g. if expression).
      * @throws IOException
      */
-    private void collectNonBooleanFromLine(String line) throws IOException {
+    private void collectNonBooleanFromLine(File file, String line) throws IOException {
         Matcher variableNameMatcher = variableNamePattern.matcher(line);
         
         while (variableNameMatcher.find()) {
             int index = variableNameMatcher.start();
             String left = line.substring(index);
             
-            
             // Expression is in form of: <variable> <operator> <constant>
-            boolean handled = identifyNonBooleanOperation(left, leftSide); 
+            boolean handled = identifyNonBooleanOperation(file, left, leftSide); 
             if (!handled) {
-                handled = identifyNonBooleanOperation(left, rightSide); 
+                handled = identifyNonBooleanOperation(file, left, rightSide); 
             }
         }
         
@@ -1145,13 +1160,13 @@ public class NonBooleanPreperation implements IPreparation {
      *     or {@link #rightSide}
      * @return <tt>true</tt> if the location matches to the given pattern, <tt>false</tt> otherwise.
      */
-    private boolean identifyNonBooleanOperation(String expression, Pattern variableValuePattern) {
+    private boolean identifyNonBooleanOperation(File file, String expression, Pattern variableValuePattern) {
         boolean matchFound = false;
         Matcher m = variableValuePattern.matcher(expression);
         if (m.matches()) {
             matchFound = true;
             putNonBooleanOperation(m.group(GROUP_NAME_VARIABLE), m.group(GROUP_NAME_OPERATOR),
-                parseConstant(m.group(GROUP_NAME_VALUE)));
+                parseConstant(file, m.group(GROUP_NAME_VALUE)));
         }
         return matchFound;
     }

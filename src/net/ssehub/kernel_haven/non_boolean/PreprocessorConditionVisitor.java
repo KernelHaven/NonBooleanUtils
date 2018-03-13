@@ -52,12 +52,12 @@ public abstract class PreprocessorConditionVisitor {
                     }
                 }
                 
-                visit(line);
+                visit(file, line);
             }
             
         }
     }
     
-    public abstract void visit(String line);
+    public abstract void visit(File file, String line);
     
 }
