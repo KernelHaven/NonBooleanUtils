@@ -191,5 +191,29 @@ public class CppReplacerTest {
         assertThat(replacer.replace("#if VAR_A == 5"), is("#if 0"));
     }
     
+    /**
+     * Tests that an unsupported operator correctly throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testUnsupportedOperator() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        replacer.replace("#if VAR_A++");
+    }
+    
+    /**
+     * Tests that an expression containing boolean expressions is replaced correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testBooleanExpression() throws ExpressionFormatException {
+        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        
+        assertThat(replacer.replace("#if VAR_A == 1 || (!(VAR_B==1) && VAR_C==1)"),
+                is("#if (defined(VAR_A_eq_1)) || ((!(defined(VAR_B_eq_1))) && (defined(VAR_C_eq_1)))"));
+    }
+    
 }
 
