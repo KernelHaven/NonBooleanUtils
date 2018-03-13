@@ -39,4 +39,13 @@ class OperatorToken extends CppToken {
         return "Operator('" + operator.getSymbol() + "')";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = super.equals(obj);
+        if (equal && obj instanceof OperatorToken) {
+            equal = ((OperatorToken) obj).operator == this.operator;
+        }
+        return equal;
+    }
+    
 }

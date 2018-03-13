@@ -40,12 +40,21 @@ class IdentifierToken extends CppToken {
     
     @Override
     public String toString() {
-        return "Identifier('" + name + "')";
+        return "Identifier('" + name + "' pos=" + getPos() + ")";
     }
 
     @Override
     public int getLength() {
         return name.length();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = super.equals(obj);
+        if (equal && obj instanceof IdentifierToken) {
+            equal = ((IdentifierToken) obj).name.equals(this.name);
+        }
+        return equal;
     }
 
 }

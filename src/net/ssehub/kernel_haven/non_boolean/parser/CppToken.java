@@ -37,4 +37,13 @@ abstract class CppToken {
     @Override
     public abstract String toString();
     
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = false;
+        if (obj instanceof CppToken) {
+            equal = this.pos == ((CppToken) obj).pos;
+        }
+        return equal;
+    }
+    
 }

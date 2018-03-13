@@ -48,4 +48,13 @@ class Bracket extends CppToken {
         return "Bracket('" + (closing ? ')' : '(') + "')";
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        boolean equal = super.equals(obj);
+        if (equal && obj instanceof Bracket) {
+            equal = ((Bracket) obj).closing == this.closing;
+        }
+        return equal;
+    }
+    
 }

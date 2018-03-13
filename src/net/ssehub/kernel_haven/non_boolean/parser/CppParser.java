@@ -149,7 +149,11 @@ public class CppParser {
                         literal = literal.substring(0, literal.length() - 1);
                 }
                 try {
-                    result = new IntegerLiteral((Long) NumberUtils.convertToNumber(literal));
+                    Number value = NumberUtils.convertToNumber(literal);
+                    if (value == null || !(value instanceof Long)) {
+                        throw new NumberFormatException();
+                    }
+                    result = new IntegerLiteral((Long) value);
                 } catch (NumberFormatException e) {
                     throw makeException(expression, "Cannot parse literal " + variable.getName());
                 }
@@ -429,14 +433,14 @@ public class CppParser {
     }
     
     /**
-     * Lex (tokenize) the given expression.
+     * Lex (tokenize) the given expression. Package visibility for test cases.
      * 
      * @param expression The expression to turn into tokens.
      * @return The tokens.
      * 
      * @throws ExpressionFormatException If invalid characters appear in the expression.
      */
-    private CppToken[] lex(String expression) throws ExpressionFormatException {
+    CppToken[] lex(String expression) throws ExpressionFormatException {
         List<CppToken> tokens = new ArrayList<>(50);
         
         IdentifierToken currentIdentifier = null;
