@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import net.ssehub.kernel_haven.non_boolean.parser.AllParserTests;
+import net.ssehub.kernel_haven.non_boolean.replacer.AllReplacerTests;
 
 /**
  * All tests.
@@ -12,6 +13,7 @@ import net.ssehub.kernel_haven.non_boolean.parser.AllParserTests;
 @RunWith(Suite.class)
 @SuiteClasses({
     AllParserTests.class,
+    AllReplacerTests.class,
     
     CPPUtilsTest.class,
     NonBooleanPreperationTest.class,

@@ -1,9 +1,6 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
 import net.ssehub.kernel_haven.non_boolean.parser.CppParser;
@@ -33,26 +30,21 @@ public class CppReplacer {
     public String replace(String cppLine) throws ExpressionFormatException {
         String expression = null;
         String prepend = null;
-        boolean isDef = false;
         
-        for (String prefix : new String[] {"#ifdef ", "#ifndef ", "#if ", "#elif "}) {
+        for (String prefix : new String[] {"#if ", "#elif "}) {
             if (cppLine.startsWith(prefix)) {
                 expression = cppLine.substring(prefix.length());
-                isDef = prefix.contains("def");
                 prepend = prefix;
                 break;
             }
         }
         if (expression == null) {
-            throw new ExpressionFormatException("Line does not start with #ifdef, #ifndef, #if or #elif:\n" + cppLine);
+            throw new ExpressionFormatException("Line does not start with #if or #elif:\n" + cppLine);
         }
         
-        
-        if (!isDef) {
-            CppExpression parsed = parser.parse(expression);
-            Result result = parsed.accept(new AstEvaluator());
-            cppLine = prepend + result.toCppString();
-        }
+        CppExpression parsed = parser.parse(expression);
+        Result result = parsed.accept(new AstEvaluator());
+        cppLine = prepend + result.toCppString();
         
         return cppLine;
     }
@@ -196,24 +188,6 @@ public class CppReplacer {
             return new LiteralIntResult(literal.getValue());
         }
         
-    }
-    
-    public static void main(String[] args) throws ExpressionFormatException {
-        Map<String, NonBooleanVariable> variables = new HashMap<>();
-        
-        Set<Long> values = new HashSet<>();
-//        values.add(0L);
-        values.add(1L);
-        values.add(2L);
-        variables.put("a", new NonBooleanVariable("a", values));
-        values.add(-1L);
-        variables.put("b", new NonBooleanVariable("b", values));
-        
-        Map<String, Long> constants = new HashMap<>();
-//        constants.put("CONST_A", 0L);
-//        constants.put("CONST_B", 1L);
-        
-        System.out.println(new CppReplacer(variables, constants).replace("#if a + 1 > 2 && b < 0"));
     }
     
 }
