@@ -166,10 +166,18 @@ abstract class Result {
      * @return A string representation of this {@link Result}.
      */
     public abstract String toCppString();
+
+    /**
+     * Turns this {@link Result} (or tree of {@link Result}s) into a non-CPP string. Basically the same as
+     * {@link #toCppString()} but without defined() calls.
+     * 
+     * @return A string representation of this {@link Result}.
+     */
+    public abstract String toNonCppString();
     
     @Override
     public String toString() {
-        return toCppString();
+        return toNonCppString();
     }
-
+    
 }

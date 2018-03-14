@@ -13,6 +13,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     CppReplacerTest.class,
     CppReplacerNegativeTest.class,
+    
+    NonCppReplacerTest.class,
+    NonCppReplacerNegativeTest.class,
     })
 public class AllReplacerTests {
 

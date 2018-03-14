@@ -18,7 +18,7 @@ import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVaria
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * Positive parameterized tests for the {@link CppReplacer}.
+ * Positive parameterized tests for the {@link NonBooleanReplacer} with CPP expressions.
  *
  * @author Adam
  */
@@ -347,9 +347,9 @@ public class CppReplacerTest {
      */
     @Test
     public void test() throws ExpressionFormatException {
-        CppReplacer replacer = new CppReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
+        NonBooleanReplacer replacer = new NonBooleanReplacer(DEFAULT_VARS, DEFAULT_CONSTANTS);
         
-        String actual = replacer.replace(input);
+        String actual = replacer.replaceCpp(input);
         
         assertEquals(expected, actual);
     }

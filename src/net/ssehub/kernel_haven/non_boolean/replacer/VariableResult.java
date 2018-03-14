@@ -195,5 +195,18 @@ class VariableResult extends Result {
         
         return result;
     }
+    
+    @Override
+    public String toNonCppString() {
+        String result;
+        
+        if (unknownVariable) {
+            result = "!" + var + "_eq_0";
+        } else {
+            result = var;
+        }
+        
+        return result;
+    }
 
 }

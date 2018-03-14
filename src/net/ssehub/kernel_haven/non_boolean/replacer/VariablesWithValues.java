@@ -405,5 +405,10 @@ class VariablesWithValues extends Result {
     public String toCppString() {
         return new BoolNot(apply((currentValue) -> currentValue == 0)).toCppString();
     }
+    
+    @Override
+    public String toNonCppString() {
+        return new BoolNot(apply((currentValue) -> currentValue == 0)).toNonCppString();
+    }
 
 }

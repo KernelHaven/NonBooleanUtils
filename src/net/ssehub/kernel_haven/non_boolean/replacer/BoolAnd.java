@@ -27,4 +27,9 @@ class BoolAnd extends BoolResult {
         return "(" + leftSide.toCppString() + ") && (" + rightSide.toCppString() + ")";
     }
     
+    @Override
+    public String toNonCppString() {
+        return "(" + leftSide.toNonCppString() + ") && (" + rightSide.toNonCppString() + ")";
+    }
+    
 }

@@ -183,6 +183,10 @@ class LiteralIntResult extends Result {
         // everything except 0 is true
         return value == 0 ? "0" : "1";
     }
-
+    
+    @Override
+    public String toNonCppString() {
+        return toCppString();
+    }
     
 }

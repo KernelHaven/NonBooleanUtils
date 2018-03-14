@@ -14,12 +14,12 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.Variable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * A replacer that turns non-boolean expressions in the C preprocessor (CPP) into pure-boolean ones. This requires
- * a set of {@link NonBooleanVariable}s (and optionally a map of constants) to work properly.
+ * A replacer that turns non-boolean expressions (from the C preprocessor (CPP) or another source) into pure-boolean
+ * ones. This requires a set of {@link NonBooleanVariable}s (and optionally a map of constants) to work properly.
  *
  * @author Adam
  */
-public class CppReplacer {
+public class NonBooleanReplacer {
     
     private Map<String, NonBooleanVariable> variables;
     
@@ -28,17 +28,31 @@ public class CppReplacer {
     private CppParser parser;
     
     /**
-     * Creates a new {@link CppReplacer}.
+     * Creates a new {@link NonBooleanReplacer}.
      * 
      * @param variables The known {@link NonBooleanVariable}s.
      * @param constants A {@link Map} of constant values to replace in the expressions.
      */
-    public CppReplacer(Map<String, NonBooleanVariable> variables, Map<String, Long> constants) {
+    public NonBooleanReplacer(Map<String, NonBooleanVariable> variables, Map<String, Long> constants) {
         this.variables = variables;
         this.constants = constants;
         this.parser = new CppParser();
     }
 
+    /**
+     * Takes an expression that is not from the CPP and does non-boolean replacements in it. This is basically the same
+     * as {@link #replaceCpp(String)} but without defined() functions.
+     * 
+     * @param expression The expression to replace non-boolean variables in.
+     * 
+     * @return The expressions with replacements done.
+     * 
+     * @throws ExpressionFormatException If parsing or evaluating the expression fails.
+     */
+    public String replaceNonCpp(String expression) throws ExpressionFormatException {
+        return replaceImpl(expression, false);
+    }
+    
     /**
      * Takes a #if or #elif line from the CPP and replaces everything that is non-boolean.
      * 
@@ -47,7 +61,7 @@ public class CppReplacer {
      * 
      * @throws ExpressionFormatException If parsing or evaluating the given CPP line fails.
      */
-    public String replace(String cppLine) throws ExpressionFormatException {
+    public String replaceCpp(String cppLine) throws ExpressionFormatException {
         String expression = null;
         String prepend = null;
         
@@ -62,11 +76,24 @@ public class CppReplacer {
             throw new ExpressionFormatException("Line does not start with #if or #elif:\n" + cppLine);
         }
         
-        CppExpression parsed = parser.parse(expression);
-        Result result = parsed.accept(new AstEvaluator());
-        cppLine = prepend + result.toCppString();
+        return prepend + replaceImpl(expression, true);
+    }
+    
+    /**
+     * Takes an expression and does non-boolean replacements in it.
+     * 
+     * @param expr The expression to do replacements for.
+     * @param cpp Whether this should use CPP defined() calls or not.
+     * 
+     * @return The expression with replacements done.
+     * 
+     * @throws ExpressionFormatException If parsing or evaluating the given CPP line fails.
+     */
+    private String replaceImpl(String expr, boolean cpp) throws ExpressionFormatException {
+        CppExpression parsed = parser.parse(expr);
+        Result result = parsed.accept(new AstEvaluator(cpp));
         
-        return cppLine;
+        return cpp ? result.toCppString() : result.toNonCppString();
     }
     
     /**
@@ -116,6 +143,17 @@ public class CppReplacer {
      */
     private class AstEvaluator implements ICppExressionVisitor<Result> {
 
+        private boolean cpp;
+        
+        /**
+         * Creates a new {@link AstEvaluator}.
+         * 
+         * @param cpp Whether this should consider defined() calls or not.
+         */
+        public AstEvaluator(boolean cpp) {
+            this.cpp = cpp;
+        }
+        
         @Override
         public Result visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             throw new ExpressionFormatException("This code can't be reached.");
@@ -123,6 +161,10 @@ public class CppReplacer {
 
         @Override
         public Result visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
+            if (!cpp) {
+                throw new ExpressionFormatException("Can't handle function " + call.getFunctionName());
+            }
+            
             Result result = null;
             if (call.getFunctionName().equals("defined") && call.getArgument() instanceof Variable) {
                 result = new VariableResult(((Variable) call.getArgument()).getName());

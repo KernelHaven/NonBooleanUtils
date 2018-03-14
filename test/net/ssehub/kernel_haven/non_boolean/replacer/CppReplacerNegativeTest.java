@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * Negative parameterized tests for the {@link CppReplacer}.
+ * Negative parameterized tests for the {@link NonBooleanReplacer} with CPP expressions.
  *
  * @author Adam
  */
@@ -198,10 +198,11 @@ public class CppReplacerNegativeTest {
      */
     @Test
     public void test() {
-        CppReplacer replacer = new CppReplacer(CppReplacerTest.DEFAULT_VARS, CppReplacerTest.DEFAULT_CONSTANTS);
+        NonBooleanReplacer replacer = new NonBooleanReplacer(CppReplacerTest.DEFAULT_VARS,
+                CppReplacerTest.DEFAULT_CONSTANTS);
         
         try {
-            String result = replacer.replace(input);
+            String result = replacer.replaceCpp(input);
             fail("Expected ExpressionFormatException, but got: " + result);
         } catch (ExpressionFormatException e) {
             // expected

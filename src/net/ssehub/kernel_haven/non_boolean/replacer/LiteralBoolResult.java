@@ -27,4 +27,9 @@ class LiteralBoolResult extends BoolResult {
         return value ? "1" : "0";
     }
     
+    @Override
+    public String toNonCppString() {
+        return toCppString();
+    }
+    
 }

@@ -21,7 +21,7 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
-import net.ssehub.kernel_haven.non_boolean.replacer.CppReplacer;
+import net.ssehub.kernel_haven.non_boolean.replacer.NonBooleanReplacer;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.Util;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
@@ -399,11 +399,11 @@ public class NonBooleanPreperation implements IPreparation {
     
     private String replaceInLine(String line, File from) {
         
-        CppReplacer replacer = new CppReplacer(variables, getConstants());
+        NonBooleanReplacer replacer = new NonBooleanReplacer(variables, getConstants());
         
         String result = line;
         try {
-            result = replacer.replace(line);
+            result = replacer.replaceCpp(line);
         } catch (ExpressionFormatException e) {
             LOGGER.logException("Error whilte replacing the following line in " + from + ": " + line, e);
         }

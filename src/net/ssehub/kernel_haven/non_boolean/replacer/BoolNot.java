@@ -30,5 +30,18 @@ class BoolNot extends BoolResult {
         }
         return result;
     }
+    
+    @Override
+    public String toNonCppString() {
+        String result;
+        if (nested == LiteralBoolResult.FALSE) {
+            result = "1"; // not false
+        } else if (nested == LiteralBoolResult.TRUE) {
+            result = "0"; // not true
+        } else {
+            result = "!(" + nested.toNonCppString() + ")";
+        }
+        return result;
+    }
 
 }
