@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -313,10 +315,10 @@ public class NonBooleanReplacer {
                 result = leftSide.cmpLe(rightSide);
                 break;
             case CMP_GT:
-                result = rightSide.cmpLt(leftSide);
+                result = notNull(rightSide).cmpLt(leftSide);
                 break;
             case CMP_GE:
-                result = rightSide.cmpLe(leftSide);
+                result = notNull(rightSide).cmpLe(leftSide);
                 break;
                 
             default:
