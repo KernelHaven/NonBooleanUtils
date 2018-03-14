@@ -18,8 +18,15 @@ import net.ssehub.kernel_haven.non_boolean.PreprocessorConditionVisitor;
 import net.ssehub.kernel_haven.util.Logger;
 
 /**
+ * <p>
  * A heuristic to find allowed values for integer variables. This walks through all source files in a given source
  * tree.
+ * </p>
+ * <p>
+ * After creating a {@link NonBooleanHeuristic}, use {@link #addAllSourceFiles(File)} and / or
+ * {@link #addSingleCppLine(String)} to add C preprocessor lines to consider. After this, call {@link #getResult()}
+ * to compute the final result.
+ * </p>
  * 
  * @author Adam
  */
@@ -37,12 +44,6 @@ public class NonBooleanHeuristic {
      * The non boolean operations that were found in the source files. Maps variable name -> NonBooleanOperation.
      */
     private Map<String, Set<NonBooleanOperation>> nonBooleanOperations;
-    
-    /**
-     * The non boolean variables found by this heuristic. This is the final result of the
-     * {@link #findNonBooleanVariables(File)} method.
-     */
-    private Map<String, NonBooleanVariable> variables;
     
     private Pattern variableNamePattern;
     private Pattern leftSide;
@@ -94,6 +95,8 @@ public class NonBooleanHeuristic {
      * @throws SetUpException If setting up this heuristic fails.
      */
     public NonBooleanHeuristic(Configuration config) throws SetUpException {
+        this.nonBooleanOperations = new HashMap<>();
+        
         this.variableNamePattern = config.getValue(NonBooleanSettings.VARIABLE_REGEX);
         String variableRegex = variableNamePattern.pattern();
         
@@ -139,30 +142,26 @@ public class NonBooleanHeuristic {
      * 
      * @param sourceTree The directory to walk through.
      * 
-     * @return The found {@link NonBooleanVariable}s.
-     * 
      * @throws IOException If reading source file fails.
      */
-    public Map<String, NonBooleanVariable> findNonBooleanVariables(File sourceTree) throws IOException {
-        variables = new HashMap<>();
-        nonBooleanOperations = new HashMap<>();
-        
+    public void addAllSourceFiles(File sourceTree) throws IOException {
         new PreprocessorConditionVisitor() {
             
             @Override
             public void visit(File file, String line) {
-                try {
-                    collectNonBooleanFromLine(file, line);
-                } catch (IOException e) {
-                    LOGGER.logException("Error reading line", e);
-                    e.printStackTrace();
-                }
+                collectNonBooleanFromLine(file, line);
             }
+            
         }.visitAllFiles(sourceTree);
-        
-        gatherConstantValues();
-        
-        return variables;
+    }
+    
+    /**
+     * Uses the heuristic to find {@link NonBooleanVariable}s in the given C preprocessor line.
+     * 
+     * @param line The line to find {@link NonBooleanVariable}s in.
+     */
+    public void addSingleCppLine(String line) {
+        collectNonBooleanFromLine(null, line);
     }
     
     /**
@@ -170,10 +169,8 @@ public class NonBooleanHeuristic {
      * 
      * @param file The file we are currently in (used for error messages).
      * @param line A CPP expression (e.g. if expression).
-     * 
-     * @throws IOException If reading the file fails.
      */
-    private void collectNonBooleanFromLine(File file, String line) throws IOException {
+    private void collectNonBooleanFromLine(File file, String line) {
         Matcher variableNameMatcher = variableNamePattern.matcher(line);
         
         while (variableNameMatcher.find()) {
@@ -256,9 +253,13 @@ public class NonBooleanHeuristic {
     }
     
     /**
-     * Fill {@link #variables} based on the found operations in {@link #nonBooleanOperations}.
+     * Uses all previously found non-boolean operations to create a set of {@link NonBooleanVariable}s.
+     * 
+     * @return A map of variableName -&gt; {@link NonBooleanVariable}s.
      */
-    private void gatherConstantValues() {
+    public Map<String, NonBooleanVariable> getResult() {
+        Map<String, NonBooleanVariable> variables = new HashMap<>();
+        
         // No variability model available -> use heuristic (use gathered values from code)
         for (Map.Entry<String, Set<NonBooleanOperation>> entry : nonBooleanOperations.entrySet()) {
             Set<Long> requiredConstants = new HashSet<>();
@@ -288,6 +289,8 @@ public class NonBooleanHeuristic {
             
             variables.put(entry.getKey(), new NonBooleanVariable(entry.getKey(), requiredConstants));
         }
+        
+        return variables;
     }
     
 }

@@ -113,7 +113,8 @@ public class NonBooleanPreperation implements IPreparation {
         if (!nonBooleanModelRead) {
             // walk through all *.c and *.h files in the source_tree, and collect non boolean operations.
             NonBooleanHeuristic heuristic = new NonBooleanHeuristic(config);
-            variables = heuristic.findNonBooleanVariables(originalSourceTree);
+            heuristic.addAllSourceFiles(originalSourceTree);
+            variables = heuristic.getResult();
         }
         
         this.replacer = new NonBooleanReplacer(variables, getConstants());
