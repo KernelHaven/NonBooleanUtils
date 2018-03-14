@@ -1,7 +1,11 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import net.ssehub.kernel_haven.non_boolean.FiniteIntegerVariable;
 import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
 import net.ssehub.kernel_haven.non_boolean.parser.CppParser;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
@@ -12,6 +16,8 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.IntegerLiteral;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Operator;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Variable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
+import net.ssehub.kernel_haven.variability_model.VariabilityModel;
+import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
 /**
  * A replacer that turns non-boolean expressions (from the C preprocessor (CPP) or another source) into pure-boolean
@@ -35,6 +41,30 @@ public class NonBooleanReplacer {
      */
     public NonBooleanReplacer(Map<String, NonBooleanVariable> variables, Map<String, Long> constants) {
         this.variables = variables;
+        this.constants = constants;
+        this.parser = new CppParser();
+    }
+    
+    /**
+     * Creates a new {@link NonBooleanReplacer} with {@link NonBooleanVariable} created from the
+     * {@link FiniteIntegerVariable} given variability model.
+     * 
+     * @param varModel The {@link VariabilityModel} to get the {@link FiniteIntegerVariable}s from.
+     * @param constants A {@link Map} of constant values to replace in the expressions.
+     */
+    public NonBooleanReplacer(VariabilityModel varModel, Map<String, Long> constants) {
+        this.variables = new HashMap<>();
+        for (VariabilityVariable variable : varModel.getVariables()) {
+            if (variable instanceof FiniteIntegerVariable) {
+                FiniteIntegerVariable intVar = (FiniteIntegerVariable) variable;
+                Set<Long> variableConstants = new HashSet<>();
+                for (int i = 0; i < intVar.getSizeOfRange(); i++) {
+                    variableConstants.add((long) intVar.getValue(i));
+                }
+                variables.put(variable.getName(), new NonBooleanVariable(variable.getName(), variableConstants));
+            }
+        }
+        
         this.constants = constants;
         this.parser = new CppParser();
     }
