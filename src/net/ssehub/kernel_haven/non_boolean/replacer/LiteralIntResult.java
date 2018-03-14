@@ -95,7 +95,7 @@ class LiteralIntResult extends Result {
     
     /**
      * Applies the given binary operation on this value and returns the result. The only allowed value for other
-     * is another {@link LiteralIntResult}.
+     * is another {@link LiteralIntResult} or {@link VariablesWithValues}.
      * 
      * @param other The other value to use as the right-hand side in the binary operation.
      * @param op The operation. This value is the left-hand side, other is the right-hand side.
@@ -103,7 +103,7 @@ class LiteralIntResult extends Result {
      * 
      * @return The new value after applying the given binary operation.
      * 
-     * @throws ExpressionFormatException If other is not a {@link LiteralIntResult}.
+     * @throws ExpressionFormatException If other is not a {@link LiteralIntResult} or a {@link VariablesWithValues}.
      */
     private Result applyOperation(Result other, BiFunction<Long, Long, Long> op, String opcode)
             throws ExpressionFormatException {
@@ -113,6 +113,10 @@ class LiteralIntResult extends Result {
         if (other instanceof LiteralIntResult) {
             LiteralIntResult o = (LiteralIntResult) other;
             result = new LiteralIntResult(op.apply(value, o.value));
+            
+        } else if (other instanceof VariablesWithValues) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            result = o.applyOperation(this, op, opcode, true);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator " + opcode + " on literal and "

@@ -102,7 +102,7 @@ public class CppReplacerTest {
                  */
                 
                 /*
-                 * Var OP Literal 
+                 * Var CMP_OP Literal 
                  * + reversed
                  */
                 new Object[] {"#if (VAR_A == 1)", "#if defined(VAR_A_eq_1)", "Var equals Literal"},
@@ -265,6 +265,18 @@ public class CppReplacerTest {
                 new Object[] {"#if ~VAR_A == " + (~1L), "#if defined(VAR_A_eq_1)", "Var calculation (Bin INVERT)"},
                 
                 /*
+                 * (Literal INT_OP Var) EQUAL Literal
+                 */
+                new Object[] {"#if 2 + VAR_A == 3", "#if defined(VAR_A_eq_1)", "Var calculation (ADD) (reversed)"},
+                new Object[] {"#if 2 - VAR_A == 0", "#if defined(VAR_A_eq_2)", "Var calculation (SUB) (reversed)"},
+                new Object[] {"#if 2 * VAR_A == 4", "#if defined(VAR_A_eq_2)", "Var calculation (MUL) (reversed)"},
+                new Object[] {"#if 2 / (VAR_A + 1) == 1", "#if defined(VAR_A_eq_1)", "Var calculation (DIV) (reversed)"},
+                new Object[] {"#if 5 % (VAR_A + 1) == 0", "#if defined(VAR_A_eq_0)", "Var calculation (MOD) (reversed)"},
+                new Object[] {"#if (1 & VAR_A) == 1", "#if defined(VAR_A_eq_1)", "Var calculation (Bin AND) (reversed)"},
+                new Object[] {"#if (1 | VAR_A) == 3", "#if defined(VAR_A_eq_2)", "Var calculation (Bin OR) (reversed)"},
+                new Object[] {"#if (1 ^ VAR_A) == 3", "#if defined(VAR_A_eq_2)", "Var calculation (Bin XOR) (reversed)"},
+                
+                /*
                  * Var CMP_OP Unknown
                  * + reversed
                  */
@@ -290,6 +302,27 @@ public class CppReplacerTest {
                 new Object[] {"#if UNKNOWN1 <= UNKNOWN2", "#if defined(UNKNOWN1_le_UNKNOWN2)", "Unknown and Unknown comparison"},
                 new Object[] {"#if UNKNOWN1 > UNKNOWN2", "#if defined(UNKNOWN2_lt_UNKNOWN1)", "Unknown and Unknown comparison"},
                 new Object[] {"#if UNKNOWN1 >= UNKNOWN2", "#if defined(UNKNOWN2_le_UNKNOWN1)", "Unknown and Unknown comparison"},
+                
+                /*
+                 * (Var INT_OP Var) equals Literal
+                 */
+                new Object[] {"#if VAR_A + VAR_C == 0", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "Var PLUS Var"},
+                new Object[] {"#if VAR_A - VAR_C == 0", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "Var MINUS Var"},
+                new Object[] {"#if VAR_A * VAR_C == 1", "#if (defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1))", "Var PLUS Var"},
+                
+                /*
+                 * (Var INT_OP Var INT_OP Var) equals Literal
+                 */
+                new Object[] {"#if VAR_A + VAR_B + VAR_C == 0", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_B_eq_0))) && (defined(VAR_C_eq_0))", "Var PLUS Var PLUS Var"},
+                
+                /*
+                 * (Var INT_OP Var INT_OP Literal) equals Literal
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A + VAR_C) + 1 == 1", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "(Var PLUS Var) PLUS Literal"},
+                new Object[] {"#if VAR_A + (VAR_C + 1) == 1", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "Var PLUS (Var PLUS Literal)"},
+                new Object[] {"#if 2 + (VAR_A + VAR_C) == 2", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "Literal PLUS (Var PLUS Var)"},
+                new Object[] {"#if (2 + VAR_A) + VAR_C == 2", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "(Literal PLUS Var) PLUS Var"},
                 
                 /*
                  * From old NonBooleanPreperationTest

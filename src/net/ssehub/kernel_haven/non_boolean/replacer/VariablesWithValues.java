@@ -53,6 +53,17 @@ class VariablesWithValues extends Result {
     }
     
     /**
+     * Creates a {@link VariablesWithValues} for the given varNames and values.
+     * 
+     * @param varNames The variable names.
+     * @param values The values.
+     */
+    private VariablesWithValues(String[] varNames, long[][] values) {
+        this.varNames = varNames;
+        this.values = values;
+    }
+    
+    /**
      * Returns the current value for the given line in values.
      * 
      * @param lineIndex The line index of values.
@@ -280,21 +291,57 @@ class VariablesWithValues extends Result {
      * @param other The right-hand side of the operation.
      * @param op The operation to perform on all current values.
      * @param opcode A string representation of the operation. Used in error messages.
+     * @param switchSides Whether left- and right-hand side should be reversed.
      * 
      * @return this, with the operation applied to all current values.
      * 
      * @throws ExpressionFormatException If other is not a {@link LiteralIntResult}.
      */
-    private Result applyOperation(Result other, BiFunction<Long, Long, Long> op, String opcode) 
+    public Result applyOperation(Result other, BiFunction<Long, Long, Long> op, String opcode, boolean switchSides) 
             throws ExpressionFormatException {
         
         Result result;
         if (other instanceof LiteralIntResult) {
             LiteralIntResult o = (LiteralIntResult) other;
             for (int i = 0; i < getNumberOfLines(); i++) {
-                setCurrentValue(i, op.apply(getCurrentValue(i), o.getValue()));
+                if (switchSides) {
+                    setCurrentValue(i, op.apply(o.getValue(), getCurrentValue(i)));
+                } else {
+                    setCurrentValue(i, op.apply(getCurrentValue(i), o.getValue()));
+                }
             }
             result = this;
+            
+        } else if (other instanceof VariablesWithValues) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            
+            String[] varNames = new String[this.getNumVars() + o.getNumVars()];
+            // varNames = {this.varNames, o.VarNames}
+            System.arraycopy(this.varNames, 0, varNames, 0, this.varNames.length);
+            System.arraycopy(o.varNames, 0, varNames, this.varNames.length, o.varNames.length);
+
+            long[][] values = new long[this.values.length * o.values.length][this.getNumVars() + o.getNumVars() + 1];
+            int valuesIndex = 0;
+            for (int thisIndex = 0; thisIndex < getNumberOfLines(); thisIndex++) {
+                for (int oIndex = 0; oIndex < o.getNumberOfLines(); oIndex++) {
+                    long[] line = values[valuesIndex];
+                    valuesIndex++;
+                    
+                    long[] thisLine = this.values[thisIndex];
+                    long[] oLine = o.values[oIndex];
+                    
+                    // line = {thisLine (except last), oLine (except last), combineCurrentValue}
+                    System.arraycopy(thisLine, 0, line, 0, thisLine.length - 1);
+                    System.arraycopy(oLine, 0, line, thisLine.length - 1, oLine.length - 1);
+                    if (switchSides) {
+                        line[line.length - 1] = op.apply(o.getCurrentValue(oIndex), this.getCurrentValue(thisIndex)); 
+                    } else {
+                        line[line.length - 1] = op.apply(this.getCurrentValue(thisIndex), o.getCurrentValue(oIndex)); 
+                    }
+                }
+            }
+            
+            result = new VariablesWithValues(varNames, values);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator " + opcode
@@ -305,42 +352,42 @@ class VariablesWithValues extends Result {
     
     @Override
     public Result add(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa + bb, "+");
+        return applyOperation(other, (aa, bb) -> aa + bb, "+", false);
     }
     
     @Override
     public Result sub(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa - bb, "-");
+        return applyOperation(other, (aa, bb) -> aa - bb, "-", false);
     }
     
     @Override
     public Result mul(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa * bb, "*");
+        return applyOperation(other, (aa, bb) -> aa * bb, "*", false);
     }
     
     @Override
     public Result div(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa / bb, "/");
+        return applyOperation(other, (aa, bb) -> aa / bb, "/", false);
     }
     
     @Override
     public Result mod(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa % bb, "%");
+        return applyOperation(other, (aa, bb) -> aa % bb, "%", false);
     }
     
     @Override
     public Result binAnd(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa & bb, "&");
+        return applyOperation(other, (aa, bb) -> aa & bb, "&", false);
     }
     
     @Override
     public Result binOr(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa | bb, "|");
+        return applyOperation(other, (aa, bb) -> aa | bb, "|", false);
     }
     
     @Override
     public Result binXor(Result other) throws ExpressionFormatException {
-        return applyOperation(other, (aa, bb) -> aa ^ bb, "^");
+        return applyOperation(other, (aa, bb) -> aa ^ bb, "^", false);
     }
     
     @Override
