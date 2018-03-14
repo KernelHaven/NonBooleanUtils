@@ -35,7 +35,6 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
  * @author Adam
  * @author El-Sharkawy
  */
-// TODO SE: @Adam please check whether and how NonBooleanConditionConverter can be used/integrated
 public class NonBooleanPreperation implements IPreparation {
     
     static final String VAR_IDENTIFICATION_REGEX_CONFIG = "code.extractor.variable_regex";
