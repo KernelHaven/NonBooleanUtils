@@ -182,7 +182,8 @@ class VariablesWithValues extends Result {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 < v2);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator < or > on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator < or > on VariablesWithValues and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -206,7 +207,8 @@ class VariablesWithValues extends Result {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 <= v2);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator <= or >= on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator <= or >= on VariablesWithValues and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -230,7 +232,8 @@ class VariablesWithValues extends Result {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 == v2);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator == or != on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator == or != on VariablesWithValues and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -345,7 +348,7 @@ class VariablesWithValues extends Result {
             
         } else {
             throw new ExpressionFormatException("Can't apply operator " + opcode
-                    + " on VariableWithValues with operand " + other.getClass().getSimpleName());
+                    + " on VariableWithValues and " + other.getClass().getSimpleName());
         }
         return result;
     }

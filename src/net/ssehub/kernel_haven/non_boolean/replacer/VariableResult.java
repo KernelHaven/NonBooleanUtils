@@ -66,7 +66,8 @@ class VariableResult extends Result {
             result = new VariableResult(o.getVarName(0) + "_gt_" + var);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator < or > on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator < or > on Unknown variable and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -100,7 +101,8 @@ class VariableResult extends Result {
             result = new VariableResult(o.getVarName(0) +  "_ge_" + var);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator <= or >= on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator <= or >= on Unknown variable and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -125,7 +127,8 @@ class VariableResult extends Result {
             result = new VariableResult(o.getVarName(0) +  "_eq_" + var);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator == or != on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator == or != on Unknown variable and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }

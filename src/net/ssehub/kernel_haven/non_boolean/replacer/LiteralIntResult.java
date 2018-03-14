@@ -46,7 +46,8 @@ class LiteralIntResult extends Result {
             result = new VariableResult(o.getVar() + "_gt_" + value);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator < or > on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator < or > on Literal and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -67,7 +68,8 @@ class LiteralIntResult extends Result {
             result = new VariableResult(o.getVar() + "_ge_" + value);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator <= or >= on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator <= or >= on Literal and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -88,7 +90,8 @@ class LiteralIntResult extends Result {
             result = new VariableResult(o.getVar() + "_eq_" + value);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator == or != on " + other.getClass().getSimpleName());
+            throw new ExpressionFormatException("Can't apply operator == or != on Literal and "
+                    + other.getClass().getSimpleName());
         }
         return result;
     }
@@ -119,7 +122,7 @@ class LiteralIntResult extends Result {
             result = o.applyOperation(this, op, opcode, true);
             
         } else {
-            throw new ExpressionFormatException("Can't apply operator " + opcode + " on literal and "
+            throw new ExpressionFormatException("Can't apply operator " + opcode + " on Literal and "
                     + other.getClass().getSimpleName());
         }
         return result;
