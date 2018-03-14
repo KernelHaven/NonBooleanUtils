@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.ssehub.kernel_haven.non_boolean.FiniteIntegerVariable;
-import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
+import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
 import net.ssehub.kernel_haven.non_boolean.parser.CppParser;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.ExpressionList;

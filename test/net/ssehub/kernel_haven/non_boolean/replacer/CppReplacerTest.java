@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
+import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**

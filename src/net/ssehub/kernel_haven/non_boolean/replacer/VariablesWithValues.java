@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation.NonBooleanVariable;
+import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
