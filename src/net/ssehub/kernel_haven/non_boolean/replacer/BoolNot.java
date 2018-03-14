@@ -29,7 +29,15 @@ class BoolNot extends BoolResult {
 
     @Override
     public String toCppString() {
-        return "!(" + nested.toCppString() + ")";
+        String result;
+        if (nested == LiteralBoolResult.FALSE) {
+            result = "1"; // not false
+        } else if (nested == LiteralBoolResult.TRUE) {
+            result = "0"; // not true
+        } else {
+            result = "!(" + nested.toCppString() + ")";
+        }
+        return result;
     }
 
 }

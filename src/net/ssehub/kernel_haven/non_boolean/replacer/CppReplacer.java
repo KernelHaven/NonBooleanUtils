@@ -150,7 +150,7 @@ public class CppReplacer {
             } else {
                 NonBooleanVariable var = variables.get(variable.getName());
                 if (var != null) {
-                    result = new VariableWithValues(variable.getName(), var.getConstants());
+                    result = new VariablesWithValues(variable.getName(), var.getConstants());
                     
                 } else {
                     result = new VariableResult(variable.getName(), true);

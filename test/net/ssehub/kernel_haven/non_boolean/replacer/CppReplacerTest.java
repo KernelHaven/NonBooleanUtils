@@ -159,8 +159,8 @@ public class CppReplacerTest {
                 /*
                  * Var, Var with calculation, Unknown without defined()
                  */
-                new Object[] {"#if VAR_A", "#if (!defined(VAR_A_eq_0))", "Missing defined with Var"},
-                new Object[] {"#if VAR_A / 2", "#if (!defined(VAR_A_eq_0) && !defined(VAR_A_eq_1))", "Missing defined with Var multiple 0 values"},
+                new Object[] {"#if VAR_A", "#if !(defined(VAR_A_eq_0))", "Missing defined with Var"},
+                new Object[] {"#if VAR_A / 2", "#if !((defined(VAR_A_eq_0)) || (defined(VAR_A_eq_1)))", "Missing defined with Var multiple 0 values"},
                 new Object[] {"#if VAR_A + 1", "#if 1", "Missing defined with Var no 0 values"},
                 new Object[] {"#if VAR_UNKNOWN", "#if !defined(VAR_UNKNOWN_eq_0)", "Missing defined with Unknown"},
                 
@@ -207,8 +207,8 @@ public class CppReplacerTest {
                  */
                 new Object[] {"#if 1 == 2", "#if 0", "Literal equals Literal (false)"},
                 new Object[] {"#if 1 == 1", "#if 1", "Literal equals Literal (true)"},
-                new Object[] {"#if 1 != 2", "#if !(0)", "Literal not equals Literal (true)"},
-                new Object[] {"#if 1 != 1", "#if !(1)", "Literal not equals Literal (false)"},
+                new Object[] {"#if 1 != 2", "#if 1", "Literal not equals Literal (true)"},
+                new Object[] {"#if 1 != 1", "#if 0", "Literal not equals Literal (false)"},
                 new Object[] {"#if 1 > 2", "#if 0", "Literal gt Literal (false)"},
                 new Object[] {"#if 2 > 1", "#if 1", "Literal gt Literal (true)"},
                 new Object[] {"#if 1 >= 2", "#if 0", "Literal ge Literal (false)"},
@@ -295,12 +295,12 @@ public class CppReplacerTest {
                  * From old NonBooleanPreperationTest
                  */
                 new Object[] {"#if ((VAR_A & 2) > 0)", "#if defined(VAR_A_eq_2)", "bitOperationHas2"},
-                new Object[] {"#if (VAR_A || VAR_B)", "#if ((!defined(VAR_A_eq_0))) || ((!defined(VAR_B_eq_0)))", "booleanNumbersInIf"},
+                new Object[] {"#if (VAR_A || VAR_B)", "#if (!(defined(VAR_A_eq_0))) || (!(defined(VAR_B_eq_0)))", "booleanNumbersInIf"},
                 new Object[] {"#if ((VAR_A) == VAR_C)", "#if ((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))", "unnecessaryBrackets"},
                 new Object[] {"#if (VAR_A % 2) == 0", "#if (defined(VAR_A_eq_0)) || (defined(VAR_A_eq_2))", "modulo"},
                 new Object[] {"#if 1l==1ul", "#if 1", "ifOneUL2"},
                 new Object[] {"#if 1L==1UL", "#if 1", "ifOneUL"},
-                new Object[] {"#if (defined(VAR_C) || VAR_C)", "#if (defined(VAR_C)) || ((!defined(VAR_C_eq_0)))", "ifdefWeirdCombination"},
+                new Object[] {"#if (defined(VAR_C) || VAR_C)", "#if (defined(VAR_C)) || (!(defined(VAR_C_eq_0)))", "ifdefWeirdCombination"},
                 new Object[] {"#if ((VAR_A == VAR_C) && (VAR_B == 2))", "#if (((defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))) || ((defined(VAR_A_eq_1)) && (defined(VAR_C_eq_1)))) && (defined(VAR_B_eq_2))", "complexExpression"},
                 new Object[] {"#if (!VAR1 || !VAR2)", "#if (!(!defined(VAR1_eq_0))) || (!(!defined(VAR2_eq_0)))", "booleanNumbersInIfNegated"}
         );

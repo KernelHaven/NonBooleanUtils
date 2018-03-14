@@ -37,8 +37,8 @@ class LiteralIntResult extends Result {
         if (other instanceof LiteralIntResult) {
             result = value < ((LiteralIntResult) other).value ? LiteralBoolResult.TRUE : LiteralBoolResult.FALSE;
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
+        } else if (other instanceof VariablesWithValues) {
+            VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value < value);
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
@@ -58,8 +58,8 @@ class LiteralIntResult extends Result {
         if (other instanceof LiteralIntResult) {
             result = value <= ((LiteralIntResult) other).value ? LiteralBoolResult.TRUE : LiteralBoolResult.FALSE;
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
+        } else if (other instanceof VariablesWithValues) {
+            VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value <= value);
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
@@ -79,8 +79,8 @@ class LiteralIntResult extends Result {
         if (other instanceof LiteralIntResult) {
             result = value == ((LiteralIntResult) other).value ? LiteralBoolResult.TRUE : LiteralBoolResult.FALSE;
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
+        } else if (other instanceof VariablesWithValues) {
+            VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value == value);
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {

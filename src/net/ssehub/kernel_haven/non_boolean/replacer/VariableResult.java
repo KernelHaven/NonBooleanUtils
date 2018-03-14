@@ -61,9 +61,9 @@ class VariableResult extends Result {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_lt_" + o.getVar());
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
-            result = new VariableResult(o.getVar() + "_gt_" + var);
+        } else if (other instanceof VariablesWithValues && ((VariablesWithValues) other).getNumVars() == 1) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            result = new VariableResult(o.getVarName(0) + "_gt_" + var);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator < or > on " + other.getClass().getSimpleName());
@@ -95,9 +95,9 @@ class VariableResult extends Result {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_le_" + o.getVar());
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
-            result = new VariableResult(o.getVar() +  "_ge_" + var);
+        } else if (other instanceof VariablesWithValues && ((VariablesWithValues) other).getNumVars() == 1) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            result = new VariableResult(o.getVarName(0) +  "_ge_" + var);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator <= or >= on " + other.getClass().getSimpleName());
@@ -120,9 +120,9 @@ class VariableResult extends Result {
             VariableResult o = (VariableResult) other;
             result = new VariableResult(var + "_eq_" + o.getVar());
             
-        } else if (other instanceof VariableWithValues) {
-            VariableWithValues o = (VariableWithValues) other;
-            result = new VariableResult(o.getVar() +  "_eq_" + var);
+        } else if (other instanceof VariablesWithValues  && ((VariablesWithValues) other).getNumVars() == 1) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            result = new VariableResult(o.getVarName(0) +  "_eq_" + var);
             
         } else {
             throw new ExpressionFormatException("Can't apply operator == or != on " + other.getClass().getSimpleName());
