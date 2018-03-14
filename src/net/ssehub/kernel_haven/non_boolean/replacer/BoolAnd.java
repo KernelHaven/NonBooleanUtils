@@ -22,24 +22,6 @@ class BoolAnd extends BoolResult {
         this.rightSide = rightSide;
     }
     
-    /**
-     * Returns the left side.
-     * 
-     * @return The left side.
-     */
-    public Result getLeftSide() {
-        return leftSide;
-    }
-    
-    /**
-     * Returns the right side.
-     * 
-     * @return The right side.
-     */
-    public Result getRightSide() {
-        return rightSide;
-    }
-
     @Override
     public String toCppString() {
         return "(" + leftSide.toCppString() + ") && (" + rightSide.toCppString() + ")";

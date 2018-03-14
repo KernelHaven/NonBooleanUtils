@@ -18,15 +18,6 @@ class BoolNot extends BoolResult {
         this.nested = nested;
     }
     
-    /**
-     * Returns the nested {@link Result}.
-     * 
-     * @return The nested {@link Result}.
-     */
-    public Result getNested() {
-        return nested;
-    }
-
     @Override
     public String toCppString() {
         String result;

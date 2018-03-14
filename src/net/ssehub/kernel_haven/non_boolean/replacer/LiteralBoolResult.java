@@ -22,15 +22,6 @@ class LiteralBoolResult extends BoolResult {
         this.value = value;
     }
     
-    /**
-     * Returns the value of this literal.
-     * 
-     * @return This value.
-     */
-    public boolean getValue() {
-        return value;
-    }
-    
     @Override
     public String toCppString() {
         return value ? "1" : "0";

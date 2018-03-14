@@ -171,7 +171,24 @@ public class CppReplacerNegativeTest {
                 new Object[] {"#if 1 % UNKNOWN", "Calcating on Unknown (MOD) (reversed)"},
                 new Object[] {"#if 1 & UNKNOWN", "Calcating on Unknown (Bin AND) (reversed)"},
                 new Object[] {"#if 1 | UNKNOWN", "Calcating on Unknown (Bin OR) (reversed)"},
-                new Object[] {"#if 1 ^ UNKNOWN", "Calcating on Unknown (Bin XOR) (reversed)"}
+                new Object[] {"#if 1 ^ UNKNOWN", "Calcating on Unknown (Bin XOR) (reversed)"},
+                
+                /*
+                 * Comparing unknown with (Var + Var)
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A + VAR_C) == UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if (VAR_A + VAR_C) != UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if (VAR_A + VAR_C) < UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if (VAR_A + VAR_C) <= UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if (VAR_A + VAR_C) > UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if (VAR_A + VAR_C) >= UNKNOWN", "Comparing (Var + Var) with Uknown"},
+                new Object[] {"#if UNKNOWN == (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if UNKNOWN != (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if UNKNOWN < (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if UNKNOWN <= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if UNKNOWN > (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"}
         );
     }
     // CHECKSTYLE:ON
