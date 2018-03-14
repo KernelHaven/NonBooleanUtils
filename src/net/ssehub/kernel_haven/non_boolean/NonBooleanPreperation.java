@@ -166,7 +166,9 @@ public class NonBooleanPreperation implements IPreparation {
             try (Writer out = createWriter(to)) {
                 
                 String line;
-                while ((line = in.readLine()) != null) {
+                // CHECKSTYLE:OFF // TODO inner assignment
+                while (continueReading(line = in.readLine())) {
+                // CHECKSTYLE:ON
                     // Replace variable occurrences of #if's and #elif's
                     if (CPPUtils.isIfOrElifStatement(line)) {
                         
@@ -192,6 +194,17 @@ public class NonBooleanPreperation implements IPreparation {
                 
             }
         }
+    }
+    
+    /**
+     * Whether we should keep continue reading and do replacements in the source file.
+     *  
+     * @param line The line that was just read.
+     * 
+     * @return Whether this line should be handled, too. Must return false if line is <code>null</code>.
+     */
+    protected boolean continueReading(String line) {
+        return line != null;
     }
     
     /**
