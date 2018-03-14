@@ -282,7 +282,7 @@ public class NonBooleanHeuristic {
                     break;
                     
                 default:
-                    System.err.println("Unknown operator: " + op.operator);
+                    LOGGER.logError("Unknown operator: " + op.operator);
                     break;
                 }
             }
