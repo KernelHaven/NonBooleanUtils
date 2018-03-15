@@ -55,17 +55,6 @@ class VariablesWithValues extends Result {
     }
     
     /**
-     * Creates a {@link VariablesWithValues} for the given varNames and values.
-     * 
-     * @param varNames The variable names.
-     * @param values The values.
-     */
-    private VariablesWithValues(String[] varNames, long[][] values) {
-        this.varNames = varNames;
-        this.values = values;
-    }
-    
-    /**
      * Returns the current value for the given line in values.
      * 
      * @param lineIndex The line index of values.
@@ -178,7 +167,9 @@ class VariablesWithValues extends Result {
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(varNames[0] + "_lt_" + o.getVar());
+            o.setVar(varNames[0] + "_lt_" + o.getVar());
+            o.setUnknownVariable(false);
+            result = o;
             
         } else if (other instanceof VariablesWithValues) {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 < v2);
@@ -203,7 +194,9 @@ class VariablesWithValues extends Result {
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(varNames[0] + "_le_" + o.getVar());
+            o.setVar(varNames[0] + "_le_" + o.getVar());
+            o.setUnknownVariable(false);
+            result = o;
             
         } else if (other instanceof VariablesWithValues) {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 <= v2);
@@ -228,7 +221,9 @@ class VariablesWithValues extends Result {
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(varNames[0] + "_eq_" + o.getVar());
+            o.setVar(varNames[0] + "_eq_" + o.getVar());
+            o.setUnknownVariable(false);
+            result = o;
             
         } else if (other instanceof VariablesWithValues) {
             result = join(this, (VariablesWithValues) other, (v1, v2) -> v1 == v2);
@@ -354,7 +349,9 @@ class VariablesWithValues extends Result {
                 }
             }
             
-            result = new VariablesWithValues(varNames, values);
+            this.varNames = varNames;
+            this.values = values;
+            result = this;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator " + opcode

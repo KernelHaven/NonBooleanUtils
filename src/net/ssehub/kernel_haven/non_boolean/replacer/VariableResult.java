@@ -46,30 +46,15 @@ class VariableResult extends Result {
         return unknownVariable;
     }
     
-    @Override
-    public Result cmpLt(Result other) throws ExpressionFormatException {
-        if (!unknownVariable) {
-            throw new ExpressionFormatException("Can't apply operator < or > on VariableResult");
-        }
-        
-        Result result;
-        if (other instanceof LiteralIntResult) {
-            LiteralIntResult lit = (LiteralIntResult) other;
-            result = new VariableResult(var + "_lt_" + lit.getValue());
-            
-        } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
-            VariableResult o = (VariableResult) other;
-            result = new VariableResult(var + "_lt_" + o.getVar());
-            
-        } else if (other instanceof VariablesWithValues && ((VariablesWithValues) other).getNumVars() == 1) {
-            VariablesWithValues o = (VariablesWithValues) other;
-            result = new VariableResult(o.getVarName(0) + "_gt_" + var);
-            
-        } else {
-            throw new ExpressionFormatException("Can't apply operator < or > on Unknown variable and "
-                    + other.getClass().getSimpleName());
-        }
-        return result;
+    /**
+     * Overrides whether this is an unknown variable.
+     * 
+     * @param unknownVariable Whether this is an unknown variable.
+     * 
+     * @see #isUnknownVariable()
+     */
+    public void setUnknownVariable(boolean unknownVariable) {
+        this.unknownVariable = unknownVariable;
     }
     
     /**
@@ -80,7 +65,48 @@ class VariableResult extends Result {
     public String getVar() {
         return var;
     }
-
+    
+    /**
+     * Changes the name of this variable.
+     * 
+     * @param var The new name of this variable.
+     */
+    public void setVar(String var) {
+        this.var = var;
+    }
+    
+    @Override
+    public Result cmpLt(Result other) throws ExpressionFormatException {
+        if (!unknownVariable) {
+            throw new ExpressionFormatException("Can't apply operator < or > on VariableResult");
+        }
+        
+        Result result;
+        if (other instanceof LiteralIntResult) {
+            LiteralIntResult lit = (LiteralIntResult) other;
+            this.var = var + "_lt_" + lit.getValue();
+            this.unknownVariable = false;
+            result = this;
+            
+        } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
+            VariableResult o = (VariableResult) other;
+            this.var = var + "_lt_" + o.getVar();
+            this.unknownVariable = false;
+            result = this;
+            
+        } else if (other instanceof VariablesWithValues && ((VariablesWithValues) other).getNumVars() == 1) {
+            VariablesWithValues o = (VariablesWithValues) other;
+            this.var = o.getVarName(0) + "_gt_" + var;
+            this.unknownVariable = false;
+            result  = this;
+            
+        } else {
+            throw new ExpressionFormatException("Can't apply operator < or > on Unknown variable and "
+                    + other.getClass().getSimpleName());
+        }
+        return result;
+    }
+    
     @Override
     public Result cmpLe(Result other) throws ExpressionFormatException {
         if (!unknownVariable) {
@@ -90,15 +116,21 @@ class VariableResult extends Result {
         Result result;
         if (other instanceof LiteralIntResult) {
             LiteralIntResult lit = (LiteralIntResult) other;
-            result = new VariableResult(var + "_le_" + lit.getValue());
+            this.var = var + "_le_" + lit.getValue();
+            this.unknownVariable = false;
+            result = this;
             
         } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(var + "_le_" + o.getVar());
+            this.var = var + "_le_" + o.getVar();
+            this.unknownVariable = false;
+            result = this;
             
         } else if (other instanceof VariablesWithValues && ((VariablesWithValues) other).getNumVars() == 1) {
             VariablesWithValues o = (VariablesWithValues) other;
-            result = new VariableResult(o.getVarName(0) +  "_ge_" + var);
+            this.var = o.getVarName(0) +  "_ge_" + var;
+            this.unknownVariable = false;
+            result = this;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator <= or >= on Unknown variable and "
@@ -116,15 +148,21 @@ class VariableResult extends Result {
         Result result;
         if (other instanceof LiteralIntResult) {
             LiteralIntResult lit = (LiteralIntResult) other;
-            result = new VariableResult(var + "_eq_" + lit.getValue());
+            this.var = var + "_eq_" + lit.getValue();
+            this.unknownVariable = false;
+            result = this;
             
         } else if (other instanceof VariableResult && ((VariableResult) other).unknownVariable) {
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(var + "_eq_" + o.getVar());
+            this.var = var + "_eq_" + o.getVar();
+            this.unknownVariable = false;
+            result = this;
             
         } else if (other instanceof VariablesWithValues  && ((VariablesWithValues) other).getNumVars() == 1) {
             VariablesWithValues o = (VariablesWithValues) other;
-            result = new VariableResult(o.getVarName(0) +  "_eq_" + var);
+            this.var = o.getVarName(0) +  "_eq_" + var;
+            this.unknownVariable = false;
+            result = this;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator == or != on Unknown variable and "

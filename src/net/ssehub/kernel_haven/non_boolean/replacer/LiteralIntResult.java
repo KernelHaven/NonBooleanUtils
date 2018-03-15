@@ -43,7 +43,9 @@ class LiteralIntResult extends Result {
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(o.getVar() + "_gt_" + value);
+            o.setVar(o.getVar() + "_gt_" + value);
+            o.setUnknownVariable(false);
+            result = o;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator < or > on Literal and "
@@ -65,7 +67,9 @@ class LiteralIntResult extends Result {
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(o.getVar() + "_ge_" + value);
+            o.setVar(o.getVar() + "_ge_" + value);
+            o.setUnknownVariable(false);
+            result = o;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator <= or >= on Literal and "
@@ -87,7 +91,9 @@ class LiteralIntResult extends Result {
             
         } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
             VariableResult o = (VariableResult) other;
-            result = new VariableResult(o.getVar() + "_eq_" + value);
+            o.setVar(o.getVar() + "_eq_" + value);
+            o.setUnknownVariable(false);
+            result = o;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator == or != on Literal and "
@@ -115,7 +121,8 @@ class LiteralIntResult extends Result {
         
         if (other instanceof LiteralIntResult) {
             LiteralIntResult o = (LiteralIntResult) other;
-            result = new LiteralIntResult(op.apply(value, o.value));
+            this.value = op.apply(this.value, o.value);
+            result = this;
             
         } else if (other instanceof VariablesWithValues) {
             VariablesWithValues o = (VariablesWithValues) other;
@@ -155,7 +162,8 @@ class LiteralIntResult extends Result {
     
     @Override
     public Result subUnary() throws ExpressionFormatException {
-        return new LiteralIntResult(-value);
+        this.value = -this.value;
+        return this;
     }
     
     @Override
@@ -175,7 +183,8 @@ class LiteralIntResult extends Result {
     
     @Override
     public Result binInv() throws ExpressionFormatException {
-        return new LiteralIntResult(~value);
+        this.value = ~this.value;
+        return this;
     }
     
     @Override
