@@ -28,6 +28,8 @@ import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
  */
 class VariablesWithValues extends Result {
     
+    private static final int MAX_ALLOWED_COMINATION_SIZE = 50;
+    
     private String[] varNames;
     
     /**
@@ -318,12 +320,20 @@ class VariablesWithValues extends Result {
         } else if (other instanceof VariablesWithValues) {
             VariablesWithValues o = (VariablesWithValues) other;
             
+            int resultSize = this.values.length * o.values.length;
+            if (resultSize > MAX_ALLOWED_COMINATION_SIZE) {
+                throw new ExpressionFormatException("Can't do integer opertion on two VariablesWithValues with sizes "
+                        + this.values.length + " and " + o.values.length + " (result size would be "
+                        + resultSize + ")\n" + "Left side has " + this.getNumVars() + ", right side has "
+                        + o.getNumVars() + " variables");
+            }
+            
             String[] varNames = new String[this.getNumVars() + o.getNumVars()];
             // varNames = {this.varNames, o.VarNames}
             System.arraycopy(this.varNames, 0, varNames, 0, this.varNames.length);
             System.arraycopy(o.varNames, 0, varNames, this.varNames.length, o.varNames.length);
 
-            long[][] values = new long[this.values.length * o.values.length][this.getNumVars() + o.getNumVars() + 1];
+            long[][] values = new long[resultSize][this.getNumVars() + o.getNumVars() + 1];
             int valuesIndex = 0;
             for (int thisIndex = 0; thisIndex < getNumberOfLines(); thisIndex++) {
                 for (int oIndex = 0; oIndex < o.getNumberOfLines(); oIndex++) {
