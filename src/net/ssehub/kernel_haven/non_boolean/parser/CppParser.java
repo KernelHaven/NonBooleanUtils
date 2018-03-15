@@ -130,15 +130,6 @@ public class CppParser {
 
         private String expression;
         
-        /**
-         * Creates a new {@link LiteralFinder}.
-         * 
-         * @param expression The currently parsed expression. Used for error messages.
-         */
-        public LiteralFinder(String expression) {
-            this.expression = expression;
-        }
-        
         @Override
         public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
@@ -266,15 +257,6 @@ public class CppParser {
 
         private String expression;
         
-        /**
-         * Creates a new {@link OperatorResolver}.
-         * 
-         * @param expression The currently parsed expression. Used for error messages.
-         */
-        public OperatorResolver(String expression) {
-            this.expression = expression;
-        }
-        
         @Override
         public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
             CppExpression result;
@@ -398,9 +380,14 @@ public class CppParser {
         
     }
     
+    private LiteralFinder literalFinder = new LiteralFinder();
+    private FunctionCallTranslator functionCallTranslator = new FunctionCallTranslator();
+    private UnaryOperatorFinder unaryOperatorFinder = new UnaryOperatorFinder();
+    private OperatorResolver operatorResolver = new OperatorResolver();
+    
     /**
      * Partially parses the given CPP expression. The resulting AST only has bracket hierarchies and function calls
-     * resolved.
+     * resolved. This method is not thread-safe (don't call it from multiple threads).
      * 
      * @param expression The expression to parse.
      * @return A (partially) parsed AST for the given expression.
@@ -458,10 +445,13 @@ public class CppParser {
             result = resultList.getExpression(0);
         }
         
-        result = result.accept(new LiteralFinder(expression));
-        result = result.accept(new FunctionCallTranslator());
-        result = result.accept(new UnaryOperatorFinder());
-        result = result.accept(new OperatorResolver(expression));
+        
+        literalFinder.expression = expression;
+        result = result.accept(literalFinder);
+        result = result.accept(functionCallTranslator);
+        result = result.accept(unaryOperatorFinder);
+        operatorResolver.expression = expression;
+        result = result.accept(operatorResolver);
         
         return result;
     }
