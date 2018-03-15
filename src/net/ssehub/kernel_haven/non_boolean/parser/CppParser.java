@@ -197,11 +197,13 @@ public class CppParser {
                 boolean foundFunction = false;
                 
                 if (currentExpr instanceof Variable && i + 1 < expressionList.getExpressionSize()) {
+                    Variable currentVar = (Variable) currentExpr;
                     CppExpression nextExpr = expressionList.getExpression(i + 1);
+                    
                     if (nextExpr instanceof ExpressionList) {
                         foundFunction = true;
                         nextExpr = nextExpr.accept(this);
-                        String name = ((Variable) currentExpr).getName();
+                        String name = currentVar.getName();
                         
                         ExpressionList nextExprList = (ExpressionList) nextExpr;
                         // unpack argument list if we only have one element
@@ -216,6 +218,13 @@ public class CppParser {
                         expressionList.setExpression(i, new FunctionCall(name, nextExpr));
                         expressionList.removeExpression(i + 1);
                         i++; // increment, since we already handled nextExpr
+                        
+                    } else if (currentVar.getName().equals("defined") && nextExpr instanceof Variable) {
+                        // special case: defined(VAR) without brackets ("defined VAR") is allowed
+                        foundFunction = true;
+                        
+                        expressionList.setExpression(i, new FunctionCall("defined", nextExpr));
+                        expressionList.removeExpression(i + 1);
                     }
                 }
                 

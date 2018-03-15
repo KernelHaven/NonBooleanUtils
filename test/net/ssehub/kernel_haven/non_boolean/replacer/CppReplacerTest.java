@@ -155,6 +155,7 @@ public class CppReplacerTest {
                  * defined(Var)
                  */
                 new Object[] {"#if defined(VAR_A)", "#if defined(VAR_A)", "Defined with Var"},
+                new Object[] {"#if defined VAR_A", "#if defined(VAR_A)", "Defined with Var (no brackets)"},
                 
                 /*
                  * Var, Var with calculation, Unknown without defined()

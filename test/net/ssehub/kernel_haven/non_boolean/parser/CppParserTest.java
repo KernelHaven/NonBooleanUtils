@@ -226,6 +226,33 @@ public class CppParserTest {
     }
     
     /**
+     * Tests that a defined() call without brackets is handled, too.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testDefinedWithoutBrackets() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        CppExpression result = parser.parse("defined A");
+        
+        CppExpression arg = assertFunctionCall(result, "defined");
+        assertVariable(arg, "A");
+    }
+    
+    /**
+     * Tests that a defined() call without brackets and an invalid parameter throws an exception.
+     * 
+     * @throws ExpressionFormatException wanted.
+     */
+    @Test(expected = ExpressionFormatException.class)
+    public void testDefinedWithoutBracketsInvalidParameter() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        parser.parse("defined ! A");
+    }
+    
+    /**
      * Tests that a function call without parameters is detected correctly.
      * 
      * @throws ExpressionFormatException unwanted.
