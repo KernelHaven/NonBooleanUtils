@@ -366,6 +366,7 @@ public class CppParserTest {
         
         assertLiteral(parser.parse("14L"), 14);
         assertLiteral(parser.parse("1434UL"), 1434);
+        assertLiteral(parser.parse("543ULL"), 543);
     }
     
     /**

@@ -167,6 +167,8 @@ public class CppParser {
                 String literal = variable.getName().toLowerCase();
                 if (literal.endsWith("ul")) {
                     literal = literal.substring(0, literal.length() - 2);
+                } else if (literal.endsWith("ull")) {
+                    literal = literal.substring(0, literal.length() - 3);
                 } else if (literal.endsWith("l")) {
                     literal = literal.substring(0, literal.length() - 1);
                 }
