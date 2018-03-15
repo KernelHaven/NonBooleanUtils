@@ -20,7 +20,8 @@ import net.ssehub.kernel_haven.non_boolean.replacer.AllReplacerTests;
     CPPUtilsTest.class,
     NonBooleanPreperationScenarioTest.class,
     NumberUtilsTest.class,
-    CppBufferedWriterTest.class
+    CppBufferedWriterTest.class,
+    NonBooleanPreparationTest.class,
     })
 public class AllTests {
 

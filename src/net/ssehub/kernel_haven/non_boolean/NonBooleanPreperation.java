@@ -238,13 +238,52 @@ public class NonBooleanPreperation implements IPreparation {
      * @return The line with replacements done; or the original line if the replacer failed.
      */
     private String replaceInLine(String line, File from) {
-        String result = line;
+        String result = removeComments(line);
         try {
             result = replacer.replaceCpp(line);
         } catch (ExpressionFormatException e) {
             LOGGER.logException("Error whilte replacing the following line in " + from + ": " + line, e);
         }
         return result;
+    }
+    
+    /**
+     * Removes inline (/* ... *&#47;)  and line (//) comments from the given line.
+     * Package visibility for test cases.
+     * 
+     * @param original The line to remove the comments from.
+     * @return The line with comments removed.
+     */
+    static String removeComments(String original) {
+        String replaced = original;
+        
+        if (original.indexOf('/') != -1) {
+            StringBuilder result = new StringBuilder();
+            
+            char[] chars = original.toCharArray();
+            boolean inlineComment = false;
+            
+            for (int i = 0; i < chars.length; i++) {
+                if (inlineComment) {
+                    if (chars[i] == '/' && chars[i - 1] == '*') {
+                        inlineComment = false;
+                    }
+                    
+                } else {
+                    if (chars[i] == '/' && i + 1 < chars.length && chars[i + 1] == '/') {
+                        break; // line comment, everything from now on is removed
+                    } else if (chars[i] == '/' && i + 1 < chars.length && chars[i + 1] == '*') {
+                        inlineComment = true;
+                    } else {
+                        result.append(chars[i]);
+                    }
+                }
+            }
+            
+            replaced = result.toString();
+        }
+        
+        return replaced;
     }
     
     /**
