@@ -97,11 +97,11 @@ public class NonBooleanReplacer {
         String expression = null;
         String prepend = null;
         
-        if (cppLine.startsWith("#if ")) {
-            expression = cppLine.substring("#if ".length());
+        if (cppLine.startsWith("#if ") || cppLine.startsWith("#if(")) {
+            expression = cppLine.substring("#if".length());
             prepend = "#if ";
-        } else if (cppLine.startsWith("#elif ")) {
-            expression = cppLine.substring("#elif ".length());
+        } else if (cppLine.startsWith("#elif ") || cppLine.startsWith("#elif(")) {
+            expression = cppLine.substring("#elif".length());
             prepend = "#elif ";
         }
         if (expression == null) {

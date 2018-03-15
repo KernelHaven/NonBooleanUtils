@@ -325,6 +325,14 @@ public class CppReplacerTest {
                 new Object[] {"#if (2 + VAR_A) + VAR_C == 2", "#if (defined(VAR_A_eq_0)) && (defined(VAR_C_eq_0))", "(Literal PLUS Var) PLUS Var"},
                 
                 /*
+                 * prefixes
+                 */
+                new Object[] {"#if VAR_A", "#if !(defined(VAR_A_eq_0))", "#if prefix with space"},
+                new Object[] {"#if(VAR_A)", "#if !(defined(VAR_A_eq_0))", "#if prefix without space"},
+                new Object[] {"#elif VAR_A", "#elif !(defined(VAR_A_eq_0))", "#elif prefix with space"},
+                new Object[] {"#elif(VAR_A)", "#elif !(defined(VAR_A_eq_0))", "#elif prefix without space"},
+                
+                /*
                  * From old NonBooleanPreperationTest
                  */
                 new Object[] {"#if ((VAR_A & 2) > 0)", "#if defined(VAR_A_eq_2)", "bitOperationHas2"},
