@@ -1,5 +1,8 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import net.ssehub.kernel_haven.util.logic.Disjunction;
+import net.ssehub.kernel_haven.util.logic.Formula;
+
 /**
  * A boolean disjunction of two {@link Result}s.
  *
@@ -30,6 +33,11 @@ class BoolOr extends BoolResult {
     @Override
     public String toNonCppString() {
         return "(" + leftSide.toNonCppString() + ") || (" + rightSide.toNonCppString() + ")";
+    }
+    
+    @Override
+    public Formula toFormula() {
+        return new Disjunction(leftSide.toFormula(), rightSide.toFormula());
     }
     
 }

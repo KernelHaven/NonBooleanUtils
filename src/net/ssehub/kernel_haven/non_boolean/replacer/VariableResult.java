@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
@@ -242,6 +244,19 @@ class VariableResult extends Result {
             result = "!" + var + "_eq_0";
         } else {
             result = var;
+        }
+        
+        return result;
+    }
+    
+    @Override
+    public Formula toFormula() {
+        Formula result;
+        
+        if (unknownVariable) {
+            result = new Negation(new net.ssehub.kernel_haven.util.logic.Variable(var + "_eq_0"));
+        } else {
+            result = new net.ssehub.kernel_haven.util.logic.Variable(var);
         }
         
         return result;

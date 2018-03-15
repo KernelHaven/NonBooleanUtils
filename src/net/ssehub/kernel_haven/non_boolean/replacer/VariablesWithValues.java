@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
+import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
@@ -416,6 +417,11 @@ class VariablesWithValues extends Result {
     @Override
     public String toNonCppString() {
         return new BoolNot(apply((currentValue) -> currentValue == 0)).toNonCppString();
+    }
+    
+    @Override
+    public Formula toFormula() {
+        return new BoolNot(apply((currentValue) -> currentValue == 0)).toFormula();
     }
 
 }

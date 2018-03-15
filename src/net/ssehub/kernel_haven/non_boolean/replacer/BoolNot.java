@@ -1,5 +1,8 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.Negation;
+
 /**
  * A boolean negation of a {@link Result}.
  *
@@ -42,6 +45,11 @@ class BoolNot extends BoolResult {
             result = "!(" + nested.toNonCppString() + ")";
         }
         return result;
+    }
+    
+    @Override
+    public Formula toFormula() {
+        return new Negation(nested.toFormula());
     }
 
 }

@@ -17,6 +17,7 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.ICppExressionVisitor;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.IntegerLiteral;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Operator;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Variable;
+import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
@@ -119,13 +120,29 @@ public class NonBooleanReplacer {
      * 
      * @return The expression with replacements done.
      * 
-     * @throws ExpressionFormatException If parsing or evaluating the given CPP line fails.
+     * @throws ExpressionFormatException If parsing or evaluating the given expression fails.
      */
     private String replaceImpl(String expr, boolean cpp) throws ExpressionFormatException {
         CppExpression parsed = parser.parse(expr);
         Result result = parsed.accept(new AstEvaluator(cpp));
         
         return cpp ? result.toCppString() : result.toNonCppString();
+    }
+    
+    /**
+     * Does non-boolean replacements in the non-CPP expression and returns a boolean {@link Formula} of the result.
+     * 
+     * @param expression The expression to do non-boolean replacements in.
+     * 
+     * @return A boolean {@link Formula} of the expression with non-boolean replacements.
+     * 
+     * @throws ExpressionFormatException If parsing or evaluating the given expression fails.
+     */
+    public Formula nonCppToFormula(String expression) throws ExpressionFormatException {
+        CppExpression parsed = parser.parse(expression);
+        Result result = parsed.accept(new AstEvaluator(false));
+        
+        return result.toFormula();
     }
     
     /**

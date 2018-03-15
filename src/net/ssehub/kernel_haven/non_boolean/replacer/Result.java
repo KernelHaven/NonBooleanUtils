@@ -1,5 +1,6 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
@@ -179,5 +180,12 @@ abstract class Result {
     public String toString() {
         return toNonCppString();
     }
+    
+    /**
+     * Turns this {@link Result} (or tree of {@link Result}s) into a boolean formula.
+     * 
+     * @return This result as a boolean formula.
+     */
+    public abstract Formula toFormula();
     
 }

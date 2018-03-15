@@ -1,5 +1,9 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import net.ssehub.kernel_haven.util.logic.False;
+import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.True;
+
 /**
  * A literal boolean value. Singleton with two instances, {@link #TRUE} and {@link #FALSE}.
  *
@@ -30,6 +34,11 @@ class LiteralBoolResult extends BoolResult {
     @Override
     public String toNonCppString() {
         return toCppString();
+    }
+    
+    @Override
+    public Formula toFormula() {
+        return value ? True.INSTANCE : False.INSTANCE;
     }
     
 }

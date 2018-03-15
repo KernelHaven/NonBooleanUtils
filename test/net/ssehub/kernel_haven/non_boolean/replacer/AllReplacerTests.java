@@ -16,6 +16,8 @@ import org.junit.runners.Suite.SuiteClasses;
     
     NonCppReplacerTest.class,
     NonCppReplacerNegativeTest.class,
+    
+    ToFormulaTest.class,
     })
 public class AllReplacerTests {
 

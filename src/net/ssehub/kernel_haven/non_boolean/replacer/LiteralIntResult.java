@@ -2,6 +2,9 @@ package net.ssehub.kernel_haven.non_boolean.replacer;
 
 import java.util.function.BiFunction;
 
+import net.ssehub.kernel_haven.util.logic.False;
+import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
@@ -195,7 +198,14 @@ class LiteralIntResult extends Result {
     
     @Override
     public String toNonCppString() {
-        return toCppString();
+        // everything except 0 is true
+        return value == 0 ? "0" : "1";
+    }
+    
+    @Override
+    public Formula toFormula() {
+        // everything except 0 is true
+        return value == 0 ? False.INSTANCE : True.INSTANCE;
     }
     
 }
