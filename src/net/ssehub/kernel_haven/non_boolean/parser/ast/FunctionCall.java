@@ -42,6 +42,15 @@ public class FunctionCall extends CppExpression {
         return argument;
     }
     
+    /**
+     * Overrides the argument (parameter) for the function.
+     * 
+     * @param argument The new argument.
+     */
+    public void setArgument(CppExpression argument) {
+        this.argument = argument;
+    }
+    
     @Override
     public <T> T accept(ICppExressionVisitor<T> visitor) throws ExpressionFormatException {
         return visitor.visitFunctionCall(this);

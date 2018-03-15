@@ -35,6 +35,15 @@ public class Operator extends CppExpression {
     }
     
     /**
+     * Changes the opeartor.
+     * 
+     * @param operator The new operator.
+     */
+    public void setOperator(CppOperator operator) {
+        this.operator = operator;
+    }
+    
+    /**
      * Returns the left side of this operator. This is the only "side" for unary operators.
      * 
      * @return The left side of this operator.

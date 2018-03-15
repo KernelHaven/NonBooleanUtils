@@ -71,8 +71,6 @@ public class CppParser {
 
         @Override
         public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
-            ExpressionList newList = new ExpressionList();
-            
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
                 CppExpression currentExpr = expressionList.getExpression(i);
                 
@@ -88,14 +86,14 @@ public class CppParser {
                             } else {
                                 newOp = INT_SUB_UNARY;
                             }
-                            currentExpr = new Operator(newOp);
+                            ((Operator) currentExpr).setOperator(newOp);
                         }
                     }
                 }
                 
-                newList.addExpression(currentExpr.accept(this));
+                expressionList.setExpression(i, currentExpr.accept(this));
             }
-            return newList;
+            return expressionList;
         }
 
         @Override
@@ -104,7 +102,8 @@ public class CppParser {
             if (arg != null) {
                 arg = arg.accept(this);
             }
-            return new FunctionCall(call.getFunctionName(), arg);
+            call.setArgument(arg);
+            return call;
         }
 
         @Override
@@ -142,13 +141,10 @@ public class CppParser {
         
         @Override
         public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
-            ExpressionList newList = new ExpressionList();
-            
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
-                newList.addExpression(expressionList.getExpression(i).accept(this));
+                expressionList.setExpression(i, expressionList.getExpression(i).accept(this));
             }
-            
-            return newList;
+            return expressionList;
         }
 
         @Override
@@ -157,7 +153,8 @@ public class CppParser {
             if (arg != null) {
                 arg = arg.accept(this);
             }
-            return new FunctionCall(call.getFunctionName(), arg);
+            call.setArgument(arg);
+            return call;
         }
 
         @Override
@@ -204,8 +201,6 @@ public class CppParser {
         
         @Override
         public CppExpression visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
-            ExpressionList newList = new ExpressionList();
-            
             for (int i = 0; i < expressionList.getExpressionSize(); i++) {
                 CppExpression currentExpr = expressionList.getExpression(i);
                 boolean foundFunction = false;
@@ -227,18 +222,19 @@ public class CppParser {
                             nextExpr = null;
                         }
                         
-                        newList.addExpression(new FunctionCall(name, nextExpr));
+                        expressionList.setExpression(i, new FunctionCall(name, nextExpr));
+                        expressionList.removeExpression(i + 1);
                         i++; // increment, since we already handled nextExpr
                     }
                 }
                 
                 if (!foundFunction) {
-                    newList.addExpression(currentExpr.accept(this));
+                    expressionList.setExpression(i, currentExpr.accept(this));
                 }
                 
             }
             
-            return newList;
+            return expressionList;
         }
 
         @Override
@@ -348,15 +344,10 @@ public class CppParser {
                     throw makeException(expression, "Found elements on wrong side of unary operator");
                         
                 } else {
-                    ExpressionList nested = new ExpressionList();
-                    for (int i = 0; i < expressionList.getExpressionSize(); i++) {
-                        if (i != operatorIndex) {
-                            nested.addExpression(expressionList.getExpression(i));
-                        }
-                    }
-                    operator.setLeftSide(nested.accept(this));
-                    
+                    expressionList.removeExpression(operatorIndex);
+                    operator.setLeftSide(expressionList.accept(this));
                 }
+                
             } else {
                 if (operatorIndex == 0 || operatorIndex == expressionList.getExpressionSize() - 1) {
                     throw makeException(expression, "Didn't find elements on both sides of binary operator");
@@ -386,7 +377,8 @@ public class CppParser {
             if (arg != null) {
                 arg = arg.accept(this);
             }
-            return new FunctionCall(call.getFunctionName(), arg);
+            call.setArgument(arg);
+            return call;
         }
 
         @Override

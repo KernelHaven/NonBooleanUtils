@@ -42,6 +42,25 @@ public class ExpressionList extends CppExpression {
     }
     
     /**
+     * Replaces the expression at the given index.
+     * 
+     * @param index The index to replace the expression at.
+     * @param expression The new expression for that index.
+     */
+    public void setExpression(int index, CppExpression expression) {
+        this.expressions.set(index, expression);
+    }
+    
+    /**
+     * Removes the expression at the given index. The following expressions shift done by one.
+     * 
+     * @param index The index to remove.
+     */
+    public void removeExpression(int index) {
+        this.expressions.remove(index);
+    }
+    
+    /**
      * Adds a nested expression to the end of the list.
      * 
      * @param expression The expression to add.
