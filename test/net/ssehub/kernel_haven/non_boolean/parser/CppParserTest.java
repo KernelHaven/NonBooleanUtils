@@ -226,6 +226,21 @@ public class CppParserTest {
     }
     
     /**
+     * Tests that a function call with a space after the function name is detected correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testFunctionCallWithSpace() throws ExpressionFormatException {
+        CppParser parser = new CppParser();
+
+        CppExpression result = parser.parse("defined (A)");
+        
+        CppExpression arg = assertFunctionCall(result, "defined");
+        assertVariable(arg, "A");
+    }
+    
+    /**
      * Tests that a defined() call without brackets is handled, too.
      * 
      * @throws ExpressionFormatException unwanted.
