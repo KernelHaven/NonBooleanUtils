@@ -188,7 +188,12 @@ public class CppReplacerNegativeTest {
                 new Object[] {"#if UNKNOWN < (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
                 new Object[] {"#if UNKNOWN <= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
                 new Object[] {"#if UNKNOWN > (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"}
+                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                
+                /*
+                 * Too large result for INT_OPs on Var
+                 */
+                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_A + VAR_A + VAR_A)", "Too large Var INT_OP Var result"}
         );
     }
     // CHECKSTYLE:ON
