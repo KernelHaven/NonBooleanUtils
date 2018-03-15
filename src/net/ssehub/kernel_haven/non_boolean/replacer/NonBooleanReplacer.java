@@ -197,7 +197,7 @@ public class NonBooleanReplacer {
                 throw new ExpressionFormatException("Can't handle function " + call.getFunctionName());
             }
             
-            Result result = null;
+            Result result;
             if (call.getFunctionName().equals("defined") && call.getArgument() instanceof Variable) {
                 result = new VariableResult(((Variable) call.getArgument()).getName());
                 
