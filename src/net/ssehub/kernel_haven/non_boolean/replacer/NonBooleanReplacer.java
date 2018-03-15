@@ -97,12 +97,12 @@ public class NonBooleanReplacer {
         String expression = null;
         String prepend = null;
         
-        for (String prefix : new String[] {"#if ", "#elif "}) {
-            if (cppLine.startsWith(prefix)) {
-                expression = cppLine.substring(prefix.length());
-                prepend = prefix;
-                break;
-            }
+        if (cppLine.startsWith("#if")) {
+            expression = cppLine.substring("#if".length());
+            prepend = "#if";
+        } else if (cppLine.startsWith("#elif")) {
+            expression = cppLine.substring("#elif".length());
+            prepend = "#elif";
         }
         if (expression == null) {
             throw new ExpressionFormatException("Line does not start with #if or #elif:\n" + cppLine);
