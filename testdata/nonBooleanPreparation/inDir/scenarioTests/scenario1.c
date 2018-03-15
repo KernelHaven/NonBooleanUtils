@@ -4,7 +4,8 @@
 #endif
 #endif
 
-#if (B == 1)
+#if (B == \
+	1)
 #if (A == 2)
 // Code
 #endif

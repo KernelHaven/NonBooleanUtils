@@ -175,9 +175,10 @@ public class NonBooleanPreperation implements IPreparation {
                         
                         // Consider continuation
                         while (line.charAt(line.length() - 1) == '\\') {
-                            String tmp = in.readLine();
-                            if (null != tmp) {
-                                line += tmp;
+                            line = line.substring(0, line.length() - 1); // remove trailing \
+                            String next = in.readLine();
+                            if (null != next) {
+                                line += next;
                             } else {
                                 break;
                             }
