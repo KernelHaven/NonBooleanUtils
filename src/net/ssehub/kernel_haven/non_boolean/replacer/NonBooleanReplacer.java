@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.ssehub.kernel_haven.non_boolean.FiniteIntegerVariable;
+import net.ssehub.kernel_haven.non_boolean.InfiniteIntegerVariable;
 import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
 import net.ssehub.kernel_haven.non_boolean.parser.CppParser;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.CppExpression;
@@ -66,6 +67,9 @@ public class NonBooleanReplacer {
                     variableConstants.add((long) intVar.getValue(i));
                 }
                 variables.put(variable.getName(), new NonBooleanVariable(variable.getName(), variableConstants));
+                
+            } else if (variable instanceof InfiniteIntegerVariable) {
+                variables.put(variable.getName(), new NonBooleanVariable(variable.getName(), new HashSet<>(), true));
             }
         }
         

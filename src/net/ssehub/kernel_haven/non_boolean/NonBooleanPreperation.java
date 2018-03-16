@@ -106,6 +106,11 @@ public class NonBooleanPreperation implements IPreparation {
                         requiredConstants.add((long) intVar.getValue(i));
                     }
                     variables.put(variable.getName(), new NonBooleanVariable(variable.getName(), requiredConstants));
+                    
+                } else if (variable instanceof InfiniteIntegerVariable) {
+                    nonBooleanModelRead = true;
+                    variables.put(variable.getName(), 
+                            new NonBooleanVariable(variable.getName(), new HashSet<>(), true));
                 }
             }
         }
