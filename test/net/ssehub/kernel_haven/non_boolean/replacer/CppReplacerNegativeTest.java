@@ -177,18 +177,35 @@ public class CppReplacerNegativeTest {
                  * Comparing unknown with (Var + Var)
                  * + reversed
                  */
-                new Object[] {"#if (VAR_A + VAR_C) == UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if (VAR_A + VAR_C) != UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if (VAR_A + VAR_C) < UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if (VAR_A + VAR_C) <= UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if (VAR_A + VAR_C) > UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if (VAR_A + VAR_C) >= UNKNOWN", "Comparing (Var + Var) with Uknown"},
-                new Object[] {"#if UNKNOWN == (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN != (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN < (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN <= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN > (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
-                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Uknown (reversed)"},
+                new Object[] {"#if (VAR_A + VAR_C) == UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if (VAR_A + VAR_C) != UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if (VAR_A + VAR_C) < UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if (VAR_A + VAR_C) <= UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if (VAR_A + VAR_C) > UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if (VAR_A + VAR_C) >= UNKNOWN", "Comparing (Var + Var) with Unknown"},
+                new Object[] {"#if UNKNOWN == (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                new Object[] {"#if UNKNOWN != (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                new Object[] {"#if UNKNOWN < (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                new Object[] {"#if UNKNOWN <= (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                new Object[] {"#if UNKNOWN > (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                new Object[] {"#if UNKNOWN >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Unknown (reversed)"},
+                
+                /*
+                 * Comparing Infinite with (Var + Var)
+                 * + reversed
+                 */
+                new Object[] {"#if (VAR_A + VAR_C) == VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if (VAR_A + VAR_C) != VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if (VAR_A + VAR_C) < VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if (VAR_A + VAR_C) <= VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if (VAR_A + VAR_C) > VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if (VAR_A + VAR_C) >= VAR_D", "Comparing (Var + Var) with Infinite"},
+                new Object[] {"#if VAR_D == (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
+                new Object[] {"#if VAR_D != (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
+                new Object[] {"#if VAR_D < (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
+                new Object[] {"#if VAR_D <= (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
+                new Object[] {"#if VAR_D > (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
+                new Object[] {"#if VAR_D >= (VAR_A + VAR_C)", "Comparing (Var + Var) with Infinite (reversed)"},
                 
                 /*
                  * Too large result for INT_OPs on Var

@@ -386,6 +386,7 @@ public class CppReplacerTest {
                  * Inifinte Integer CMP_OP Var
                  * + reversed
                  */
+                // TODO: change this to  defined(VAR_A) && defined(VAR_D)
                 new Object[] {"#if VAR_D == VAR_A", "#if defined(VAR_A_eq_VAR_D)", "Infinite Integer CMP Var"},
                 new Object[] {"#if VAR_D != VAR_A", "#if !(defined(VAR_A_eq_VAR_D))", "Infinite Integer CMP Var"},
                 new Object[] {"#if VAR_D > VAR_A", "#if defined(VAR_A_lt_VAR_D)", "Infinite Integer CMP Var"},
@@ -404,6 +405,7 @@ public class CppReplacerTest {
                  * Inifinte Integer CMP_OP Unknown
                  * + reversed
                  */
+                // TODO: change this to  defined(UNKNOWN) && defined(VAR_D)
                 new Object[] {"#if VAR_D == UNKNOWN", "#if defined(VAR_D_eq_UNKNOWN)", "Infinite Integer CMP Var"},
                 new Object[] {"#if VAR_D != UNKNOWN", "#if !(defined(VAR_D_eq_UNKNOWN))", "Infinite Integer CMP Var"},
                 new Object[] {"#if VAR_D > UNKNOWN", "#if defined(UNKNOWN_lt_VAR_D)", "Infinite Integer CMP Var"},
