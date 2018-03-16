@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.non_boolean.replacer;
 
 import java.util.function.BiFunction;
 
+import net.ssehub.kernel_haven.non_boolean.replacer.VariableResult.Type;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.True;
@@ -44,10 +45,14 @@ class LiteralIntResult extends Result {
             VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value < value);
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             VariableResult o = (VariableResult) other;
-            o.setVar(o.getVar() + "_gt_" + value);
-            o.setUnknownVariable(false);
+            if (o.getType() == Type.UNKNOWN) {
+                o.setVar(o.getVar() + "_gt_" + value);
+            }
+            // no change for o.type==INFINITE
+            
+            o.setType(Type.FINAL);
             result = o;
             
         } else {
@@ -68,10 +73,14 @@ class LiteralIntResult extends Result {
             VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value <= value);
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             VariableResult o = (VariableResult) other;
-            o.setVar(o.getVar() + "_ge_" + value);
-            o.setUnknownVariable(false);
+            if (o.getType() == Type.UNKNOWN) {
+                o.setVar(o.getVar() + "_ge_" + value);
+            }
+            // no change for o.type==INFINITE
+            
+            o.setType(Type.FINAL);
             result = o;
             
         } else {
@@ -92,10 +101,14 @@ class LiteralIntResult extends Result {
             VariablesWithValues o = (VariablesWithValues) other;
             result = o.apply((value) -> this.value == value);
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             VariableResult o = (VariableResult) other;
-            o.setVar(o.getVar() + "_eq_" + value);
-            o.setUnknownVariable(false);
+            if (o.getType() == Type.UNKNOWN) {
+                o.setVar(o.getVar() + "_eq_" + value);
+            }
+            // no change for o.type==INFINITE
+            
+            o.setType(Type.FINAL);
             result = o;
             
         } else {
@@ -130,6 +143,11 @@ class LiteralIntResult extends Result {
         } else if (other instanceof VariablesWithValues) {
             VariablesWithValues o = (VariablesWithValues) other;
             result = o.applyOperation(this, op, opcode, true);
+            
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() == Type.INFINITE) {
+            // integer operations have no effect on INFINITE integer variables
+            VariableResult o = (VariableResult) other;
+            result = o;
             
         } else {
             throw new ExpressionFormatException("Can't apply operator " + opcode + " on Literal and "

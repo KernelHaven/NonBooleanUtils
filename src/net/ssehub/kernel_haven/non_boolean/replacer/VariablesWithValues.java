@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
+import net.ssehub.kernel_haven.non_boolean.replacer.VariableResult.Type;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
@@ -115,10 +116,10 @@ class VariablesWithValues extends Result {
      * @return A boolean result expression.
      */
     private Result buildResultForCombination(long[] line) {
-        Result result =  new VariableResult(getVarName(0) + "_eq_" + line[0]);
+        Result result =  new VariableResult(getVarName(0) + "_eq_" + line[0], Type.FINAL);
         
         for (int i = 1; i < getNumVars(); i++) {
-            result = new BoolAnd(result, new VariableResult(getVarName(i) + "_eq_" + line[i]));
+            result = new BoolAnd(result, new VariableResult(getVarName(i) + "_eq_" + line[i], Type.FINAL));
         }
         
         return result;
@@ -162,14 +163,14 @@ class VariablesWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value < o.getValue());
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             if (getNumVars() > 1) {
                 throw new ExpressionFormatException(
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
             o.setVar(varNames[0] + "_lt_" + o.getVar());
-            o.setUnknownVariable(false);
+            o.setType(Type.FINAL);
             result = o;
             
         } else if (other instanceof VariablesWithValues) {
@@ -189,14 +190,14 @@ class VariablesWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value <= o.getValue());
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             if (getNumVars() > 1) {
                 throw new ExpressionFormatException(
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
             o.setVar(varNames[0] + "_le_" + o.getVar());
-            o.setUnknownVariable(false);
+            o.setType(Type.FINAL);
             result = o;
             
         } else if (other instanceof VariablesWithValues) {
@@ -216,14 +217,14 @@ class VariablesWithValues extends Result {
             LiteralIntResult o = (LiteralIntResult) other;
             result = apply((value) -> value == o.getValue());
             
-        } else if (other instanceof VariableResult && ((VariableResult) other).isUnknownVariable()) {
+        } else if (other instanceof VariableResult && ((VariableResult) other).getType() != Type.FINAL) {
             if (getNumVars() > 1) {
                 throw new ExpressionFormatException(
                         "Can't compare unknown variable with multiple VariablesWithResults");
             }
             VariableResult o = (VariableResult) other;
             o.setVar(varNames[0] + "_eq_" + o.getVar());
-            o.setUnknownVariable(false);
+            o.setType(Type.FINAL);
             result = o;
             
         } else if (other instanceof VariablesWithValues) {

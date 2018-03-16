@@ -17,6 +17,7 @@ import net.ssehub.kernel_haven.non_boolean.parser.ast.ICppExressionVisitor;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.IntegerLiteral;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Operator;
 import net.ssehub.kernel_haven.non_boolean.parser.ast.Variable;
+import net.ssehub.kernel_haven.non_boolean.replacer.VariableResult.Type;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
@@ -216,7 +217,7 @@ public class NonBooleanReplacer {
             
             Result result;
             if (call.getFunctionName().equals("defined") && call.getArgument() instanceof Variable) {
-                result = new VariableResult(((Variable) call.getArgument()).getName());
+                result = new VariableResult(((Variable) call.getArgument()).getName(), Type.FINAL);
                 
             } else {
                 String argumentClass = "null";
@@ -241,10 +242,14 @@ public class NonBooleanReplacer {
             } else {
                 NonBooleanVariable var = variables.get(variable.getName());
                 if (var != null) {
-                    result = new VariablesWithValues(variable.getName(), var.getConstants());
+                    if (var.isInfinite()) {
+                        result = new VariableResult(variable.getName(), Type.INFINITE);
+                    } else {
+                        result = new VariablesWithValues(variable.getName(), var.getConstants());
+                    }
                     
                 } else {
-                    result = new VariableResult(variable.getName(), true);
+                    result = new VariableResult(variable.getName(), Type.UNKNOWN);
                 }
             }
             
@@ -323,7 +328,19 @@ public class NonBooleanReplacer {
                 result = leftSide.cmpEq(rightSide);
                 break;
             case CMP_NE:
-                result = new BoolNot(leftSide.cmpEq(rightSide));
+                // CHECKSTYLE:OFF // TODO: too "complex" condition
+                if ((leftSide instanceof VariableResult && ((VariableResult) leftSide).getType() == Type.INFINITE
+                        && rightSide instanceof LiteralIntResult)
+                        || (rightSide instanceof VariableResult && ((VariableResult) rightSide).getType()
+                                == Type.INFINITE && leftSide instanceof LiteralIntResult)) {
+                // CHECKSTYLE:ON
+                    
+                    // don't add a NOT if we compare a literal with an INFINITE variable
+                    // TODO: this is quite hacky...
+                    result = leftSide.cmpEq(rightSide);
+                } else {
+                    result = new BoolNot(leftSide.cmpEq(rightSide));
+                }
                 break;
             case CMP_LT:
                 result = leftSide.cmpLt(rightSide);

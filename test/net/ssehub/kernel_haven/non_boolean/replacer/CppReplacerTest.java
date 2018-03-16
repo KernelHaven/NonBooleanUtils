@@ -32,6 +32,7 @@ public class CppReplacerTest {
      * VAR_A = {0, 1, 2}
      * VAR_B = {0, 1, 2}
      * VAR_C = {0, 1}
+     * VAR_D = Infinite Integer
      * </pre></code>
      */
     static final Map<String, NonBooleanVariable> DEFAULT_VARS = new HashMap<>();
@@ -58,6 +59,9 @@ public class CppReplacerTest {
         
         constants.remove(2L);
         DEFAULT_VARS.put("VAR_C", new NonBooleanVariable("VAR_C", constants));
+        
+        constants.clear();
+        DEFAULT_VARS.put("VAR_D", new NonBooleanVariable("VAR_D", constants, true));
         
         DEFAULT_CONSTANTS.put("CONST_A", 1L);
         DEFAULT_CONSTANTS.put("CONST_B", 2L);
@@ -332,6 +336,87 @@ public class CppReplacerTest {
                 new Object[] {"#if(VAR_A)", "#if !(defined(VAR_A_eq_0))", "#if prefix without space"},
                 new Object[] {"#elif VAR_A", "#elif !(defined(VAR_A_eq_0))", "#elif prefix with space"},
                 new Object[] {"#elif(VAR_A)", "#elif !(defined(VAR_A_eq_0))", "#elif prefix without space"},
+                
+                /*
+                 * Infinite Integer INT_OP Literal
+                 * + reversed
+                 */
+                new Object[] {"#if VAR_D + 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D - 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D * 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D / 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D % 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if -VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if +VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if ~VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D & 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D | 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                new Object[] {"#if VAR_D ^ 3", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal"},
+                
+                new Object[] {"#if 3 + VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 - VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 * VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 / VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 % VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 & VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 | VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                new Object[] {"#if 3 ^ VAR_D", "#if defined(VAR_D)", "Infinite Integer INT_OP Literal (reversed)"},
+                
+                new Object[] {"#if VAR_D", "#if defined(VAR_D)", "Infinite Integer without comparison"},
+                
+                /*
+                 * Inifinte Integer CMP_OP Literal
+                 * + reversed
+                 */
+                new Object[] {"#if VAR_D == 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D != 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D > 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D >= 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D < 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D <= 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                
+                new Object[] {"#if 5 == VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5 != VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5 > VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5 >= VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5 < VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5 <= VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                
+                /*
+                 * Inifinte Integer CMP_OP Var
+                 * + reversed
+                 */
+                new Object[] {"#if VAR_D == VAR_A", "#if defined(VAR_A_eq_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D != VAR_A", "#if !(defined(VAR_A_eq_VAR_D))", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D > VAR_A", "#if defined(VAR_A_lt_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D >= VAR_A", "#if defined(VAR_A_le_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D < VAR_A", "#if defined(VAR_A_gt_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D <= VAR_A", "#if defined(VAR_A_ge_VAR_D)", "Infinite Integer CMP Var"}
+                ,
+                new Object[] {"#if VAR_A == VAR_D", "#if defined(VAR_A_eq_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if VAR_A != VAR_D", "#if !(defined(VAR_A_eq_VAR_D))", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if VAR_A > VAR_D", "#if defined(VAR_A_gt_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if VAR_A >= VAR_D", "#if defined(VAR_A_ge_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if VAR_A < VAR_D", "#if defined(VAR_A_lt_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if VAR_A <= VAR_D", "#if defined(VAR_A_le_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                
+                /*
+                 * Inifinte Integer CMP_OP Unknown
+                 * + reversed
+                 */
+                new Object[] {"#if VAR_D == UNKNOWN", "#if defined(VAR_D_eq_UNKNOWN)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D != UNKNOWN", "#if !(defined(VAR_D_eq_UNKNOWN))", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D > UNKNOWN", "#if defined(UNKNOWN_lt_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D >= UNKNOWN", "#if defined(UNKNOWN_le_VAR_D)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D < UNKNOWN", "#if defined(VAR_D_lt_UNKNOWN)", "Infinite Integer CMP Var"},
+                new Object[] {"#if VAR_D <= UNKNOWN", "#if defined(VAR_D_le_UNKNOWN)", "Infinite Integer CMP Var"}
+                ,
+                new Object[] {"#if UNKNOWN == VAR_D", "#if defined(UNKNOWN_eq_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if UNKNOWN != VAR_D", "#if !(defined(UNKNOWN_eq_VAR_D))", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if UNKNOWN > VAR_D", "#if defined(VAR_D_lt_UNKNOWN)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if UNKNOWN >= VAR_D", "#if defined(VAR_D_le_UNKNOWN)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if UNKNOWN < VAR_D", "#if defined(UNKNOWN_lt_VAR_D)", "Infinite Integer CMP Var (reversed)"},
+                new Object[] {"#if UNKNOWN <= VAR_D", "#if defined(UNKNOWN_le_VAR_D)", "Infinite Integer CMP Var (reversed)"},
                 
                 /*
                  * From old NonBooleanPreperationTest
