@@ -13,7 +13,6 @@ import net.ssehub.kernel_haven.non_boolean.NonBooleanVariable;
 import net.ssehub.kernel_haven.non_boolean.replacer.VariableResult.Type;
 import net.ssehub.kernel_haven.util.cpp.parser.CppParser;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.CppExpression;
-import net.ssehub.kernel_haven.util.cpp.parser.ast.ExpressionList;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.FunctionCall;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.ICppExressionVisitor;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.IntegerLiteral;
@@ -208,11 +207,6 @@ public class NonBooleanReplacer {
             this.cpp = cpp;
         }
         
-        @Override
-        public Result visitExpressionList(ExpressionList expressionList) throws ExpressionFormatException {
-            throw new ExpressionFormatException("This code can't be reached.");
-        }
-
         @Override
         public Result visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
             if (!cpp) {
