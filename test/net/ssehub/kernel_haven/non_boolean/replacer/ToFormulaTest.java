@@ -1,15 +1,15 @@
 package net.ssehub.kernel_haven.non_boolean.replacer;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
@@ -48,7 +48,7 @@ public class ToFormulaTest {
         
         Formula result = replacer.nonCppToFormula("VAR_A == 0 && VAR_B == 1");
         
-        assertThat(result, is(new Conjunction(new Variable("VAR_A_eq_0"), new Variable("VAR_B_eq_1"))));
+        assertThat(result, is(and("VAR_A_eq_0", "VAR_B_eq_1")));
     }
     
     /**
@@ -63,7 +63,7 @@ public class ToFormulaTest {
         
         Formula result = replacer.nonCppToFormula("VAR_A == 0 || VAR_B == 1");
         
-        assertThat(result, is(new Disjunction(new Variable("VAR_A_eq_0"), new Variable("VAR_B_eq_1"))));
+        assertThat(result, is(or("VAR_A_eq_0", "VAR_B_eq_1")));
     }
     
     /**
@@ -78,7 +78,7 @@ public class ToFormulaTest {
         
         Formula result = replacer.nonCppToFormula("!(VAR_A == 0)");
         
-        assertThat(result, is(new Negation(new Variable("VAR_A_eq_0"))));
+        assertThat(result, is(not("VAR_A_eq_0")));
     }
     
     /**
@@ -153,7 +153,7 @@ public class ToFormulaTest {
         
         Formula result = replacer.nonCppToFormula("UNKNOWN");
         
-        assertThat(result, is(new Negation(new Variable("UNKNOWN_eq_0"))));
+        assertThat(result, is(not("UNKNOWN_eq_0")));
     }
     
     /**
@@ -168,7 +168,7 @@ public class ToFormulaTest {
         
         Formula result = replacer.nonCppToFormula("VAR_A");
         
-        assertThat(result, is(new Negation(new Variable("VAR_A_eq_0"))));
+        assertThat(result, is(not("VAR_A_eq_0")));
     }
     
 }
