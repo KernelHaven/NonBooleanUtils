@@ -253,6 +253,9 @@ public class CppReplacerTest {
                 new Object[] {"#if (6 ^ 2) == 4", "#if 1", "Literal calculation (Bin XOR)"},
                 new Object[] {"#if ~2 == " + (~2L), "#if 1", "Literal calculation (Bin INVERT)"},
                 
+                new Object[] {"#if 5 - 2 + 2 == 5", "#if 1", "Literal calculation (Left-to-Right)"},
+                new Object[] {"#if 5 - 2 - 2 == 1", "#if 1", "Literal calculation (Left-to-Right)"},
+                
                 /*
                  * (Var INT_OP Literal) EQUAL Literal
                  */
