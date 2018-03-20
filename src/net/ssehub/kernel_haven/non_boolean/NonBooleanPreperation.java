@@ -246,7 +246,7 @@ public class NonBooleanPreperation implements IPreparation {
     private String replaceInLine(String line, File from) {
         String result = removeComments(line);
         try {
-            result = replacer.replaceCpp(line);
+            result = replacer.replaceCpp(result);
         } catch (ExpressionFormatException e) {
             LOGGER.logException("Error whilte replacing the following line in " + from + ": " + line, e);
         }
