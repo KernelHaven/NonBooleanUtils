@@ -2,6 +2,8 @@ package net.ssehub.kernel_haven.non_boolean;
 
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
+import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializer;
+import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializerFactory;
 
 /**
  * An Integer-based variability variable with a infinite (not restricted) domain.
@@ -10,6 +12,13 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
  */
 public class InfiniteIntegerVariable extends VariabilityVariable {
 
+    static {
+        // this block is called by the infrastructure, see loadClasses.txt
+        
+        VariabilityVariableSerializerFactory.INSTANCE.registerSerializer(InfiniteIntegerVariable.class.getName(),
+                new VariabilityVariableSerializer()); // use default serializer
+    }
+    
     /**
      * Creates this {@link InfiniteIntegerVariable}.
      * 

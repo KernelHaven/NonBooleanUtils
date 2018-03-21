@@ -1,0 +1,5 @@
+# This file specifies that the KernelHaven infrastructure should load the
+# following classes and execute their static initialize method.
+
+net.ssehub.kernel_haven.non_boolean.InfiniteIntegerVariable
+net.ssehub.kernel_haven.non_boolean.FiniteIntegerVariable
