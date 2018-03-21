@@ -94,7 +94,7 @@ class VariableResult extends Result {
     @Override
     public Result cmpLt(Result other) throws ExpressionFormatException {
         if (type == Type.FINAL) {
-            throw new ExpressionFormatException("Can't apply operator < or > on final VariableResult");
+            throw new ExpressionFormatException("Can't apply operator < or > on " + this.type + " VariableResult");
         }
         
         Result result;
@@ -130,7 +130,7 @@ class VariableResult extends Result {
     @Override
     public Result cmpLe(Result other) throws ExpressionFormatException {
         if (type == Type.FINAL) {
-            throw new ExpressionFormatException("Can't apply operator <= or => on final VariableResult");
+            throw new ExpressionFormatException("Can't apply operator <= or => on " + this.type + " VariableResult");
         }
         
         Result result;
@@ -166,7 +166,7 @@ class VariableResult extends Result {
     @Override
     public Result cmpEq(Result other) throws ExpressionFormatException {
         if (type == Type.FINAL) {
-            throw new ExpressionFormatException("Can't apply operator == or != on final VariableResult");
+            throw new ExpressionFormatException("Can't apply operator == or != on " + this.type + " VariableResult");
         }
         
         Result result;
@@ -205,7 +205,8 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator unary subtraction on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator unary subtraction on " + this.type
+                + " VariableResult");
     }
     
     @Override
@@ -214,7 +215,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator + on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator + on " + this.type + " VariableResult");
     }
     
     @Override
@@ -223,7 +224,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator - on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator - on " + this.type + " VariableResult");
     }
     
     @Override
@@ -232,7 +233,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator * on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator * on " + this.type + " VariableResult");
     }
     
     @Override
@@ -241,7 +242,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator / on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator / on " + this.type + " VariableResult");
     }
     
     @Override
@@ -250,7 +251,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator % on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator % on " + this.type + " VariableResult");
     }
     
     @Override
@@ -259,7 +260,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator & on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator & on " + this.type + " VariableResult");
     }
     @Override
     public Result binOr(Result other) throws ExpressionFormatException {
@@ -267,7 +268,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator | on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator | on " + this.type + " VariableResult");
     }
     @Override
     public Result binXor(Result other) throws ExpressionFormatException {
@@ -275,7 +276,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator ^ on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator ^ on " + this.type + " VariableResult");
     }
     @Override
     public Result binInv() throws ExpressionFormatException {
@@ -283,7 +284,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator ~ on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator ~ on " + this.type + " VariableResult");
     }
     
     @Override
