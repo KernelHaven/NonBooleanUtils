@@ -1,11 +1,11 @@
 package net.ssehub.kernel_haven.non_boolean;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -167,7 +167,7 @@ public class NonBooleanPreperation implements IPreparation {
      * @throws IOException If copying the file fails.
      */
     private void copySourceFile(File from, File to) throws IOException {
-        try (BufferedReader in = new BufferedReader(new FileReader(from))) {
+        try (LineNumberReader in = new LineNumberReader(new FileReader(from))) {
             
             try (Writer out = createWriter(to)) {
                 
@@ -175,6 +175,10 @@ public class NonBooleanPreperation implements IPreparation {
                 // CHECKSTYLE:OFF // TODO inner assignment
                 while (continueReading(line = in.readLine())) {
                 // CHECKSTYLE:ON
+                    
+                    // get line number here, so that we get the first line if any continuation is appended below
+                    int currentLineNumber = in.getLineNumber();
+                    
                     // Replace variable occurrences of #if's and #elif's
                     if (CPPUtils.isIfOrElifStatement(line)) {
                         
@@ -190,7 +194,7 @@ public class NonBooleanPreperation implements IPreparation {
                         }
                         
                         line = line.trim();
-                        line = replaceInLine(line, from);
+                        line = replaceInLine(line, from, currentLineNumber);
                     }
                     
                     out.write(line);
@@ -240,15 +244,16 @@ public class NonBooleanPreperation implements IPreparation {
      * 
      * @param line The line to do replacements in.
      * @param from The file we are currently in (used for error messages).
+     * @param lineNumber The current line number (used for error messages).
      * 
      * @return The line with replacements done; or the original line if the replacer failed.
      */
-    private String replaceInLine(String line, File from) {
+    private String replaceInLine(String line, File from, int lineNumber) {
         String result = removeComments(line);
         try {
             result = replacer.replaceCpp(result);
         } catch (ExpressionFormatException e) {
-            LOGGER.logException("Error whilte replacing the following line in " + from + ": " + line, e);
+            LOGGER.logException("Error whilte replacing line " + lineNumber + " in " + from + ": " + line, e);
         }
         return result;
     }
