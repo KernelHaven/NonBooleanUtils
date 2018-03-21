@@ -259,7 +259,7 @@ class VariableResult extends Result {
             // integer operations have no effect on infinite variables
             return this;
         }
-        throw new ExpressionFormatException("Can't apply operator % on VariableResult");
+        throw new ExpressionFormatException("Can't apply operator & on VariableResult");
     }
     @Override
     public Result binOr(Result other) throws ExpressionFormatException {
