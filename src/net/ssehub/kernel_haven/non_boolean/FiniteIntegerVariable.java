@@ -119,7 +119,7 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
         
         @Override
         protected @NonNull VariabilityVariable deserializeImpl(@NonNull String @NonNull [] csv) throws FormatException {
-            VariabilityVariable variable = deserializeImpl(csv);
+            VariabilityVariable variable = super.deserializeImpl(csv);
             try {
                 int size = Integer.parseInt(csv[DEFAULT_SIZE]);
                 int[] values = new int[size];
