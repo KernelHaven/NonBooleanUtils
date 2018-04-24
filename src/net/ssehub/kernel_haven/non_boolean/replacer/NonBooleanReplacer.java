@@ -37,6 +37,8 @@ public class NonBooleanReplacer {
     
     private CppParser parser;
     
+    private Set<String> allowedFunctions;
+    
     /**
      * Creates a new {@link NonBooleanReplacer}.
      * 
@@ -47,6 +49,7 @@ public class NonBooleanReplacer {
         this.variables = variables;
         this.constants = constants;
         this.parser = new CppParser();
+        this.allowedFunctions = new HashSet<>();
     }
     
     /**
@@ -74,6 +77,15 @@ public class NonBooleanReplacer {
         
         this.constants = constants;
         this.parser = new CppParser();
+        this.allowedFunctions = new HashSet<>();
+    }
+    
+    public void setConstants(Map<String, Long> constants) {
+        this.constants = constants;
+    }
+    
+    public void setAllowedFunctions(Set<String> allowedFunctions) {
+        this.allowedFunctions = allowedFunctions;
     }
 
     /**
@@ -128,7 +140,23 @@ public class NonBooleanReplacer {
      */
     private String replaceImpl(String expr, boolean cpp) throws ExpressionFormatException {
         CppExpression parsed = parser.parse(expr);
-        Result result = parsed.accept(new AstEvaluator(cpp));
+        
+        boolean removeDefined = false;
+        Result result;
+        try {
+            if (cpp && !allowedFunctions.contains("defined")) {
+                allowedFunctions.add("defined");
+                removeDefined = false;
+            }
+            result = parsed.accept(new AstEvaluator());
+            
+        } finally {
+            if (removeDefined) {
+                allowedFunctions.remove("defined");
+            }
+        }
+        
+        
         
         return cpp ? result.toCppString() : result.toNonCppString();
     }
@@ -144,7 +172,7 @@ public class NonBooleanReplacer {
      */
     public Formula nonCppToFormula(String expression) throws ExpressionFormatException {
         CppExpression parsed = parser.parse(expression);
-        Result result = parsed.accept(new AstEvaluator(false));
+        Result result = parsed.accept(new AstEvaluator());
         
         return result.toFormula();
     }
@@ -196,25 +224,14 @@ public class NonBooleanReplacer {
      */
     private class AstEvaluator implements ICppExressionVisitor<Result> {
 
-        private boolean cpp;
-        
-        /**
-         * Creates a new {@link AstEvaluator}.
-         * 
-         * @param cpp Whether this should consider defined() calls or not.
-         */
-        public AstEvaluator(boolean cpp) {
-            this.cpp = cpp;
-        }
-        
         @Override
         public Result visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
-            if (!cpp) {
+            if (!allowedFunctions.contains(call.getFunctionName())) {
                 throw new ExpressionFormatException("Can't handle function " + call.getFunctionName());
             }
             
             Result result;
-            if (call.getFunctionName().equals("defined") && call.getArgument() instanceof Variable) {
+            if (call.getArgument() instanceof Variable) {
                 result = new VariableResult(((Variable) call.getArgument()).getName(), Type.FINAL);
                 
             } else {
