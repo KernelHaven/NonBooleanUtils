@@ -87,23 +87,32 @@ public class NonBooleanPreperation implements IPreparation {
         
         // make sure that the destination is empty
         if (copiedSourceTree.exists()) {
-            Util.deleteFolder(copiedSourceTree);
+            for (File oldFile : copiedSourceTree.listFiles()) {
+                if (oldFile.isDirectory()) {
+                    Util.deleteFolder(oldFile);                    
+                } else {
+                    if (!oldFile.delete()) {
+                        LOGGER.logWarning2("Could not delete ", oldFile.getAbsolutePath());
+                    }
+                }
+            }
+        } else {
+            try {
+                boolean success = copiedSourceTree.mkdir();
+                if (!success) {
+                    LOGGER.logWarning2("Could not create ", copiedSourceTree.getName(), " in ",
+                            copiedSourceTree.getParentFile().getAbsolutePath());
+                } else {
+                    LOGGER.logError2("Created ", copiedSourceTree.getName(), " in ",
+                            copiedSourceTree.getParentFile().getAbsolutePath());
+                }
+            } catch (SecurityException exc) {
+                LOGGER.logException("Cannot create " + copiedSourceTree.getName() + " in "
+                        + copiedSourceTree.getParentFile().getAbsolutePath(), exc);
+                throw new SetUpException(exc);
+            }            
         }
         
-        try {
-            boolean success = copiedSourceTree.mkdir();
-            if (!success) {
-                LOGGER.logWarning2("Could not create ", copiedSourceTree.getName(), " in ",
-                    copiedSourceTree.getParentFile().getAbsolutePath());
-            } else {
-                LOGGER.logError2("Created ", copiedSourceTree.getName(), " in ",
-                    copiedSourceTree.getParentFile().getAbsolutePath());
-            }
-        } catch (SecurityException exc) {
-            LOGGER.logException("Cannot create " + copiedSourceTree.getName() + " in "
-                + copiedSourceTree.getParentFile().getAbsolutePath(), exc);
-            throw new SetUpException(exc);
-        }
         
         Map<String, NonBooleanVariable> variables = new HashMap<>();
         boolean nonBooleanModelRead = false;
