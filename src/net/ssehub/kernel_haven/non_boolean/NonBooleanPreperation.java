@@ -89,7 +89,14 @@ public class NonBooleanPreperation implements IPreparation {
         if (copiedSourceTree.exists()) {
             Util.deleteFolder(copiedSourceTree);
         }
-        copiedSourceTree.mkdir();
+        
+        try {
+            copiedSourceTree.mkdir();
+        } catch (SecurityException exc) {
+            LOGGER.logException("Cannot create " + copiedSourceTree.getName() + " in "
+                + copiedSourceTree.getParentFile().getAbsolutePath(), exc);
+            throw new SetUpException(exc);
+        }
         
         Map<String, NonBooleanVariable> variables = new HashMap<>();
         boolean nonBooleanModelRead = false;
