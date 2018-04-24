@@ -91,7 +91,14 @@ public class NonBooleanPreperation implements IPreparation {
         }
         
         try {
-            copiedSourceTree.mkdir();
+            boolean success = copiedSourceTree.mkdir();
+            if (!success) {
+                LOGGER.logWarning2("Could not create ", copiedSourceTree.getName(), " in ",
+                    copiedSourceTree.getParentFile().getAbsolutePath());
+            } else {
+                LOGGER.logError2("Created ", copiedSourceTree.getName(), " in ",
+                    copiedSourceTree.getParentFile().getAbsolutePath());
+            }
         } catch (SecurityException exc) {
             LOGGER.logException("Cannot create " + copiedSourceTree.getName() + " in "
                 + copiedSourceTree.getParentFile().getAbsolutePath(), exc);
