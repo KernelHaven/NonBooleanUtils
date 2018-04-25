@@ -6,67 +6,69 @@ import java.io.StringWriter;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests the {@link CppBufferedWriter}.
  * @author El-Sharkawy
  *
  */
+@RunWith(Parameterized.class)
 public class CppBufferedWriterTest {
     
+    private String input;
+    private String expected;
+    
     /**
-     * Tests C code with a CPP block, which shall not be removed.
+     * Creates a new {@link CppBufferedWriterTest}.
+     * 
+     * @param input The input to pass to the {@link CppBufferedWriter}.
+     * @param expected The expected output of the {@link CppBufferedWriter}.
+     * @param name The name of this test (won't be used for testing).
      */
-    @Test
-    public void testWriteCppBlock() {
-        String input = "#if A\n//A Line\n#endif\n";
-        String result = readCode(input);
-        
-        Assert.assertEquals(input, result);
+    public CppBufferedWriterTest(String input, String expected, String name) {
+        this.input = input;
+        this.expected = expected;
     }
     
     /**
-     * Tests C code with a CPP block, which shall not be removed.
+     * Creates the parameters for this test.
+     * 
+     * @return The parameters of this test.
      */
-    @Test
-    public void testSimpleRemoval() {
-        String input = "//some code before\n#if A\n#error >>> An error message\n#endif\n//some code after\n";
-        String result = readCode(input);
-        
-        Assert.assertEquals("//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n", result);
+    // CHECKSTYLE:OFF
+    @Parameters(name = "{2}")
+    public static String[][] getParameters() {
+        return new String[][]{
+            // Blocks to remove
+            {"//some code before\n#if A\n#error >>> An error message\n#endif\n//some code after\n",
+                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n",
+                "Removal of toplevel block"},
+            {"//some code before\n#if A\n#error >>> An error message\n#else\n#endif\n//some code after\n",
+                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n",
+                "Removal of toplevel block"},
+            {"#if OUTER\n//some code before\n#if INNER\n#error >>> An error message\n#endif\n#endif\n",
+                "#if OUTER\n//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n#endif\n",
+                "Removal of nested block"},
+            {"//some code before\n#if OUTER\n#if INNER\n#error >>> An error message\n#endif\n#endif\n",
+                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n",
+                "Removal of outer and inner block"},
+            
+            // Statements, which should not be changed
+            {"#if A\n//A Line\n#endif\n", "#if A\n//A Line\n#endif\n", "Desired CPP-Blocks are kept"},
+        };
     }
     
     /**
-     * Tests C code with a CPP block, which shall not be removed.
+     * Parameterized test method.
      */
     @Test
-    public void testSimpleRemovalWithElse() {
-        String input = "//some code before\n#if A\n#error >>> An error message\n#else\n#endif\n//some code after\n";
+    public void test() {
         String result = readCode(input);
         
-        Assert.assertEquals("//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n", result);
-    }
-    
-    /**
-     * Tests a removal of a nested, but not surrounding cpp block.
-     */
-    @Test
-    public void testRemovalOfNestedIf() {
-        String input = "#if OUTER\n//some code before\n#if INNER\n#error >>> An error message\n#endif\n#endif\n";
-        String result = readCode(input);
-        
-        Assert.assertEquals("#if OUTER\n//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n#endif\n", result);
-    }
-    
-    /**
-     * Tests a removal of a nested and also surrounding cpp block.
-     */
-    @Test
-    public void testRemovalOfStructure() {
-        String input = "//some code before\n#if OUTER\n#if INNER\n#error >>> An error message\n#endif\n#endif\n";
-        String result = readCode(input);
-        
-        Assert.assertEquals("//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n", result);
+        Assert.assertEquals(expected, result);
     }
 
     /**
