@@ -257,13 +257,19 @@ public class NonBooleanReplacer {
             
             Result result;
             if (definedLikeFunctions.contains(call.getFunctionName())) {
-                if (call.getArgument() instanceof Variable) {
-                    result = new VariableResult(((Variable) call.getArgument()).getName(), Type.FINAL);
+                CppExpression argument = call.getArgument();
+                while (argument instanceof FunctionCall
+                        && ignoredFunctions.contains(((FunctionCall) argument).getFunctionName())) {
+                    argument = ((FunctionCall) argument).getArgument();
+                }
+                
+                if (argument instanceof Variable) {
+                    result = new VariableResult(((Variable) argument).getName(), Type.FINAL);
                     
                 } else {
                     String argumentClass = "null";
-                    if (call.getArgument() != null) {
-                        argumentClass = call.getArgument().getClass().getSimpleName();
+                    if (argument != null) {
+                        argumentClass = argument.getClass().getSimpleName();
                     }
                     throw new ExpressionFormatException("Got function that isn't defined(VARIABLE):\n"
                             + call.getFunctionName() + "(" + argumentClass + ")");

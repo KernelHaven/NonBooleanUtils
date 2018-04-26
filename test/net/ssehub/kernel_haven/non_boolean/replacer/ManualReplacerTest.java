@@ -153,4 +153,21 @@ public class ManualReplacerTest {
         assertThat(replacer.replaceNonCpp("MY_OWN_INFINITE_VAR == 2"), is("MY_OWN_INFINITE_VAR"));
     }
     
+    /**
+     * Tests that an ignored function inside a defined is handled correctly.
+     * 
+     * @throws ExpressionFormatException unwanted.
+     */
+    @Test
+    public void testIgnoredFunctionInsideDefined() throws ExpressionFormatException {
+        NonBooleanReplacer replacer = new NonBooleanReplacer(CppReplacerTest.DEFAULT_VARS,
+                CppReplacerTest.DEFAULT_CONSTANTS);
+        
+        Set<String> ignoredFunctions = new HashSet<>();
+        ignoredFunctions.add("i");
+        replacer.setIgnoredFunctions(ignoredFunctions);
+        
+        assertThat(replacer.replaceCpp("#if defined(i(VAR_A))"), is("#if defined(VAR_A)"));
+    }
+    
 }
