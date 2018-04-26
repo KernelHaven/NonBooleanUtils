@@ -49,6 +49,7 @@ public class CppBufferedWriter extends Writer {
     private BufferedWriter out;
     private int nestingDepth = 0;
     private int skipAtNesting = -1;
+    private String removedCondition = null;
     
     /**
      * Sole constructor for this class.
@@ -65,7 +66,7 @@ public class CppBufferedWriter extends Writer {
      */
     @Override
     public void write(String line) throws IOException {
-        String trimedLine = line.trim();
+        String trimedLine = line.trim().toLowerCase();
         if (trimedLine.startsWith("#if")) {
             // if, ifndef, ifdef
             nestingDepth++;
@@ -93,7 +94,28 @@ public class CppBufferedWriter extends Writer {
         } else if (trimedLine.startsWith("#el")) {
             // else, elif
             if (skipAtNesting == -1 || skipAtNesting > nestingDepth) {
+                // Nothing to remove, continue
                 cppLines.add(new CppLine(line, true, nestingDepth));
+            } else {
+                if (null != removedCondition) {
+                    // Rewrite else/elif and check if we should also delete this block or rewrite it.
+                    StringBuffer newLine = new StringBuffer();
+                    if (trimedLine.startsWith("#elif")) {
+                        int start = line.toLowerCase().indexOf("#elif") + 5;
+                        newLine.append("#if (!(");
+                        newLine.append(removedCondition.trim());
+                        newLine.append(") && ");
+                        // Attention: condition must not be transformed to lower case
+                        newLine.append(line.substring(start).trim());
+                        newLine.append(")");
+                    } else {
+                        newLine.append("#if !(");
+                        newLine.append(removedCondition.trim());
+                        newLine.append(")");
+                    }
+                    cppLines.add(new CppLine(newLine.toString(), true, nestingDepth));
+                    skipAtNesting = -1;
+                }
             }
         } else if (trimedLine.startsWith("#error")) {
             // Delete this statement and surrounding block
@@ -121,9 +143,41 @@ public class CppBufferedWriter extends Writer {
         while (itr.hasNext()) {
             index++;
             
-            if (itr.next().nestingDepth >= nestingDepth) {
+            CppLine currentElement = itr.next();
+            if (currentElement.nestingDepth >= nestingDepth) {
                 itr.remove();
+                
+                // Store the condition to rewrite else/elif elements if necessary
+                if (currentElement.cppBlock) {
+                    String line = currentElement.line.toLowerCase();
+                    int start = line.indexOf("ifndef");
+                    int offset = 0;
+                    if (-1 == start) {
+                        start = line.indexOf("ifdef");
+                        if (-1 != start) {
+                         // length of ifdef
+                            offset += 4;
+                        }
+                    } else {
+                        // length of ifndef
+                        offset += 5;
+                    }
+                    if (-1 == start) {
+                        start = line.indexOf("if");
+                        if (-1 != start) {
+                            // length of if
+                            offset += 2;
+                        }
+                    }
+                    
+                    // Extract condition
+                    if (-1 != start) {
+                        removedCondition = currentElement.line.substring(start + offset);
+                    }
+                }
+                
                 if (-1 == firstRemovalIndex) {
+                    // Mark that we have removed at least one element at this index
                     firstRemovalIndex = index;
                 }
             }

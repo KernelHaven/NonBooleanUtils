@@ -41,23 +41,28 @@ public class CppBufferedWriterTest {
     // CHECKSTYLE:OFF
     @Parameters(name = "{2}")
     public static String[][] getParameters() {
+        final String error = "#error >>> errMessage\n";
         return new String[][]{
+            
             // Blocks to remove
-            {"//some code before\n#if A\n#error >>> An error message\n#endif\n//some code after\n",
-                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n",
-                "Removal of toplevel block"},
-            {"//some code before\n#if A\n#error >>> An error message\n#else\n#endif\n//some code after\n",
-                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n//some code after\n",
-                "Removal of toplevel block"},
-            {"#if OUTER\n//some code before\n#if INNER\n#error >>> An error message\n#endif\n#endif\n",
-                "#if OUTER\n//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n#endif\n",
-                "Removal of nested block"},
-            {"//some code before\n#if OUTER\n#if INNER\n#error >>> An error message\n#endif\n#endif\n",
-                "//some code before\n" + CppBufferedWriter.REPLACEMENT + "\n",
-                "Removal of outer and inner block"},
+            {"//Code: Before\n#if A\n" + error + "#endif\n//Code: After\n",
+                "//Code: Before\n" + CppBufferedWriter.REPLACEMENT + "\n//Code: After\n",
+                "Unnested Removal"},
+            {"#if OUTER\n//Code: Before\n#if INNER\n" + error + "#endif\n#endif\n",
+                "#if OUTER\n//Code: Before\n" + CppBufferedWriter.REPLACEMENT + "\n#endif\n",
+                "Nested Removal"},
+            {"//Code: Before\n#if OUTER\n#if INNER\n" + error + "#endif\n#endif\n",
+                "//Code: Before\n" + CppBufferedWriter.REPLACEMENT + "\n",
+                "(Un)Nested Removal"},
             
             // Statements, which should not be changed
             {"#if A\n//A Line\n#endif\n", "#if A\n//A Line\n#endif\n", "Desired CPP-Blocks are kept"},
+            {"//Code\n", "//Code\n", "No CPP"},
+            
+            // Mixed statements
+            {"//before\n#if A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
+                "//before\n" + CppBufferedWriter.REPLACEMENT + "\n#if (!(A) && B)\n//code to keep\n#endif\n//after\n",
+                "Partial removal"},
         };
     }
     
