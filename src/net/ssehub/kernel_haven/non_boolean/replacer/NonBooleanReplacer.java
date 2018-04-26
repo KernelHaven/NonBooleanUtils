@@ -37,7 +37,9 @@ public class NonBooleanReplacer {
     
     private CppParser parser;
     
-    private Set<String> allowedFunctions;
+    private Set<String> definedLikeFunctions;
+    
+    private Set<String> ignoredFunctions;
     
     /**
      * Creates a new {@link NonBooleanReplacer}.
@@ -49,7 +51,8 @@ public class NonBooleanReplacer {
         this.variables = variables;
         this.constants = constants;
         this.parser = new CppParser();
-        this.allowedFunctions = new HashSet<>();
+        this.definedLikeFunctions = new HashSet<>();
+        this.ignoredFunctions = new HashSet<>();
     }
     
     /**
@@ -77,15 +80,38 @@ public class NonBooleanReplacer {
         
         this.constants = constants;
         this.parser = new CppParser();
-        this.allowedFunctions = new HashSet<>();
+        this.definedLikeFunctions = new HashSet<>();
+        this.ignoredFunctions = new HashSet<>();
     }
     
+    /**
+     * Overrides the map of constants set in the constructor.
+     * 
+     * @param constants The new map of constants to use.
+     */
     public void setConstants(Map<String, Long> constants) {
         this.constants = constants;
     }
     
-    public void setAllowedFunctions(Set<String> allowedFunctions) {
-        this.allowedFunctions = allowedFunctions;
+    /**
+     * Sets which functions should be handled like <code>defined</code> in the C preprocessor. This is basically a set
+     * of aliases for <code>defined</code>. <code>defined</code> itself is automatically added, if
+     * {@link #replaceCpp(String)} is used, so it doesn't need to be explicitly added here.
+     * 
+     * @param definedLikeFunctions The set of <code>defined</code> like function names.
+     */
+    public void setDefinedLikeFunctions(Set<String> definedLikeFunctions) {
+        this.definedLikeFunctions = definedLikeFunctions;
+    }
+    
+    /**
+     * Sets which functions should be ignored. If such a function is found in the CPP line, then its only argument
+     * is used as the "return value" for this function without any modification.
+     * 
+     * @param ignoredFunctions The set of function names to "ignore".
+     */
+    public void setIgnoredFunctions(Set<String> ignoredFunctions) {
+        this.ignoredFunctions = ignoredFunctions;
     }
 
     /**
@@ -144,15 +170,17 @@ public class NonBooleanReplacer {
         boolean removeDefined = false;
         Result result;
         try {
-            if (cpp && !allowedFunctions.contains("defined")) {
-                allowedFunctions.add("defined");
-                removeDefined = false;
+            // add defined to the definedLikeFunctions, if we should parse like the CPP
+            if (cpp && !definedLikeFunctions.contains("defined")) {
+                definedLikeFunctions.add("defined");
+                removeDefined = true;
             }
             result = parsed.accept(new AstEvaluator());
             
         } finally {
+            // remove defined again, if we only temporarily added it for this call
             if (removeDefined) {
-                allowedFunctions.remove("defined");
+                definedLikeFunctions.remove("defined");
             }
         }
         
@@ -226,22 +254,29 @@ public class NonBooleanReplacer {
 
         @Override
         public Result visitFunctionCall(FunctionCall call) throws ExpressionFormatException {
-            if (!allowedFunctions.contains(call.getFunctionName())) {
+            
+            Result result;
+            if (definedLikeFunctions.contains(call.getFunctionName())) {
+                if (call.getArgument() instanceof Variable) {
+                    result = new VariableResult(((Variable) call.getArgument()).getName(), Type.FINAL);
+                    
+                } else {
+                    String argumentClass = "null";
+                    if (call.getArgument() != null) {
+                        argumentClass = call.getArgument().getClass().getSimpleName();
+                    }
+                    throw new ExpressionFormatException("Got function that isn't defined(VARIABLE):\n"
+                            + call.getFunctionName() + "(" + argumentClass + ")");
+                }
+                
+            } else if (ignoredFunctions.contains(call.getFunctionName())) {
+                result = call.getArgument().accept(this);
+                
+            } else {
                 throw new ExpressionFormatException("Can't handle function " + call.getFunctionName());
             }
             
-            Result result;
-            if (call.getArgument() instanceof Variable) {
-                result = new VariableResult(((Variable) call.getArgument()).getName(), Type.FINAL);
-                
-            } else {
-                String argumentClass = "null";
-                if (call.getArgument() != null) {
-                    argumentClass = call.getArgument().getClass().getSimpleName();
-                }
-                throw new ExpressionFormatException("Got function that isn't defined(VARIABLE):\n"
-                        + call.getFunctionName() + "(" + argumentClass + ")");
-            }
+            
             
             return result;
         }
