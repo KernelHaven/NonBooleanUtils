@@ -63,6 +63,14 @@ public class CppBufferedWriterTest {
             {"//before\n#if A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
                 "//before\n" + CppBufferedWriter.REPLACEMENT + "\n#if (!(A) && B)\n//code to keep\n#endif\n//after\n",
                 "Partial removal"},
+            {"//before\n#ifdef A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
+                "//before\n" + CppBufferedWriter.REPLACEMENT
+                    + "\n#if (!(defined(A)) && B)\n//code to keep\n#endif\n//after\n",
+                "Partial removal"},
+            {"//before\n#ifndef A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
+                    "//before\n" + CppBufferedWriter.REPLACEMENT
+                    + "\n#if (!(!defined(A)) && B)\n//code to keep\n#endif\n//after\n",
+            "Partial removal"},
         };
     }
     

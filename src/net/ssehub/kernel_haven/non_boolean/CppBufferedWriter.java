@@ -149,30 +149,38 @@ public class CppBufferedWriter extends Writer {
                 
                 // Store the condition to rewrite else/elif elements if necessary
                 if (currentElement.cppBlock) {
+                    String function = null;
                     String line = currentElement.line.toLowerCase();
-                    int start = line.indexOf("ifndef");
+                    int start = line.indexOf("#ifndef");
                     int offset = 0;
                     if (-1 == start) {
-                        start = line.indexOf("ifdef");
+                        start = line.indexOf("#ifdef");
                         if (-1 != start) {
-                         // length of ifdef
-                            offset += 4;
+                            // length of ifdef
+                            offset += 6;
+                            function = "defined(";
                         }
                     } else {
                         // length of ifndef
-                        offset += 5;
+                        offset += 7;
+                        function = "!defined(";
                     }
                     if (-1 == start) {
-                        start = line.indexOf("if");
+                        start = line.indexOf("#if");
                         if (-1 != start) {
                             // length of if
-                            offset += 2;
+                            offset += 3;
                         }
                     }
                     
                     // Extract condition
                     if (-1 != start) {
-                        removedCondition = currentElement.line.substring(start + offset);
+                        String condition = currentElement.line.substring(start + offset).trim();
+                        if (null != function) {
+                            removedCondition = function + condition + ")";
+                        } else {
+                            removedCondition = condition;
+                        }
                     }
                 }
                 
