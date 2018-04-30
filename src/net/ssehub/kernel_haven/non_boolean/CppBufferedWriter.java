@@ -24,6 +24,7 @@ public class CppBufferedWriter extends Writer {
      */
     private class CppLine {
         private String line;
+        private String effectiveLine;
         private int nestingDepth;
         private boolean cppBlock;
         
@@ -34,7 +35,19 @@ public class CppBufferedWriter extends Writer {
          * @param nestingDepth The nesting of the cpp statement within all cpp blocks.
          */
         private CppLine(String line, boolean cppBlock, int nestingDepth) {
+            this(line, line, cppBlock, nestingDepth);
+        }
+        
+        /**
+         * Sole constructor.
+         * @param line The cpp line
+         * @param effectiveLine Rewritten cpp line if previous line has been removed.
+         * @param cppBlock <tt>true</tt> if an c preprocessor <tt>if, else, elif, endif</tt>.
+         * @param nestingDepth The nesting of the cpp statement within all cpp blocks.
+         */
+        private CppLine(String line, String effectiveLine, boolean cppBlock, int nestingDepth) {
             this.line = line;
+            this.effectiveLine = effectiveLine;
             this.nestingDepth = nestingDepth;
             this.cppBlock = cppBlock;
         }
@@ -49,7 +62,7 @@ public class CppBufferedWriter extends Writer {
     private BufferedWriter out;
     private int nestingDepth = 0;
     private int skipAtNesting = -1;
-    private String removedCondition = null;
+    private List<String> removedConditions = new ArrayList<>(5);
     
     /**
      * Sole constructor for this class.
@@ -97,23 +110,23 @@ public class CppBufferedWriter extends Writer {
                 // Nothing to remove, continue
                 cppLines.add(new CppLine(line, true, nestingDepth));
             } else {
-                if (null != removedCondition) {
+                if (!removedConditions.isEmpty()) {
                     // Rewrite else/elif and check if we should also delete this block or rewrite it.
                     StringBuffer newLine = new StringBuffer();
                     if (trimedLine.startsWith("#elif")) {
                         int start = line.toLowerCase().indexOf("#elif") + 5;
                         newLine.append("#if (!(");
-                        newLine.append(removedCondition.trim());
+                        newLine.append(getRemovedConditions());
                         newLine.append(") && ");
                         // Attention: condition must not be transformed to lower case
                         newLine.append(line.substring(start).trim());
                         newLine.append(")");
                     } else {
                         newLine.append("#if !(");
-                        newLine.append(removedCondition.trim());
+                        newLine.append(getRemovedConditions());
                         newLine.append(")");
                     }
-                    cppLines.add(new CppLine(newLine.toString(), true, nestingDepth));
+                    cppLines.add(new CppLine(line, newLine.toString(), true, nestingDepth));
                     skipAtNesting = -1;
                 }
             }
@@ -156,20 +169,27 @@ public class CppBufferedWriter extends Writer {
                     if (-1 == start) {
                         start = line.indexOf("#ifdef");
                         if (-1 != start) {
-                            // length of ifdef
+                            // length of #ifdef
                             offset += 6;
                             function = "defined(";
                         }
                     } else {
-                        // length of ifndef
+                        // length of #ifndef
                         offset += 7;
                         function = "!defined(";
                     }
                     if (-1 == start) {
                         start = line.indexOf("#if");
                         if (-1 != start) {
-                            // length of if
+                            // length of #if
                             offset += 3;
+                        }
+                    }
+                    if (-1 == start) {
+                        start = line.indexOf("#elif");
+                        if (-1 != start) {
+                            // length of #elif
+                            offset += 5;
                         }
                     }
                     
@@ -177,9 +197,9 @@ public class CppBufferedWriter extends Writer {
                     if (-1 != start) {
                         String condition = currentElement.line.substring(start + offset).trim();
                         if (null != function) {
-                            removedCondition = function + condition + ")";
+                            removedConditions.add(function + condition + ")");
                         } else {
-                            removedCondition = condition;
+                            removedConditions.add(condition);
                         }
                     }
                 }
@@ -221,6 +241,22 @@ public class CppBufferedWriter extends Writer {
             removeCppBlock(nestingToCheck);
         }
     }
+    
+    /**
+     * Concatenates all removed CPP conditions via a conjunction.<br/>
+     * <b>Attention:</b> check that {@link #removedConditions} is not empty before!
+     * @return The composed, removed conditions.
+     */
+    private String getRemovedConditions() {
+        StringBuffer result = new StringBuffer();
+        result.append(removedConditions.get(0).trim());
+        for (int i = 1; i < removedConditions.size(); i++) {
+            result.append(" && ");
+            result.append(removedConditions.get(i).trim());
+        }
+        
+        return result.toString();
+    }
 
     @Override
     public void close() throws IOException {
@@ -236,10 +272,11 @@ public class CppBufferedWriter extends Writer {
     public void flush() throws IOException {
         if (!cppLines.isEmpty()) {
             for (CppLine cppLine : cppLines) {
-                out.write(cppLine.line);
+                out.write(cppLine.effectiveLine);
                 out.write("\n");
             }
         }
+        removedConditions.clear();
         cppLines.clear();
         out.flush();
     }

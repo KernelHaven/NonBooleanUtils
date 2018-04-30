@@ -62,15 +62,19 @@ public class CppBufferedWriterTest {
             // Mixed statements
             {"//before\n#if A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
                 "//before\n" + CppBufferedWriter.REPLACEMENT + "\n#if (!(A) && B)\n//code to keep\n#endif\n//after\n",
-                "Partial removal"},
+                "Partial removal - 1"},
             {"//before\n#ifdef A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
                 "//before\n" + CppBufferedWriter.REPLACEMENT
                     + "\n#if (!(defined(A)) && B)\n//code to keep\n#endif\n//after\n",
-                "Partial removal"},
+                "Partial removal - 2"},
             {"//before\n#ifndef A\n" + error + "#elif B\n//code to keep\n#endif\n//after\n",
-                    "//before\n" + CppBufferedWriter.REPLACEMENT
+                "//before\n" + CppBufferedWriter.REPLACEMENT
                     + "\n#if (!(!defined(A)) && B)\n//code to keep\n#endif\n//after\n",
-            "Partial removal"},
+                "Partial removal - 3"},
+            {"//before\n#if A\n" + error + "#elif B\n" + error + "#elif C\n//code to keep\n#endif\n//after\n",
+                "//before\n" + CppBufferedWriter.REPLACEMENT + "\n#if (!(A && B) && C)\n"
+                    + "//code to keep\n#endif\n//after\n",
+                "Partial removal - 4"},
         };
     }
     
