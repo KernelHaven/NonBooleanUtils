@@ -276,7 +276,7 @@ public class NonBooleanPreperation implements IPreparation {
         try {
             result = replacer.replaceCpp(result);
         } catch (ExpressionFormatException e) {
-            LOGGER.logException("Error whilte replacing line " + lineNumber + " in " + from + ": " + line, e);
+            LOGGER.logException("Error while replacing line " + lineNumber + " in " + from + ": " + line, e);
         }
         return result;
     }
