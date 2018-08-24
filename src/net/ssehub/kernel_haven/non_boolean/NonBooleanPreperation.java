@@ -86,33 +86,13 @@ public class NonBooleanPreperation implements IPreparation {
         LOGGER.logDebug("Starting preperation...");
         
         // make sure that the destination is empty
-        if (copiedSourceTree.exists()) {
-            for (File oldFile : copiedSourceTree.listFiles()) {
-                if (oldFile.isDirectory()) {
-                    Util.deleteFolder(oldFile);                    
-                } else {
-                    if (!oldFile.delete()) {
-                        LOGGER.logWarning2("Could not delete ", oldFile.getAbsolutePath());
-                    }
-                }
-            }
-        } else {
-            try {
-                boolean success = copiedSourceTree.mkdir();
-                if (!success) {
-                    LOGGER.logWarning2("Could not create ", copiedSourceTree.getName(), " in ",
-                            copiedSourceTree.getParentFile().getAbsolutePath());
-                } else {
-                    LOGGER.logError2("Created ", copiedSourceTree.getName(), " in ",
-                            copiedSourceTree.getParentFile().getAbsolutePath());
-                }
-            } catch (SecurityException exc) {
-                LOGGER.logException("Cannot create " + copiedSourceTree.getName() + " in "
-                        + copiedSourceTree.getParentFile().getAbsolutePath(), exc);
-                throw new SetUpException(exc);
-            }            
+        try {
+            Util.clearFolder(copiedSourceTree);
+        } catch (IOException e) {
+            LOGGER.logException("Cannot clear/create " + copiedSourceTree.getName() + " in "
+                    + copiedSourceTree.getParentFile().getAbsolutePath(), e);
+            throw new SetUpException(e);
         }
-        
         
         Map<String, NonBooleanVariable> variables = new HashMap<>();
         boolean nonBooleanModelRead = false;
