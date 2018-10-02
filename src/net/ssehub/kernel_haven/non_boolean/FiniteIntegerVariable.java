@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.FormatException;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
@@ -78,6 +79,15 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
                 return values[pos++];
             }
         };
+    }
+    
+    /**
+     * Initialization method called by KernelHaven. See loadClasses.txt
+     * 
+     * @param config The global pipeline configuration.
+     */
+    public static void initialize(@NonNull Configuration config) {
+        // everything already done in the static block
     }
     
     /**
