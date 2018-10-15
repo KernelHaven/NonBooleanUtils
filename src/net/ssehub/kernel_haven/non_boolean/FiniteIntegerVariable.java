@@ -2,14 +2,8 @@ package net.ssehub.kernel_haven.non_boolean;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
-import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.util.FormatException;
-import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
-import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializer;
-import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializerFactory;
 
 /**
  * An Integer-based variability variable with a finite domain.
@@ -18,13 +12,8 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializerFa
  */
 public class FiniteIntegerVariable extends VariabilityVariable implements Iterable<Integer> {
 
-    static {
-        // this block is called by the infrastructure, see loadClasses.txt
-        
-        VariabilityVariableSerializerFactory.INSTANCE.registerSerializer(FiniteIntegerVariable.class.getName(),
-                new FiniteIntegerVariableSerializer());
-    }
-    
+    private static final long serialVersionUID = 7448987542713903869L;
+
     private int[] values;
     
     /**
@@ -79,75 +68,6 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
                 return values[pos++];
             }
         };
-    }
-    
-    /**
-     * Initialization method called by KernelHaven. See loadClasses.txt
-     * 
-     * @param config The global pipeline configuration.
-     */
-    public static void initialize(@NonNull Configuration config) {
-        // everything already done in the static block
-    }
-    
-    /**
-     * A serializer for {@link FiniteIntegerVariable}s.
-     */
-    private static final class FiniteIntegerVariableSerializer extends VariabilityVariableSerializer {
-        
-        @Override
-        protected @NonNull List<@NonNull String> serializeImpl(@NonNull VariabilityVariable variable) {
-            FiniteIntegerVariable finVar = (FiniteIntegerVariable) variable;
-            
-            List<String> result = super.serializeImpl(variable);
-            
-            result.add(String.valueOf(finVar.values.length));
-            for (int value :  finVar.values) {
-                result.add(String.valueOf(value));
-            }
-            
-            return result;
-        }
-        
-        @Override
-        protected void checkLength(@NonNull String @NonNull [] csv) throws FormatException {
-            if (csv.length < DEFAULT_SIZE + 1) {
-                throw new FormatException("Expected at least " + (DEFAULT_SIZE + 1) + " columns"); 
-            }
-            
-            try {
-                int length = Integer.parseInt(csv[DEFAULT_SIZE]);
-                
-                if (csv.length != DEFAULT_SIZE + 1 + length) {
-                    throw new FormatException("Expected exactly " + (DEFAULT_SIZE + 1 + length) + " fields");
-                }
-                
-            } catch (NumberFormatException e) {
-                throw new FormatException(e);
-            }
-        }
-        
-        @Override
-        protected @NonNull VariabilityVariable deserializeImpl(@NonNull String @NonNull [] csv) throws FormatException {
-            VariabilityVariable variable = super.deserializeImpl(csv);
-            try {
-                int size = Integer.parseInt(csv[DEFAULT_SIZE]);
-                int[] values = new int[size];
-                
-                for (int i = 0; i < size; i++) {
-                    values[i] = Integer.parseInt(csv[i + DEFAULT_SIZE + 1]);
-                }
-                
-                FiniteIntegerVariable result = new FiniteIntegerVariable(variable.getName(), variable.getType(),
-                        values);
-                
-                return result;
-            
-            } catch (NumberFormatException e) {
-                throw new FormatException(e);
-            }
-        }
-        
     }
     
 }

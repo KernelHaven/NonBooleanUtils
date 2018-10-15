@@ -1,10 +1,7 @@
 package net.ssehub.kernel_haven.non_boolean;
 
-import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
-import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializer;
-import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializerFactory;
 
 /**
  * An Integer-based variability variable with a infinite (not restricted) domain.
@@ -12,13 +9,9 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariableSerializerFa
  * @author Adam
  */
 public class InfiniteIntegerVariable extends VariabilityVariable {
-
-    static {
-        // this block is called by the infrastructure, see loadClasses.txt
-        VariabilityVariableSerializerFactory.INSTANCE.registerSerializer(InfiniteIntegerVariable.class.getName(),
-                new VariabilityVariableSerializer()); // use default serializer
-    }
     
+    private static final long serialVersionUID = -9211643373026667228L;
+
     /**
      * Creates this {@link InfiniteIntegerVariable}.
      * 
@@ -29,13 +22,4 @@ public class InfiniteIntegerVariable extends VariabilityVariable {
         super(name, type);
     }
     
-    /**
-     * Initialization method called by KernelHaven. See loadClasses.txt
-     * 
-     * @param config The global pipeline configuration.
-     */
-    public static void initialize(@NonNull Configuration config) {
-        // everything already done in the static block
-    }
-
 }
