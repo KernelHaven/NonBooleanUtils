@@ -19,7 +19,19 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
     private int[] values;
     
     /**
-     * Sole constructor for this class.
+     * Creates a new {@link FiniteIntegerVariable}.
+     * 
+     * @param name The name of the new variable. Must not be <tt>null</tt>.
+     * @param type The type of the new variable, e.g., <tt>integer</tt>. Must not be <tt>null</tt>.
+     */
+    public FiniteIntegerVariable(String name, String type) {
+        super(name, type);
+        this.values = new int[0];
+    }
+    
+    /**
+     * Creates a new {@link FiniteIntegerVariable}.
+     * 
      * @param name The name of the new variable. Must not be <tt>null</tt>.
      * @param type The type of the new variable, e.g., <tt>integer</tt>. Must not be <tt>null</tt>.
      * @param values The allowed values for this variable.
