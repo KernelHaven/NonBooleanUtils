@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,6 +21,7 @@ import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.non_boolean.heuristic.NonBooleanHeuristic;
 import net.ssehub.kernel_haven.non_boolean.replacer.NonBooleanReplacer;
 import net.ssehub.kernel_haven.util.Logger;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.Util;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
@@ -128,9 +130,15 @@ public class NonBooleanPreperation implements IPreparation {
         this.replacer = new NonBooleanReplacer(variables, getConstants());
         
         // copy the source_tree to destination, while replacing the relational expressions with NonBoolean variables
-        LOGGER.logDebug("Copying from " + originalSourceTree.getAbsolutePath() + " to "
+        int numFiles = (int) Files.walk(originalSourceTree.toPath())
+                .filter((path) -> Files.isRegularFile(path))
+                .count();
+        
+        LOGGER.logDebug("Copying " + numFiles + " files from " + originalSourceTree.getAbsolutePath() + " to "
                 + copiedSourceTree.getAbsolutePath());
-        copy(originalSourceTree, copiedSourceTree);
+        ProgressLogger progress = new ProgressLogger("NonBooleanPreparation Copying", numFiles);
+        copy(originalSourceTree, copiedSourceTree, progress);
+        progress.close();
     }
 
     
@@ -140,23 +148,25 @@ public class NonBooleanPreperation implements IPreparation {
      * 
      * @param from The file to copy.
      * @param to The destination.
+     * @param progress The {@link ProgressLogger} to notify about finished files.
      * 
      * @throws IOException If copying the file fails.
      */
-    private void copy(File from, File to) throws IOException {
+    private void copy(File from, File to, ProgressLogger progress) throws IOException {
         for (File f : from.listFiles()) {
             
             File newF = new File(to, f.getName());
             
             if (f.isDirectory()) {
                 newF.mkdir();
-                copy(f, newF);
+                copy(f, newF, progress);
             } else {
                 if (f.getName().endsWith(".c") || f.getName().endsWith(".h")) {
                     copySourceFile(f, newF);
                 } else {
                     Util.copyFile(f, newF);
                 }
+                progress.oneDone();
             }
         }
     }
