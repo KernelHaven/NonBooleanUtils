@@ -166,7 +166,7 @@ public class NonBooleanPreperation implements IPreparation {
                 } else {
                     Util.copyFile(f, newF);
                 }
-                progress.oneDone();
+                progress.processedOne();
             }
         }
     }
