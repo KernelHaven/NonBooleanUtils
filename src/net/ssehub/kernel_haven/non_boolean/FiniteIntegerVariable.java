@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import net.ssehub.kernel_haven.util.FormatException;
+import net.ssehub.kernel_haven.util.io.json.JsonElement;
+import net.ssehub.kernel_haven.util.io.json.JsonList;
+import net.ssehub.kernel_haven.util.io.json.JsonNumber;
+import net.ssehub.kernel_haven.util.io.json.JsonObject;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
@@ -82,6 +86,36 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
                 return values[pos++];
             }
         };
+    }
+    
+    @Override
+    protected @NonNull JsonObject toJson() {
+        JsonObject result = super.toJson();
+        
+        JsonList valueList = new JsonList();
+        for (int value : this.values) {
+            valueList.addElement(new JsonNumber(value));
+        }
+        
+        result.putElement("allowedValues", valueList);
+        
+        return result;
+    }
+    
+    @Override
+    protected void setJsonData(@NonNull JsonObject data, Map<@NonNull String, VariabilityVariable> vars)
+            throws FormatException {
+        super.setJsonData(data, vars);
+        
+        JsonList valueList = data.getList("allowedValues");
+        this.values = new int[valueList.getSize()];
+        int i = 0;
+        for (JsonElement element : valueList) {
+            if (!(element instanceof JsonNumber)) {
+                throw new FormatException("Expected JsonNumber, but got " + element.getClass().getSimpleName());
+            }
+            values[i++] = ((JsonNumber) element).getValue().intValue();
+        }
     }
     
     @Override
