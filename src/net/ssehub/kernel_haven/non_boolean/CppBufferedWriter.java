@@ -112,7 +112,7 @@ public class CppBufferedWriter extends Writer {
             } else {
                 if (!removedConditions.isEmpty()) {
                     // Rewrite else/elif and check if we should also delete this block or rewrite it.
-                    StringBuffer newLine = new StringBuffer();
+                    StringBuilder newLine = new StringBuilder();
                     if (trimedLine.startsWith("#elif")) {
                         int start = line.toLowerCase().indexOf("#elif") + 5;
                         newLine.append("#if (!(");
@@ -248,7 +248,7 @@ public class CppBufferedWriter extends Writer {
      * @return The composed, removed conditions.
      */
     private String getRemovedConditions() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(removedConditions.get(0).trim());
         for (int i = 1; i < removedConditions.size(); i++) {
             result.append(" && ");
