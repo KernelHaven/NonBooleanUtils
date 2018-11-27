@@ -377,6 +377,7 @@ public class CppReplacerTest {
                 new Object[] {"#if VAR_D >= 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
                 new Object[] {"#if VAR_D < 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
                 new Object[] {"#if VAR_D <= 5", "#if defined(VAR_D)", "Infinite Integer with Literal comparison"},
+                new Object[] {"#if VAR_D <= 5.32", "#if defined(VAR_D_le_5_32)", "Infinite Integer with Floating Point comparison"},
                 
                 new Object[] {"#if 5 == VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
                 new Object[] {"#if 5 != VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
@@ -384,6 +385,7 @@ public class CppReplacerTest {
                 new Object[] {"#if 5 >= VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
                 new Object[] {"#if 5 < VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
                 new Object[] {"#if 5 <= VAR_D", "#if defined(VAR_D)", "Infinite Integer with Literal comparison (reversed)"},
+                new Object[] {"#if 5.32 <= VAR_D", "#if defined(5_32_le_VAR_D)", "Infinite Integer with Floating Point comparison (reversed)"},
                 
                 /*
                  * Inifinte Integer CMP_OP Var
