@@ -424,7 +424,7 @@ public class NonBooleanReplacer {
             if (literal.getValue() instanceof Long) {
                 result = new LiteralIntResult(literal.getValue().longValue());
             } else {
-                result = new VariableResult(literal.getValue().toString(), Type.UNKNOWN);
+                result = new VariableResult(literal.getValue().toString().replace('.', '_'), Type.UNKNOWN);
             }
             return result;
         }
