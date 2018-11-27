@@ -15,7 +15,7 @@ import net.ssehub.kernel_haven.util.cpp.parser.CppParser;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.CppExpression;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.FunctionCall;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.ICppExressionVisitor;
-import net.ssehub.kernel_haven.util.cpp.parser.ast.IntegerLiteral;
+import net.ssehub.kernel_haven.util.cpp.parser.ast.NumberLiteral;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.Operator;
 import net.ssehub.kernel_haven.util.cpp.parser.ast.Variable;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -419,8 +419,14 @@ public class NonBooleanReplacer {
         }
         
         @Override
-        public Result visitLiteral(IntegerLiteral literal) {
-            return new LiteralIntResult(literal.getValue());
+        public Result visitLiteral(NumberLiteral literal) {
+            Result result;
+            if (literal.getValue() instanceof Long) {
+                result = new LiteralIntResult(literal.getValue().longValue());
+            } else {
+                result = new VariableResult(literal.getValue().toString(), Type.UNKNOWN);
+            }
+            return result;
         }
         
     }
