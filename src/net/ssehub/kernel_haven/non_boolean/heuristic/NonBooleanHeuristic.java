@@ -33,15 +33,12 @@ import net.ssehub.kernel_haven.non_boolean.PreprocessorConditionVisitor;
 import net.ssehub.kernel_haven.util.Logger;
 
 /**
- * <p>
  * A heuristic to find allowed values for integer variables. This walks through all source files in a given source
  * tree.
- * </p>
  * <p>
  * After creating a {@link NonBooleanHeuristic}, use {@link #addAllSourceFiles(File)} and / or
  * {@link #addSingleCppLine(String)} to add C preprocessor lines to consider. After this, call {@link #getResult()}
  * to compute the final result.
- * </p>
  * 
  * @author Adam
  */

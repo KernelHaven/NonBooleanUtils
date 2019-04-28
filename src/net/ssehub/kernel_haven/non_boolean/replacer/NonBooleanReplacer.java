@@ -221,11 +221,9 @@ public class NonBooleanReplacer {
     }
     
     /**
-     * <p>
      * A visitor that evaluates {@link CppExpression}s based on the given {@link NonBooleanVariable}s and constants.
      * Every integer operation is calculated and resolved. Boolean operators are left as-is (new ones are obviously
      * added).
-     * </p>
      * <p>
      * The {@link CppExpression} AST is evaluated bottom-up. Every node is turned into a {@link Result}:
      *  <ul>
@@ -235,7 +233,6 @@ public class NonBooleanReplacer {
      *      {@link VariableResult#isUnknownVariable()} set to <code>true</code></li>
      *      <li><code>defined(VAR)</code> calls are turned into {@link VariableResult}s.</li>
      *  </ul>
-     * </p>
      * <p>
      * The {@link Operator}s combine these {@link Result} to new {@link Result}:
      *  <ul>
@@ -249,7 +246,6 @@ public class NonBooleanReplacer {
      *  </ul>
      * Pretty much every other combination is not allowed an throws an {@link ExpressionFormatException} (e.g. adding
      * a literal to a boolean value).
-     * </p>
      * <p>
      * After this we have a tree of {@link Result}s which contains only boolean operations. On this,
      * {@link Result#toCppString()} is called to turn everything back into a CPP string:
@@ -263,7 +259,6 @@ public class NonBooleanReplacer {
      *      VAR is not 0)</li>
      *      <li>{@link BoolResult}s are just written in the obious way</li>
      *  </ul>
-     * </p>
      */
     private class AstEvaluator implements ICppExressionVisitor<Result> {
 

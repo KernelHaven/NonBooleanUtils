@@ -28,18 +28,15 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 
 /**
- * <p>
  * A {@link Result} representing a {@link NonBooleanVariable}. Has a name and a set of possible values. This keeps track
  * of the current value of these values (modified through integer operations) and the original values that they come
  * from (when encountering a comparison, the current values are used to check if the comparison is satisfiable, but the
  * original values are used in the resulting VAR_eq_value string).
- * </p>
  * <p>
  * This can also contain multiple {@link NonBooleanVariable}s. In this case, it keeps tracks of combinations of
  * original values and the current value for this combination. For example, consider NonBooleanVariables A and B with
  * possible values 0 and 1 (each). The addition A + B produces the following pairs of (original value of A, original
  * value of B, current value): (0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 2).
- * </p>
  *
  * @author Adam
  */
@@ -50,8 +47,9 @@ class VariablesWithValues extends Result {
     private String[] varNames;
     
     /**
-     * <p>First dimension: List of arrays of current and original values</p>
-     * <p>Second dimension: First varNames.length entries are original values, last value is current.</p>
+     * First dimension: List of arrays of current and original values
+     * <p>
+     * Second dimension: First varNames.length entries are original values, last value is current.
      */
     private long[][] values;
     

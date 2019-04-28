@@ -258,7 +258,8 @@ public class CppBufferedWriter extends Writer {
     }
     
     /**
-     * Concatenates all removed CPP conditions via a conjunction.<br/>
+     * Concatenates all removed CPP conditions via a conjunction.
+     * <p>
      * <b>Attention:</b> check that {@link #removedConditions} is not empty before!
      * @return The composed, removed conditions.
      */
