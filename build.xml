@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- author: Sascha El-Sharkawy, Adam -->
+<!-- Author: Adam, Sascha El-Sharkawy -->
 <project name="NonBooleanUtils" default="jenkins" basedir=".">
 	<description>Utilities for for replacing non-boolean conditions</description>
 
