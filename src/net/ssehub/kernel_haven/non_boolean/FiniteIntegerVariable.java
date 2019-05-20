@@ -17,7 +17,6 @@ package net.ssehub.kernel_haven.non_boolean;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import net.ssehub.kernel_haven.util.FormatException;
@@ -132,46 +131,5 @@ public class FiniteIntegerVariable extends VariabilityVariable implements Iterab
             values[i++] = ((JsonNumber) element).getValue().intValue();
         }
     }
-    
-    @Override
-    @Deprecated
-    protected @NonNull List<@NonNull String> getSerializationData() {
-        List<@NonNull String> data = super.getSerializationData();
-        
-        for (int i = values.length - 1; i >= 0; i--) {
-            data.add(0, String.valueOf(values[i]));
-        }
-        data.add(0, String.valueOf(values.length));
-        
-        return data;
-    }
-    
-    @Override
-    @Deprecated
-    protected void setSerializationData(@NonNull List<@NonNull String> data,
-            @NonNull Map<@NonNull String, VariabilityVariable> variables) throws FormatException {
-        
-        if (data.isEmpty()) {
-            throw new FormatException("Expected at least one element");
-        }
-        
-        try {
-            int size = Integer.parseInt(data.remove(0));
-        
-            if (data.size() < size) {
-                throw new FormatException("Expected at least " + size + " more elements");
-            }
-            
-            this.values = new int[size];
-            for (int i = 0; i < size; i++) {
-                this.values[i] = Integer.parseInt(data.remove(0));
-            }
-            
-        } catch (NumberFormatException e) {
-            throw new FormatException(e);
-        }
-        
-        super.setSerializationData(data, variables);
-    }
-    
+
 }
