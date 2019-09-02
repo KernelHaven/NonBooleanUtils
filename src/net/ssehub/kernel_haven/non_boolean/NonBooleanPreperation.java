@@ -36,6 +36,7 @@ import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.non_boolean.heuristic.NonBooleanHeuristic;
 import net.ssehub.kernel_haven.non_boolean.replacer.NonBooleanReplacer;
 import net.ssehub.kernel_haven.util.Logger;
+import net.ssehub.kernel_haven.util.PerformanceProbe;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.Util;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
@@ -79,7 +80,7 @@ public class NonBooleanPreperation implements IPreparation {
             throw new SetUpException(e1);
         }
         
-        try {
+        try (PerformanceProbe p = new PerformanceProbe("NonBooleanPreparation Complete Runtime")) {
             prepare(config);
         } catch (IOException e) {
             throw new SetUpException(e);
@@ -195,6 +196,7 @@ public class NonBooleanPreperation implements IPreparation {
      * @throws IOException If copying the file fails.
      */
     private void copySourceFile(File from, File to) throws IOException {
+        PerformanceProbe p = new PerformanceProbe("NonBooleanPreparation copySourceFile()");
         try (LineNumberReader in = new LineNumberReader(new FileReader(from))) {
             
             try (Writer out = createWriter(to)) {
@@ -232,6 +234,8 @@ public class NonBooleanPreperation implements IPreparation {
                 }
                 
             }
+        } finally {
+            p.close();
         }
     }
     
@@ -278,11 +282,19 @@ public class NonBooleanPreperation implements IPreparation {
      */
     private String replaceInLine(String line, File from, int lineNumber) {
         String result = removeComments(line);
+        
+        int originalSize = result.length();
+        
+        PerformanceProbe p = new PerformanceProbe("NonBooleanPreparation condition conversion");
         try {
             result = replacer.replaceCpp(result);
         } catch (ExpressionFormatException e) {
             LOGGER.logException("Error while replacing line " + lineNumber + " in " + from + ": " + line, e);
         }
+        
+        p.addExtraData("condition growth", (double) result.length() / originalSize);
+        p.close();
+        
         return result;
     }
     
