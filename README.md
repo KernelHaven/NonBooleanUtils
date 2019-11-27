@@ -14,7 +14,8 @@ To use this preparation, set `preparation.class.0` to `net.ssehub.kernel_haven.n
 
 ## Dependencies
 
-This plugin has no additional dependencies other than KernelHaven.
+In addition to KernelHaven, this plugin has the following dependencies:
+* [CppUtils](https://github.com/KernelHaven/CppUtils)
 
 ## License
 
